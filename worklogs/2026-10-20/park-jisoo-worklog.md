@@ -2,6 +2,8 @@
 
 2026년 10월 20일 · Asia/Seoul · 화장품 광고 AI 래퍼 참고 구현 정리 및 GitHub 공유
 
+> 2026-10-20 공개 저장소 이전: 아래 내용은 작업 당시 기록입니다. 현재 코드 브랜치는 plan/models이며, 원본 PR #1·협업일지 PR #2는 닫혔습니다. 협업일지는 별도 브랜치에서 PR 없이 관리합니다.
+
 ## 오늘의 목표
 
 - 로컬에 풀어 둔 beautyAi 패키지를 project-it-tem 저장소의 별도 브랜치로 공유한다.
@@ -51,12 +53,12 @@
 
 ## 관련 자료
 
-- [래퍼 Draft PR #1](https://github.com/taemin050-sys/project-it-tem/pull/1)
-- [래퍼 업로드 브랜치](https://github.com/taemin050-sys/project-it-tem/tree/codex/beauty-ai-wrappers-20261020)
-- [사용법·기능·아키텍처·보완점·주의사항 README](https://github.com/taemin050-sys/project-it-tem/blob/codex/beauty-ai-wrappers-20261020/README.md)
-- [추가 설명 README2](https://github.com/taemin050-sys/project-it-tem/blob/codex/beauty-ai-wrappers-20261020/README2.md)
-- [이번 테스트 보고서](https://github.com/taemin050-sys/project-it-tem/blob/codex/beauty-ai-wrappers-20261020/TEST_REPORT.md)
-- [사용자가 제공한 ChatGPT 참고 대화](https://chatgpt.com/c/6ad6abe7-6510-83ee-9b7c-4d508adc8fb2)
-- [사용자가 제공한 Gemini 참고 대화](https://gemini.google.com/app/c286492f15a3ba30)
+- 원본 PR #1: 당시 검토 기록이며 현재 닫힘. 원본 저장소 접근 권한이 필요합니다.
+- [래퍼 업로드 브랜치](https://github.com/uyt5041-lab/beauty-ai-models/tree/plan/models)
+- [사용법·기능·아키텍처·보완점·주의사항 README](https://github.com/uyt5041-lab/beauty-ai-models/blob/plan/models/README.md)
+- [추가 설명 README2](https://github.com/uyt5041-lab/beauty-ai-models/blob/plan/models/README2.md)
+- [이번 테스트 보고서](https://github.com/uyt5041-lab/beauty-ai-models/blob/plan/models/TEST_REPORT.md)
+- ChatGPT 참고 대화: 비공개 참고자료이며 원문은 포함하지 않습니다.
+- Gemini 참고 대화: 비공개 참고자료이며 원문은 포함하지 않습니다.
 
 기록 기준: 이번 대화에서 수행한 로컬 검증 및 GitHub 확인 결과. 참고 대화는 접근 권한이 필요할 수 있다. 작성 지원: Codex.
