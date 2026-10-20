@@ -1,0 +1,62 @@
+# 박지수 협업일지
+
+2026년 10월 20일 · Asia/Seoul · 화장품 광고 AI 래퍼 참고 구현 정리 및 GitHub 공유
+
+## 오늘의 목표
+
+- 로컬에 풀어 둔 beautyAi 패키지를 project-it-tem 저장소의 별도 브랜치로 공유한다.
+- 사용법, 기능, 아키텍처, 미완성으로서 보완해야 할 점, 하지 말 것의 다섯 항목으로 README를 정리한다.
+- 비밀값과 로컬 생성물을 제외하고, 현재 검증한 범위와 남은 작업을 구분해 기록한다.
+
+## 수행한 작업
+
+- 사용자가 제공한 ChatGPT·Gemini 대화와 실제 소스 코드를 함께 확인했다. 대화의 서비스 구상과 현재 래퍼 구현을 구분했다.
+- 기존 코드·테스트·스키마·예제를 보존해 가져오고, README.md를 다섯 항목으로 작성했다. 추가 예제와 기존 설명은 README2.md로 분리했다.
+- DESIGN.md를 보존하고 TEST_REPORT.md에 이번 실행 결과를 기록했다. ZIP 원본의 테스트 보고서는 docs/TEST_REPORT.original.md로 보존했다.
+- 요청받은 .gitignore를 적용했다. 실제 .env, API 키, 캐시, 생성물, test_output.txt를 업로드 대상에서 제외하고 .env.example은 비밀값이 비어 있는 상태로 포함했다.
+- codex/beauty-ai-wrappers-20261020 브랜치에 26개 변경 파일을 업로드하고 dev 대상 Draft PR #1을 생성했다. 원본 로컬 폴더는 변경하지 않았다.
+- 요청한 이름의 박지수_협업일지 브랜치를 dev에서 분리하고, 이 날짜 폴더에 같은 내용의 Markdown·HTML 협업일지를 작성했다.
+
+## 확인한 기능과 아키텍처
+
+- OpenAI 텍스트·VLM 게이트웨이: 제품 관찰, 광고 초안, 검수, 재작성과 구조화된 응답 검증을 담당한다.
+- ReviewService: 정규식 규칙과 LLM 검수 결과를 결합하고, 검수 시점의 입력과 규칙·모델·프롬프트 정보를 스냅샷으로 묶는다.
+- HTTPImageGateway: 별도 private inference 서버에 이미지 작업을 제출하고 상태를 조회하는 클라이언트다. 실제 서버와 GPU 실행기는 구현 범위 밖이다.
+- Pydantic 계약과 JSON 스키마로 입력·출력 구조를 정의한다. Pillow 기반 마스크·알파 합성 유틸리티를 포함한다.
+- examples/wiring.py는 클라이언트 연결 예제다. 완성된 FastAPI 앱이나 실행 가능한 전체 서비스가 아니다.
+
+## 검증 결과
+
+- 단위 테스트: python -m pytest -q -W error → 36 passed in 1.73s. 오늘 래퍼 업로드 작업에서 실행한 결과다.
+- Python 3.14.7의 별도 가상환경에 테스트 의존성을 설치했다. beauty_ai, examples, tests 구문 컴파일을 통과했다.
+- 실제 OpenAI SDK import와 responses.parse 메서드 존재를 확인했다. 예시 키로 클라이언트 객체만 생성·종료했으며 외부 API 호출은 하지 않았다.
+- 업로드 대상의 비밀값 패턴 검사에서 발견 사항은 없었다. 제외 규칙 9건, README 항목 5개, JSON 스키마 8개와 가져온 원본 파일 21개의 일치를 확인했다.
+- 래퍼 브랜치의 로컬 HEAD와 원격 HEAD가 208e9ed7919b0990d01b9b90b21578311e92a0cf로 일치했고, PR #1의 대상이 dev이며 Draft 상태임을 확인했다.
+- 이 협업일지는 동일한 원문 데이터로 두 형식을 생성하고 제목·항목·링크의 일치, HTML 문서 구조와 Git 공백 오류를 점검했다. 문서 작성으로 코드 테스트를 재실행하지 않는다.
+
+## 미완성·미검증 범위
+
+- UI, FastAPI 라우트, 인증·프로젝트 권한, 영속 DB, 작업 복구·SSE, 파일 저장·내보내기와 전체 서비스 E2E는 구현·검증되지 않았다.
+- 실제 OpenAI 계정의 모델 지원, 응답 품질, 과금과 한국어 광고 품질은 확인하지 않았다.
+- 실제 private inference 서버·GCP·GPU에서 SDXL·BiRefNet 등의 실행, 지연 시간·VRAM·제품 보존 품질을 검증하지 않았다.
+- 검수 규칙집의 최신성·완전성과 광고의 법적 적합성은 확인하지 않았다. 단위 테스트 통과를 운영 준비 완료나 규제 적합성으로 해석하면 안 된다.
+- main·dev 병합, 배포와 사용자 인수 검증은 수행하지 않았다. PR 병합은 저장소 협업 규칙에 따른 PM 검토가 남아 있다.
+
+## 다음 협업 과제
+
+- PM 검토: PR #1에서 참고 구현의 수용 범위와 통합 우선순위를 결정한다. 이 항목은 후속 제안이며 새 작업을 완료했다는 뜻이 아니다.
+- 백엔드 연동: FastAPI·DB·인증을 구현하고 검수 스냅샷의 최신성 확인을 실제 저장 상태와 연결한다.
+- 이미지 추론: private inference 서버, 원자적 작업 중복 방지, GPU 작업 큐·복구를 구현하고 실제 환경에서 검증한다.
+- 서비스 검증: 제품 입력 → 광고 생성 → 검수 → 재작성 → 이미지 작업 → 내보내기 흐름을 연결하고 실제 API·GPU·E2E 결과를 별도로 기록한다.
+
+## 관련 자료
+
+- [래퍼 Draft PR #1](https://github.com/taemin050-sys/project-it-tem/pull/1)
+- [래퍼 업로드 브랜치](https://github.com/taemin050-sys/project-it-tem/tree/codex/beauty-ai-wrappers-20261020)
+- [사용법·기능·아키텍처·보완점·주의사항 README](https://github.com/taemin050-sys/project-it-tem/blob/codex/beauty-ai-wrappers-20261020/README.md)
+- [추가 설명 README2](https://github.com/taemin050-sys/project-it-tem/blob/codex/beauty-ai-wrappers-20261020/README2.md)
+- [이번 테스트 보고서](https://github.com/taemin050-sys/project-it-tem/blob/codex/beauty-ai-wrappers-20261020/TEST_REPORT.md)
+- [사용자가 제공한 ChatGPT 참고 대화](https://chatgpt.com/c/6ad6abe7-6510-83ee-9b7c-4d508adc8fb2)
+- [사용자가 제공한 Gemini 참고 대화](https://gemini.google.com/app/c286492f15a3ba30)
+
+기록 기준: 이번 대화에서 수행한 로컬 검증 및 GitHub 확인 결과. 참고 대화는 접근 권한이 필요할 수 있다. 작성 지원: Codex.
