@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "beauty-ai-wrappers"
+version = "0.1.0"
+description = "Reference text and internal image API wrappers for the cosmetics MVP"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.7,<3", "httpx>=0.27,<1", "openai>=2,<4", "Pillow>=10"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-asyncio>=0.24"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["beauty_ai*"]

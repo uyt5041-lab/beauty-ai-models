@@ -1,0 +1,60 @@
+# Secrets / environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Logs / temporary
+*.log
+*.tmp
+test_output.txt
+tmp/
+.cache/
+
+# Generated assets
+uploads/
+outputs/
+generated/
+artifacts/
+models/
+checkpoints/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# Local configuration
+config.local.*
+
+# Team policy: local datasets are not committed
+data/
+.ipynb_checkpoints/

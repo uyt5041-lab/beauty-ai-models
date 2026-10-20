@@ -1,0 +1,216 @@
+{
+  "$defs": {
+    "CallMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "operation": {
+          "title": "Operation",
+          "type": "string"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "provider_request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider Request Id"
+        },
+        "elapsed_ms": {
+          "title": "Elapsed Ms",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Input Tokens"
+        },
+        "output_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Output Tokens"
+        },
+        "prompt_version": {
+          "title": "Prompt Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation",
+        "provider",
+        "model",
+        "provider_request_id",
+        "elapsed_ms",
+        "input_tokens",
+        "output_tokens",
+        "prompt_version"
+      ],
+      "title": "CallMeta",
+      "type": "object"
+    },
+    "ReviewIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "enum": [
+            "headline",
+            "subheadline",
+            "cta",
+            "caption",
+            "hashtags",
+            "badges"
+          ],
+          "title": "Field",
+          "type": "string"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "warning",
+            "block"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "suggested_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Suggested Text"
+        },
+        "rule_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Rule Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "field",
+        "quote",
+        "severity",
+        "reason",
+        "suggested_text",
+        "rule_ids"
+      ],
+      "title": "ReviewIssue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "enum": [
+        "no_flags",
+        "warnings",
+        "blocked",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "snapshot_hash": {
+      "title": "Snapshot Hash",
+      "type": "string"
+    },
+    "copy_revision": {
+      "title": "Copy Revision",
+      "type": "integer"
+    },
+    "product_revision": {
+      "title": "Product Revision",
+      "type": "integer"
+    },
+    "rule_pack_version": {
+      "title": "Rule Pack Version",
+      "type": "string"
+    },
+    "prompt_version": {
+      "title": "Prompt Version",
+      "type": "string"
+    },
+    "configured_review_model": {
+      "title": "Configured Review Model",
+      "type": "string"
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/ReviewIssue"
+      },
+      "title": "Issues",
+      "type": "array"
+    },
+    "uncertainties": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Uncertainties",
+      "type": "array"
+    },
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CallMeta"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "legal_approval": {
+      "const": false,
+      "default": false,
+      "title": "Legal Approval",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "status",
+    "snapshot_hash",
+    "copy_revision",
+    "product_revision",
+    "rule_pack_version",
+    "prompt_version",
+    "configured_review_model",
+    "issues",
+    "uncertainties",
+    "meta"
+  ],
+  "title": "ReviewReport",
+  "type": "object"
+}

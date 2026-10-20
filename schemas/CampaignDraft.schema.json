@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "CopyBundle": {
+      "additionalProperties": false,
+      "properties": {
+        "headline": {
+          "title": "Headline",
+          "type": "string"
+        },
+        "subheadline": {
+          "title": "Subheadline",
+          "type": "string"
+        },
+        "cta": {
+          "title": "Cta",
+          "type": "string"
+        },
+        "caption": {
+          "title": "Caption",
+          "type": "string"
+        },
+        "hashtags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hashtags",
+          "type": "array"
+        },
+        "badges": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Badges",
+          "type": "array"
+        }
+      },
+      "required": [
+        "headline",
+        "subheadline",
+        "cta",
+        "caption",
+        "hashtags",
+        "badges"
+      ],
+      "title": "CopyBundle",
+      "type": "object"
+    },
+    "CopyVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "concept": {
+          "title": "Concept",
+          "type": "string"
+        },
+        "key_message": {
+          "title": "Key Message",
+          "type": "string"
+        },
+        "copy_bundle": {
+          "$ref": "#/$defs/CopyBundle"
+        },
+        "used_claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Used Claim Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "concept",
+        "key_message",
+        "copy_bundle",
+        "used_claim_ids"
+      ],
+      "title": "CopyVariant",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "variants": {
+      "items": {
+        "$ref": "#/$defs/CopyVariant"
+      },
+      "title": "Variants",
+      "type": "array"
+    }
+  },
+  "required": [
+    "variants"
+  ],
+  "title": "CampaignDraft",
+  "type": "object"
+}

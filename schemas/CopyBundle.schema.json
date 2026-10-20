@@ -1,0 +1,45 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "headline": {
+      "title": "Headline",
+      "type": "string"
+    },
+    "subheadline": {
+      "title": "Subheadline",
+      "type": "string"
+    },
+    "cta": {
+      "title": "Cta",
+      "type": "string"
+    },
+    "caption": {
+      "title": "Caption",
+      "type": "string"
+    },
+    "hashtags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Hashtags",
+      "type": "array"
+    },
+    "badges": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Badges",
+      "type": "array"
+    }
+  },
+  "required": [
+    "headline",
+    "subheadline",
+    "cta",
+    "caption",
+    "hashtags",
+    "badges"
+  ],
+  "title": "CopyBundle",
+  "type": "object"
+}
