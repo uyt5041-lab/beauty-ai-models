@@ -13,19 +13,24 @@ import os
 from pathlib import Path
 import sqlite3
 import threading
-from typing import Callable
+from typing import Callable, Protocol
 from uuid import UUID, uuid4
 
 from pydantic import TypeAdapter, ValidationError
 
 from .assets import LocalAssetStore
-from .contracts import BackgroundResult, CutoutResult, ImageRequest, ImageResult
+from .contracts import (BackgroundResult, CutoutResult, ExternalImageResult,
+                        ImageRequest, ImageResult, image_result_matches)
 from .errors import GatewayError
 from .execution_trace import phase, recording
 from .job_ledger import JobLedger
 
 
-Processor = Callable[[ImageRequest, UUID], ImageResult]
+class JobProcessor(Protocol):
+    def process_job(self, request: ImageRequest, project_id: UUID, job_id: UUID) -> ImageResult: ...
+
+
+Processor = Callable[[ImageRequest, UUID], ImageResult] | JobProcessor
 _RESULT_ADAPTER = TypeAdapter(ImageResult)
 _SAFE_PROCESSOR_CODES = frozenset({
     "ASSET_NOT_FOUND", "ASSET_INTEGRITY_ERROR", "ASSET_STORAGE_ERROR",
@@ -35,6 +40,12 @@ _SAFE_PROCESSOR_CODES = frozenset({
     "PRODUCT_NOT_FOUND", "PRODUCT_APPROVAL_REQUIRED", "PRODUCT_APPROVAL_CONFLICT",
     "PRODUCT_STORAGE_ERROR",
     "IMAGE_RESULT_INVALID", "IMAGE_PROCESSING_FAILED", "IMAGE_OUT_OF_MEMORY",
+    "PROVIDER_CALLS_DISABLED", "PROVIDER_CONFIG_INVALID", "PROVIDER_INPUT_INVALID",
+    "PROVIDER_AUTH", "PROVIDER_RATE_LIMIT", "PROVIDER_QUOTA_EXCEEDED",
+    "PROVIDER_POLICY_REJECTED", "PROVIDER_REQUEST_REJECTED", "PROVIDER_RESPONSE_INVALID",
+    "PROVIDER_SUBMISSION_UNKNOWN", "PROVIDER_RESPONSE_TOO_LARGE", "PROVIDER_BUDGET_EXCEEDED",
+    "PROVIDER_ATTEMPT_NOT_FOUND", "PROVIDER_ATTEMPT_CONFLICT", "PROVIDER_ATTEMPT_STORAGE_ERROR",
+    "PROVIDER_OUTPUT_INVALID", "PROVIDER_RESULT_STORAGE_FAILED",
 })
 
 
@@ -53,8 +64,8 @@ class SingleHostWorker:
 
     def __init__(self, ledger: JobLedger, assets: LocalAssetStore, processor: Processor,
                  *, poll_seconds: float = 0.1):
-        if not callable(processor):
-            raise TypeError("Processor must be callable")
+        if not callable(processor) and not callable(getattr(processor, "process_job", None)):
+            raise TypeError("Processor must be callable or provide process_job")
         if not math.isfinite(poll_seconds) or poll_seconds <= 0:
             raise ValueError("Polling interval must be finite and positive")
         self.ledger = ledger
@@ -165,20 +176,25 @@ class SingleHostWorker:
             result, code = None, None
             try:
                 with trace.processor():
-                    result = self.processor(request, project_id)
+                    process_job = getattr(self.processor, "process_job", None)
+                    result = (process_job(request, project_id, job_id) if callable(process_job)
+                              else self.processor(request, project_id))
             except Exception as exc:
                 code = self._processor_code(exc)
             if code is None:
                 try:
                     with phase("result_validation"):
-                        if not isinstance(result, (CutoutResult, BackgroundResult)):
+                        if not isinstance(result, (CutoutResult, BackgroundResult, ExternalImageResult)):
                             raise ValueError("Processor did not return an image result")
                         result = _RESULT_ADAPTER.validate_python(result.model_dump())
-                        if result.kind != request.kind:
-                            raise ValueError("Result kind does not match request")
-                        refs = ((result.product_rgba, result.preserve_mask)
-                                if isinstance(result, CutoutResult)
-                                else (result.scene_underlay, result.product_rgba, result.composed_preview))
+                        if not image_result_matches(request, result):
+                            raise ValueError("Result does not match request")
+                        if isinstance(result, ExternalImageResult):
+                            refs = (result.image,)
+                        elif isinstance(result, CutoutResult):
+                            refs = (result.product_rgba, result.preserve_mask)
+                        else:
+                            refs = (result.scene_underlay, result.product_rgba, result.composed_preview)
                         for reference in refs:
                             image = self.assets.read(reference, project_id=project_id)
                             image.close()

@@ -89,3 +89,10 @@
 - 요구사항/설계/README/역할/원본 TODO를 정정했다. 기존 완료35개·SSOT12개는 보존하고 외부 API 작업 API-01~06을 미완료로 추가했다. 로컬 GPU 설치·튜닝·CUDA 이전은 자체호스팅 재선택 시만 적용한다.
 - 코드·기존 모델·결과·키는 변경하지 않았다. 기존624tests·MPS6건은 로컬 엔진 근거이며 외부 API 실호출·제품 품질·팀 인수 근거가 아니다. 이번 검증은 문서 정적 검사다.
 - Ego 리서치 창은 열었지만 ChatGPT 로그아웃 상태여서 로그인 제어를 넘겼다. 아직 Pro·최대 추론 설정 확인/프롬프트 전송/답변 수신은 하지 않았다. 준비한 연구 질문을 로그인 완료 뒤 같은 창에서 전달한다.
+
+## 2026-10-22 · B10 OpenAI 오프라인 래퍼
+
+- 사용자 OpenAI 선택·API 누끼·실제 호출 금지를 TODO/README/계약에 반영했다. 기존 로컬 실험·과거 스키마 초안은 보존했다.
+- OpenAI adapter, project 자산, durable attempt/예약액, job worker, receipt API, mock CLI를 연결했다. 실제 호출0회, 기본OFF·예산0.
+- 806 tests51.05s·mock CLI3건·pip check·wheel PASS. 출력 경고 분류 수리 포함. [검증](../test/relay-b10.md), [흐름](../architecture/spec/image-runtime-flow.md).
+- 실제 계정/품질/비용·최종 UI/렌더러·팀 인수는 미완료. Git 게시와 로컬 동기화는 [receipt](integrate-log.md)로 별도 확인한다.

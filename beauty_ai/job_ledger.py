@@ -18,8 +18,8 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
 from .contracts import (
-    BackgroundRequest, CutoutRequest, ImageJob, ImageRequest, ImageResult,
-    content_hash,
+    BackgroundRequest, CutoutRequest, ExternalImageRequest, ImageJob, ImageRequest, ImageResult,
+    content_hash, image_result_matches,
 )
 from .errors import GatewayError
 from .execution_trace import ExecutionRecord, request_metadata
@@ -154,8 +154,8 @@ class JobLedger:
                       if row["result_json"] is not None else None)
             job = ImageJob(job_id=row["job_id"], request_hash=row["request_hash"],
                            status=row["status"], result=result, error_code=row["error_code"])
-            if result is not None and result.kind != request.kind:
-                raise ValueError("Stored result kind mismatch")
+            if result is not None and not image_result_matches(request, result):
+                raise ValueError("Stored result does not match the request")
             if job.status in ("queued", "running") and job.error_code is not None:
                 raise ValueError("Non-terminal job cannot contain an error")
             if job.status == "running" and not row["owner_id"]:
@@ -174,7 +174,7 @@ class JobLedger:
         """Commit a snapshot once; return the durable current state on re-submit."""
         self._uuid(job_id)
         self._uuid(project_id)
-        if not isinstance(request, (CutoutRequest, BackgroundRequest)):
+        if not isinstance(request, (CutoutRequest, BackgroundRequest, ExternalImageRequest)):
             raise ValueError("A validated image request is required")
         # Revalidate model_copy/constructed values, and sever mutable references.
         try:
@@ -342,7 +342,7 @@ class JobLedger:
                             result.model_dump(mode="json"))
                     except (ValueError, TypeError, ValidationError, AttributeError) as exc:
                         raise self._state_error() from exc
-                    if validated.kind != claimed.request.kind:
+                    if not image_result_matches(claimed.request, validated):
                         raise self._state_error()
                     result_json, status = validated.model_dump_json(), "succeeded"
                 execution_json = None

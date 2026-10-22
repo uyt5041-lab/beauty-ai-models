@@ -1,14 +1,14 @@
 # 화장품 광고 AI 래퍼 참고 구현
 
-소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. **2026-10-22 사용자 정정: LLM·제품 분석·카피·영어 프롬프트는 김다혜가, 이미지 모델 호출은 pi가 외부 이미지 API 래퍼로 담당합니다.** 이미지 제공자·모델은 미정이며 리서치와 실제 제품 비교 후 선정합니다. 외부 이미지 API 어댑터는 아직 구현하지 않았습니다.
+소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. **2026-10-22 사용자 정정: LLM·제품 분석·카피·영어 프롬프트는 김다혜가, 이미지 모델 호출은 pi가 외부 이미지 API 래퍼로 담당합니다.** **이미지 생성·편집·누끼는 OpenAI API로 결정했습니다.** B10은 실제 호출 없이 래퍼와 내부 연결을 구현하는 범위입니다. 기본 모델은 `gpt-image-2.5-sunburst-2026-09-08`, 허용 대안은 `gpt-image-2-2026-04-21`입니다. 계정 권한·실제 품질·가격 우위는 확인하지 않았습니다.
 
-현재 코드는 내부 이미지 FastAPI·SQLite 작업 저장·자산·승인·revision/cache·평가 도구와 로컬 BiRefNetLite·SDXL 실험 경로를 포함합니다. 로컬 MPS 기술 검증은 보존하지만 자체 GPU 구축·모델 튜닝·GCP CUDA 이전은 현재 MVP의 필수 선행조건에서 제외합니다. 입력 검증·원본 제품 보존·최종 한글 합성·품질 확인은 외부 API를 사용해도 필요합니다.
+현재 코드는 OpenAI 이미지 어댑터·영속 제출 기록과 내부 이미지 FastAPI·SQLite 작업 저장·자산·승인·revision/cache·평가 도구, 로컬 BiRefNetLite·SDXL 실험 경로를 포함합니다. 로컬 MPS 기술 검증은 보존하지만 자체 GPU 구축·모델 튜닝·GCP CUDA 이전은 현재 MVP의 필수 선행조건에서 제외합니다. 입력 검증·원본 제품 보존·최종 한글 합성·품질 확인은 외부 API를 사용해도 필요합니다.
 
 확정 MVP는 **동일 제품 사진2~5장·선택 배경 참고0~5장으로 인스타그램4:5 광고1개**를 만드는 흐름입니다. 사전 조사→카피1개와 사용자 검토→이미지1개와 사용자 검토→최종 한글 합성·캡션·해시태그·다운로드가 목표입니다. 이 서비스 흐름 전체가 구현된 것은 아닙니다. 현재 코드와 목표의 차이·담당·완료 기준은 [SSOT 대조](docs/ssotAlignment.md), 실행 항목은 [이미지 TODO](docs/imageTodo.md)에 있습니다.
 
 ## 1. 쓰는 법
 
-아래 명령과 환경변수는 **현재 구현된 참고 코드·로컬 실험 경로**의 사용법입니다. 외부 이미지 API를 실행하는 설정은 아직 없으며, [외부 API 전환 계약](fivecircles/architecture/contract/image-runtime.md#외부-이미지-api-전환--2026-10-22-사용자-정정)에 따라 추가할 예정입니다.
+OpenAI 경로의 기준은 [B10 이미지 계약](fivecircles/architecture/contract/openai-images.md)입니다. 기본 설정은 **`live_calls=False`·이미지 예산 `0`**이며 실제 API 호출은 현재 작업에서 금지합니다. 로컬 모델 설명은 보존한 선택 경로의 사용법입니다.
 
 Python 3.11 이상에서 프로젝트 루트 기준으로 설치합니다.
 
@@ -17,6 +17,12 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[test]'
 python -m pytest -q -W error
+```
+
+외부 통신·키 조회 없이 생성/편집/누끼 연결을 확인하는 예제는 다음과 같습니다. 항상 mock 응답과 합성 fixture를 사용하며 실제 AI 이미지나 품질 평가 결과가 아닙니다. 상세는 [README2](README2.md#openai-이미지-래퍼--실제-호출-없는-예제)를 따릅니다.
+
+```bash
+python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 ```
 
 설정 예시는 [.env.example](.env.example)에 있습니다. 파일에는 비밀값을 넣지 마세요. 실제 값은 로컬 환경변수나 별도의 비밀 관리 수단으로 주입합니다. **패키지는 `.env`를 자동으로 읽지 않습니다.**
@@ -31,7 +37,10 @@ python -m pytest -q -W error
 | `INFERENCE_INTERNAL_TOKEN` | 내부 서버 인증 토큰 |
 | `BEAUTY_PROJECT_ID` | 로컬 이미지 서버의 프로젝트 UUID |
 | `BEAUTY_STORAGE_ROOT` | 로컬 자산·작업·승인·편집 DB 저장 경로 |
-| `BEAUTY_CUTOUT_BACKEND` / `BEAUTY_BACKGROUND_BACKEND` | 실제 누끼·배경 backend 선택. 기본 alpha/template과 구분 |
+| `BEAUTY_OPENAI_IMAGE_LIVE_CALLS` | 기본 `false`. 현재 실제 호출 금지, 이후 명시적 승인 전 변경 금지 |
+| `BEAUTY_IMAGE_BUDGET_USD` / `BEAUTY_IMAGE_RESERVATION_USD` | 서버 예약 한도·요청별 예약액. 기본 `0` / `1`, 실제 과금액이나 제공자 가격이 아님 |
+| `BEAUTY_OPENAI_IMAGE_TIMEOUT_SECONDS` | OpenAI 이미지 요청 대기 제한. 기본 `180`초 |
+| `BEAUTY_CUTOUT_BACKEND` / `BEAUTY_BACKGROUND_BACKEND` | 보존한 로컬 실험 backend. 기본 alpha/template과 구분 |
 | `BEAUTY_MODEL_ROOT` / `BEAUTY_MODEL_DEVICE` | 검증 모델 루트·명시 장치 |
 
 모델은 계정에서 사용할 수 있고 해당 입력·구조화 출력을 지원하는지 확인한 뒤 설정합니다. 동시성·시간 제한의 초기값은 `.env.example`과 [클라이언트 조립 예제](examples/wiring.py)를 참고하세요.
@@ -44,18 +53,21 @@ python -m pytest -q -W error
 
 로컬 실행기는 위 환경변수를 설정한 뒤 `python -m beauty_ai.inference_runtime`으로 기동합니다. 기본 주소는 `127.0.0.1:8001`입니다. 기존 투명 PNG를 제품 후보로 준비하고 사람이 확인한 뒤 명시적으로 승인하면 밝은 템플릿 위에 합성합니다. `uploaded-alpha/1`은 실제 누끼 모델이 아니며 RGB·완전 불투명 입력은 지원하지 않습니다.
 
-실제 누끼는 `.[inference,models]` 선택 의존성과 고정 모델 준비가 필요합니다. `BEAUTY_CUTOUT_BACKEND=birefnet-lite`·명시적 MPS 장치를 설정하고 `prepare --cutout-profile birefnet-lite`를 사용합니다. API에서 모델을 자동 다운로드하거나 CPU/template으로 자동 대체하지 않습니다. [로컬 모델 설치·GCP 이전](docs/localModelSetup.md)을 따르세요.
+보존한 로컬 실험의 실제 누끼는 `.[inference,models]` 선택 의존성과 고정 모델 준비가 필요합니다. `BEAUTY_CUTOUT_BACKEND=birefnet-lite`·명시적 MPS 장치를 설정하고 `prepare --cutout-profile birefnet-lite`를 사용합니다. API에서 모델을 자동 다운로드하거나 CPU/template으로 자동 대체하지 않습니다. [로컬 모델 설치·GCP 이전](docs/localModelSetup.md)을 따르세요.
 
-실제 배경은 `.[inference,models,background]`와 명시적 SDXL 파일 준비 후 `BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint`로 선택합니다. 승인된 후보에 `render/select --background-profile sdxl-inpaint --prompt examples/bright_flower_prompt.json`을 사용합니다. 두 tokenizer의 77 token 한도를 넘으면 거절하며 잘라서 실행하지 않습니다.
+보존한 로컬 실험의 실제 배경은 `.[inference,models,background]`와 명시적 SDXL 파일 준비 후 `BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint`로 선택합니다. 승인된 후보에 `render/select --background-profile sdxl-inpaint --prompt examples/bright_flower_prompt.json`을 사용합니다. 두 tokenizer의 77 token 한도를 넘으면 거절하며 잘라서 실행하지 않습니다.
 
 로컬 평가 도구는 `python -m beauty_ai.evaluation examples/evaluation_manifest.json --output outputs/evaluation-report.json`으로 실행합니다. 예제의 권리는 `unknown`이므로 이미지를 읽지 않고 미평가로 기록합니다. 실제 평가는 권리와 출처를 확인한 파일을 manifest 폴더 아래에 두고, 비공개 `data/`·`outputs/`에서 실행하세요. 기존 결과 파일은 덮어쓰지 않습니다.
 
-단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B9 기록](fivecircles/test/relay-b9.md)을 참고하세요. **전체 624 tests PASS + 실제 MPS 6 jobs/실행 관찰 PASS**입니다. 같은512 입력·seed의 두 번 실행에서 출력 hash가 같았습니다. B8 실제 TCP 응답 유실 조정 근거도 보존했습니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
+단계별 실행 명령은 [README2.md](README2.md), 기존 로컬 검증은 [B9 기록](fivecircles/test/relay-b9.md)을 참고하세요. **B9 당시 624 tests PASS + 실제 MPS 6 jobs/실행 관찰 PASS** 기록입니다. B10의 테스트 총수나 실제 OpenAI 호출 검증을 뜻하지 않습니다. 같은512 입력·seed의 두 번 실행에서 출력 hash가 같았습니다. B8 실제 TCP 응답 유실 조정 근거도 보존했습니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
 
 ## 2. 기능
 
 | 구현 요소 | 현재 하는 일 |
 | --- | --- |
+| `OpenAIImagesAdapter` | 생성·편집·생성형 누끼 요청 변환, 고정 모델·PNG 1장·base64 응답 검증. 실제 호출은 기본 차단 |
+| `ExternalImageProcessor` / `ProviderAttemptStore` | 자산 검증, 작업당 1회 POST를 위한 영속 예약·제출 기록, 결과 저장과 요청 ID·nullable usage 관찰 |
+| `openai_images_demo` | 네트워크·키 없는 mock 전용 예제. 합성 fixture만 생성 |
 | `OpenAITextGateway` | 제품 이미지 관찰, 광고 기획·카피 후보 생성, 문맥 검수, 수정안 생성 |
 | 구조화 계약 | Pydantic 입력·출력 검증과 [JSON Schema](schemas/) 제공 |
 | `ReviewService` | 전체 카피의 규칙 검사와 LLM 검사 병합, 검토된 규칙집 확인, revision·해시로 검수 대상 식별 |
@@ -81,7 +93,7 @@ python -m pytest -q -W error
 
 ## 3. 아키텍처
 
-목표는 `다혜의 제품 정보·프롬프트 → pi의 이미지 API 래퍼 → 외부 제공자 → 결과 검증·저장 → 사용자 검토·최종 렌더`입니다. 내부 자산·job·승인·revision/cache는 재사용 후보이며, 제공자별 요청 ID·지원 기능·재시도·과금 계약을 추가해야 합니다. 내부 작업 중복 방지가 외부 API의 중복 과금 방지를 자동 보장하지 않습니다. 아래 도식은 **현재 구현**이며 외부 이미지 API 연결 완료를 뜻하지 않습니다.
+목표는 `다혜의 제품 정보·프롬프트 → pi의 OpenAI 이미지 래퍼 → 결과 검증·저장 → 사용자 검토·최종 렌더`입니다. `api_image` 요청은 별도 processor로 연결됩니다. 내부 자산·job 기반은 재사용하지만 새 결과는 **PNG 1장**이므로 기존 세 레이어 결과의 승인·캐시를 자동 통과하지 않습니다. API 누끼는 생성형 편집이며 제품 픽셀·라벨 보존을 보장하지 않습니다. 아래 연결 코드의 존재는 실제 계정 호출·사용자 인수 완료를 뜻하지 않습니다.
 
 ```text
 [호스트 구현 필요: UI / 사용자 인증 / CampaignService / SSE / Export]
@@ -92,6 +104,8 @@ python -m pytest -q -W error
                            └─ JobLedger (SQLite WAL)
                                 └─ SingleHostWorker (POSIX 실행 잠금)
                                      └─ 주입한 processor
+                                          ├─ ExternalImageProcessor → ProviderAttemptStore → OpenAIImagesAdapter
+                                          │   (generate / edit / cutout, 기본 live 차단)
                                           ├─ LocalTemplateProcessor (기존 alpha / 밝은 템플릿)
                                           ├─ BiRefNetCutoutProcessor (고정 local files / 실제 MPS 누끼)
                                           └─ SDXLBackgroundProcessor (고정 local fp16 / 실제 MPS 배경)
@@ -104,6 +118,8 @@ python -m pytest -q -W error
 ```
 
 내부 API는 `PUT/GET /internal/v1/jobs/{job_id}`, `POST /internal/v1/assets`, `GET /internal/v1/assets/{asset_id}`를 제공합니다. 동일 프로젝트·작업 ID·입력 hash는 기존 작업을 반환하고, 같은 ID·다른 hash는 `409`입니다. 다른 프로젝트의 job·자산은 미존재와 같이 처리합니다. 접수는 DB commit 이후 응답하며, worker는 DB에서 queued 작업을 다시 찾습니다.
+
+`GET /internal/v1/jobs/{job_id}/provider`는 해당 프로젝트의 제출 기록만 조회합니다. 작업당 POST는 1회로 제한하며 timeout·응답 유실·5xx는 `PROVIDER_SUBMISSION_UNKNOWN`으로 남깁니다. 같은 작업이나 재시작에서 자동 재제출하지 않습니다. 내부 멱등성을 제공자의 exactly-once 처리로 확대하지 않습니다. 제출 후 예약은 실패·저장 실패·과금 미확인에도 유지하며 실제 청구액으로 표시하지 않습니다. 제공자 작업 조회·자동 정산 기능은 없습니다. 관찰되지 않은 `usage`는 `null`입니다.
 
 `HTTPImageGateway.submit_and_wait`는 제출과 조회를 하나의 monotonic deadline으로 묶습니다. PUT은 한 번만 보내며 응답이 유실되면 같은 ID로 GET합니다. 404만으로 새 작업을 만들지 않습니다. 유효 job을 끝까지 보지 못하면 `SubmissionUncertain`, 접수는 확인했지만 완료를 확인하지 못하면 `JobStillPending`입니다. 두 상태 모두 서버 취소·실패를 뜻하지 않습니다. 서버 오류 코드는 제한한 형식·상태만 허용하며 임의 원문은 프로토콜 오류로 거절합니다. 기존 `submit/get/wait`는 그대로 사용할 수 있습니다. CLI prepare/render도 이 조정 메서드를 사용합니다.
 
@@ -126,14 +142,16 @@ python -m pytest -q -W error
 ## 4. 미완성으로서 보완해야 할 점
 
 - **서비스 통합:** 사용자 로그인·CampaignService·SSE·내보내기·렌더러와 실제 UI 연결이 필요합니다. 내부 API 인증·job 복구·이미지 selection revision·프로젝트 캐시는 로컬 구현했습니다.
-- **외부 이미지 API 연결:** 제공자·모델을 조사하고 같은 실제 제품 사진으로 품질·처리 시간·성공한 최종 광고당 비용을 비교해야 합니다. 다중 참조·마스크·누끼·seed·4:5 지원을 가정하지 않습니다. 로컬 MPS 6건은 기존 실험 증거이며 외부 API 검증이 아닙니다. GPU 메모리/OOM·CUDA 검증은 자체 호스팅을 다시 선택할 때만 적용합니다.
+- **OpenAI 실제 검증:** 제공자 선택과 오프라인 래퍼 구현을 실제 서비스 검증과 구분합니다. 계정의 고정 모델 권한·잔액과 예산을 확인하고 별도 실제 호출 승인을 받은 뒤, 같은 실제 제품 사진으로 품질·처리 시간·성공한 최종 광고당 비용을 측정해야 합니다. seed·마스크 옵션은 현재 계약에 없고 생성형 누끼·복수 참조의 제품 보존 성능은 미검증입니다. 로컬 MPS 6건은 기존 실험 증거이며 외부 API 검증이 아닙니다. GPU 메모리/OOM·CUDA 검증은 자체 호스팅을 다시 선택할 때만 적용합니다.
 - **제품 승인·편집:** 정확한 snapshot 승인과 늦은 result attach 차단을 구현했습니다. 실제 사용자 신원·승인 UI·편집 서비스와 최종 품질 승인은 별도로 연결해야 합니다.
 - **검수 데이터:** 출처·버전·검토 이력이 있는 규칙집, 제품 사실 확인, 카피 수정 후 재검수·DB revision 경쟁 검사가 필요합니다.
 - **품질·실환경:** 크기별 꽃 표현 편차와 제품 잔상이 관찰돼 광고 품질을 승인하지 않았습니다. 측정 도구는 구현했지만 실제 고정 평가셋·권리 근거·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실사진 모델 품질·반복 지연·외부 API 사용량·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
-- **운영:** 제공자 인증·429/쿼터·타임아웃·응답 유실·지원하는 경우 작업 조회/웹훅을 연결하고 중복 생성·과금을 관리해야 합니다. 결과 URL의 출처·만료·파일 크기·프로젝트 권한을 확인해 저장합니다. 내부 job 조회·사용자 대기 UI·예산·부분 자산 처리는 계속 필요하며, 단일 호스트 worker 방식은 외부 API 실행 특성에 맞춰 재검토합니다.
+- **운영:** 실제 429/쿼터·권한·응답 유실·청구 정산과 사용자 대기 UI를 검증해야 합니다. OpenAI 응답은 base64 PNG만 수신하며 URL-only 응답은 거절합니다. 서버 예약 예산은 LLM과 공유하는 팀 계정의 실제 잔액을 알거나 제한하지 못합니다. 현재 잔액·실제 청구는 미확인입니다.
 
 ## 5. 하지 말 것
 
+- 현재 작업에서 실제 이미지 API를 호출하거나 live 설정·예산을 올리지 않습니다. 이후 계정 권한·잔액·운영 한도와 입력 권리를 확인하고 별도 실제 호출 승인을 받아야 합니다. mock 성공을 모델 품질·비용·실제 호출 성공으로 설명하지 않습니다.
+- 생성형 누끼 결과를 원본 픽셀 보존·기존 제품 레이어 승인으로 처리하거나 단일 PNG 결과를 세 레이어 캐시에 자동 연결하지 않습니다.
 - API 키, 실제 `.env`, 로컬 설정·DB·로그·테스트 캐시, 업로드·생성 이미지, 모델 가중치를 커밋하지 않습니다. `.env.example`에는 빈 값이나 명백한 예시만 둡니다.
 - VLM이 읽은 라벨·효능 문구를 확인된 제품 사실이나 기능성 분류로 자동 승격하지 않습니다. 업로드 이미지·사용자 텍스트를 시스템 지시로 취급하지 않습니다.
 - 검수 실패·규칙집 부재·오래된 snapshot을 통과로 처리하지 않습니다. LLM 결과로 규칙 검출을 지우거나 `no_flags`를 법적 적합 판정으로 설명하지 않습니다.

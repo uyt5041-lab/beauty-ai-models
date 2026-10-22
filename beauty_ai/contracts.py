@@ -252,7 +252,46 @@ class BackgroundRequest(Contract):
         return self
 
 
-ImageRequest = CutoutRequest | BackgroundRequest
+ImageProviderModel = Literal[
+    "gpt-image-2.5-sunburst-2026-09-08", "gpt-image-2-2026-04-21"]
+ImageOperation = Literal["generate", "edit", "cutout"]
+
+
+class ExternalImageRequest(Contract):
+    """One external image operation; input order is part of the snapshot hash."""
+    kind: Literal["api_image"] = "api_image"
+    operation: ImageOperation
+    pipeline_profile_id: Literal["openai-images"] = "openai-images"
+    pipeline_revision: Literal["1"] = "1"
+    model: ImageProviderModel = "gpt-image-2.5-sunburst-2026-09-08"
+    product_images: list[AssetRef] = Field(default_factory=list, max_length=5)
+    reference_images: list[AssetRef] = Field(default_factory=list, max_length=5)
+    prompt: ImagePrompt | None = None
+    width: int = Field(default=1152, ge=16, le=3840, strict=True)
+    height: int = Field(default=1440, ge=16, le=3840, strict=True)
+    quality: Literal["low", "medium", "high"] = "medium"
+
+    @model_validator(mode="after")
+    def valid_operation(self):
+        if (self.width % 16 or self.height % 16
+                or not 655360 <= self.width * self.height <= 3686400
+                or self.width > 3 * self.height or self.height > 3 * self.width):
+            raise ValueError("Unsupported image canvas")
+        identifiers = [ref.asset_id for ref in self.product_images + self.reference_images]
+        if len(identifiers) != len(set(identifiers)):
+            raise ValueError("Input assets must be unique")
+        if self.operation == "generate":
+            if self.product_images or self.prompt is None:
+                raise ValueError("Generation requires a prompt and no product images")
+        elif self.operation == "edit":
+            if not self.product_images or self.prompt is None:
+                raise ValueError("Editing requires product images and a prompt")
+        elif (len(self.product_images) != 1 or self.reference_images or self.prompt is not None):
+            raise ValueError("Cutout requires one product and the fixed wrapper prompt")
+        return self
+
+
+ImageRequest = CutoutRequest | BackgroundRequest | ExternalImageRequest
 
 
 class CutoutResult(Contract):
@@ -271,7 +310,51 @@ class BackgroundResult(Contract):
     warnings: list[str]
 
 
-ImageResult = Annotated[CutoutResult | BackgroundResult, Field(discriminator="kind")]
+class ImageProviderUsage(Contract):
+    """Observed provider token counts only; absent counts are not inferred as zero."""
+    input_tokens: int | None = Field(default=None, ge=0, strict=True)
+    output_tokens: int | None = Field(default=None, ge=0, strict=True)
+    total_tokens: int | None = Field(default=None, ge=0, strict=True)
+    input_image_tokens: int | None = Field(default=None, ge=0, strict=True)
+    input_text_tokens: int | None = Field(default=None, ge=0, strict=True)
+
+
+class ExternalImageResult(Contract):
+    """A generated flat/RGBA image, without the legacy layer-preservation claim."""
+    kind: Literal["api_image"] = "api_image"
+    operation: ImageOperation
+    image: AssetRef
+    provider: Literal["openai"] = "openai"
+    model: ImageProviderModel
+    attempt_id: UUID
+    provider_request_id: Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$")] | None = None
+    usage: ImageProviderUsage | None = None
+    needs_manual_check: Literal[True] = True
+    warnings: list[Annotated[str, Field(pattern=r"^[A-Z][A-Z0-9_]{0,79}$")]] = Field(
+        default_factory=list, max_length=20)
+
+    @model_validator(mode="after")
+    def valid_image(self):
+        if self.image.mime_type != "image/png":
+            raise ValueError("External image results must be normalized PNG assets")
+        if (self.operation == "cutout"
+                and "GENERATIVE_CUTOUT_REQUIRES_REVIEW" not in self.warnings):
+            raise ValueError("Generative cutout requires a review warning")
+        return self
+
+
+ImageResult = Annotated[CutoutResult | BackgroundResult | ExternalImageResult, Field(discriminator="kind")]
+
+
+def image_result_matches(request: ImageRequest, result: ImageResult) -> bool:
+    """Check the operation identity before publishing or decoding a job result."""
+    if result.kind != request.kind:
+        return False
+    if isinstance(request, ExternalImageRequest):
+        return (isinstance(result, ExternalImageResult)
+                and result.operation == request.operation and result.model == request.model
+                and (result.image.width, result.image.height) == (request.width, request.height))
+    return True
 
 
 class ImageJob(Contract):

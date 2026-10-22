@@ -1,44 +1,26 @@
 flowchart TB
-    A["A · 자산 검증 / 저장<br/>LocalAssetStore · 파일 / DB"]:::green
-    B["B · 인증 internal API / WAL ledger<br/>project scope · atomic ID/hash"]:::green
-    O["제출 조정 / submit_and_wait<br/>PUT 1회 · 동일 ID GET · 하나의 deadline"]:::green
-    Y["기한 종료: 미관찰 / 관찰됨<br/>Uncertain / Pending · 취소 아님"]:::gray
-    W["단일 호스트 worker<br/>POSIX 실행 잠금 · queued 복구"]:::green
-    U["uploaded-alpha / 1<br/>이미 투명한 RGBA 입력만 처리"]:::gray
-    C["C · BiRefNetLite 실제 누끼<br/>고정 revision / MPS fixture 검증"]:::green
-    D["D · 제품 후보 캔버스 / 마스크<br/>종횡비 / 실제 alpha 영역 검사"]:::green
-    E["E · 명시적 승인 저장<br/>정확한 source / layer / visual hash"]:::green
-    P["서버 소유 profile / revision<br/>승인 / 자산을 실행 직전 재검증"]:::green
-    T["bright-template / 1<br/>밝은 로컬 템플릿 · AI 모델 아님"]:::gray
-    F["F · SDXL 실제 배경 / 고정 profile<br/>MPS 크기별 fixture / 품질 미평가"]:::green
-    G["G · 제품 재합성 / 3개 레이어 저장<br/>불투명 픽셀 / 실제 파일 검사"]:::green
-    R["결과 파일 / project 확인<br/>성공 commit · 안전한 실패 코드"]:::green
-    H["H · 편집 revision CAS / 프로젝트 캐시<br/>실파일 hit 검증 / 늦은 attach 거절"]:::green
-    I["I · GAP: 렌더러 / 내보내기<br/>실서비스 연결 없음"]:::red
-    J["J · GAP: 사람 평가 / 팀 인수<br/>실제 광고 품질 증거 필요"]:::red
-    Q["영어 프롬프트 수신 / hash<br/>SDXL 두 tokenizer · 각 77 token 검사"]:::green
-    X["local template은 prompt 미지원<br/>무시하지 않고 명시적 거절"]:::gray
-    V["별도 로컬 평가 입력<br/>버전 / 권리 선언 / 정답 mask"]:::gray
-    K["평가 manifest CLI / mask·픽셀 지표<br/>권리 미확인 건너뜀 / 품질 NOT_ASSESSED"]:::green
-    L["JobTiming API / CLI<br/>접수→terminal wall-clock / GPU 시간 아님"]:::green
-    O --> B
-    O --> Y
-    M["실행 관찰 / 단계·모델 정보<br/>monotonic 경과 · 작업 후 snapshot"]:::green
-    R --> M
-    V --> K -.-> J
-    R --> L
-    Q --> X
-    Q --> F
-    A --> B --> W --> U --> D --> E --> P --> T --> G --> R
-    S["명시적 모델 준비 / 검증<br/>고정 4개 파일 hash / 로컬 로딩"]:::green
-    N["GAP: 실사진 품질 / CUDA<br/>합성 fixture 성공과 별도 검증"]:::red
-    S --> C
-    W --> C --> D
-    C -.-> N
-    S2["SDXL 고정 fp16 파일 준비<br/>18 runtime + card / license · SHA 검증"]:::green
-    S2 --> F
-    P --> F --> G
-    R --> H -.-> I -.-> J
+ A["GAP: 서비스 제품 입력 · 카피 승인 UI<br/>김다혜 LLM 연결 및 팀 인수"]:::red
+ B["구현: api_image 계약 · 내부 API<br/>제품/참고 순서 · hash · 권한"]:::green
+ C{"실제 호출 허용?<br/>기본 false · 이미지 예산 0"}:::gray
+ X["차단: 실제 API 호출 0회<br/>계정 · 잔액 · 품질 NOT_RUN"]:::red
+ M["명시 MockTransport<br/>가짜 PNG · 실제 키 사용 없음"]:::gray
+ D["SQLite 시도 먼저 저장<br/>동일 job 재전송 차단 · 예약액 유지"]:::green
+ E["구현: generate / edit / cutout 변환<br/>고정 OpenAI endpoint · retry 0"]:::green
+ P["OpenAI 외부 실행 경로<br/>현재 연결 실증 없음"]:::blue
+ F["구현: 응답 상한 · base64<br/>PNG · 크기 · alpha · 저장 검증"]:::green
+ U["unknown / 저장 실패<br/>자동 환급·재호출 없음"]:::amber
+ G["구현: 단일 이미지 · 수동 확인 필요<br/>provider receipt · nullable 사용량"]:::green
+ H["GAP: 이미지 승인 UI · 한글 renderer<br/>4:5 최종 광고 · 팀 인수"]:::red
+ L["기존 local profile 보존<br/>API 요청의 fallback 없음"]:::gray
+ A -.-> B --> C
+ C --> X
+ C --> M --> D --> E --> F --> G
+ E -.-> P
+ P -.-> F
+ E --> U
+ F --> U
+ G -.-> H
+ L -.- B
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
 classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px
 classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933,stroke-width:1.5px

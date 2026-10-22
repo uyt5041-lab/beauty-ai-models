@@ -1,15 +1,15 @@
 flowchart TB
-    A["A · 자산 검증 및 저장<br/>project · decode · hash · metadata"]:::green
-    B["B · 영속 작업 API / ledger<br/>atomic PUT · ID/hash · 복구"]:::green
-    C["C · 실제 누끼 모델<br/>고정 profile / revision"]:::blue
-    D["D · 제품 캔버스 / 보호 마스크<br/>비율 · 영역 · 동일 해상도"]:::green
-    E["E · 제품 레이어 승인<br/>현재 자산 / revision 확인"]:::amber
-    F["F · 실제 배경 모델<br/>프롬프트 / 버전 · seed"]:::blue
-    G["G · 제품 재합성 / 결과 저장<br/>불투명 pixel 검사 · 파일 확인"]:::green
-    H["H · 편집 revision / 캐시 경계<br/>프로젝트 권한 · 늦은 결과 차단"]:::amber
-    I["I · 렌더러 / 내보내기 가드<br/>문구 검수 · 이미지 승인 일치"]:::green
-    J["J · 사람 품질 평가 / 팀 인수<br/>광고 품질 · 재현 · 최종 확인"]:::amber
-    A --> B --> C --> D --> E --> F --> G --> H --> I --> J
+ A["제품 사진 2~5 · 참고 배경 0~5<br/>프로젝트 자산 · 제품 정보"]:::green
+ B["김다혜 LLM → 카피 1개 검토<br/>영어 이미지 프롬프트 인수"]:::amber
+ C["OpenAI 이미지 래퍼<br/>생성 · 편집 · API 누끼"]:::green
+ D["서버 호출 허용 · 자산 권한 · 입력 검사<br/>영속 job · 이미지 예산 예약"]:::green
+ E["OpenAI Images 1회 전송<br/>모델 고정 · 결과 PNG 1장"]:::blue
+ F["응답 · PNG · 크기 · alpha 검증<br/>프로젝트 저장 · 사용량 · 요청 ID"]:::green
+ U["응답 유실 또는 재시작<br/>불확실 유지 · 자동 재전송 금지"]:::amber
+ G["사용자 이미지 검토<br/>제품 라벨 · 색 · 모양 확인"]:::amber
+ H["한글 카피 합성 · 4:5 광고<br/>캡션 · 태그 · 다운로드"]:::green
+ A --> B --> C --> D --> E --> F --> G --> H
+ E -.-> U
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
 classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px
 classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933,stroke-width:1.5px

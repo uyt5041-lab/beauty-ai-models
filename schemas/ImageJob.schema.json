@@ -115,6 +115,169 @@
       ],
       "title": "CutoutResult",
       "type": "object"
+    },
+    "ExternalImageResult": {
+      "additionalProperties": false,
+      "description": "A generated flat/RGBA image, without the legacy layer-preservation claim.",
+      "properties": {
+        "kind": {
+          "const": "api_image",
+          "default": "api_image",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "generate",
+            "edit",
+            "cutout"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "image": {
+          "$ref": "#/$defs/AssetRef"
+        },
+        "provider": {
+          "const": "openai",
+          "default": "openai",
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "enum": [
+            "gpt-image-2.5-sunburst-2026-09-08",
+            "gpt-image-2-2026-04-21"
+          ],
+          "title": "Model",
+          "type": "string"
+        },
+        "attempt_id": {
+          "format": "uuid",
+          "title": "Attempt Id",
+          "type": "string"
+        },
+        "provider_request_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Request Id"
+        },
+        "usage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageProviderUsage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "needs_manual_check": {
+          "const": true,
+          "default": true,
+          "title": "Needs Manual Check",
+          "type": "boolean"
+        },
+        "warnings": {
+          "items": {
+            "pattern": "^[A-Z][A-Z0-9_]{0,79}$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "operation",
+        "image",
+        "model",
+        "attempt_id"
+      ],
+      "title": "ExternalImageResult",
+      "type": "object"
+    },
+    "ImageProviderUsage": {
+      "additionalProperties": false,
+      "description": "Observed provider token counts only; absent counts are not inferred as zero.",
+      "properties": {
+        "input_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Tokens"
+        },
+        "output_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Tokens"
+        },
+        "total_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Tokens"
+        },
+        "input_image_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Image Tokens"
+        },
+        "input_text_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Text Tokens"
+        }
+      },
+      "title": "ImageProviderUsage",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -145,6 +308,7 @@
         {
           "discriminator": {
             "mapping": {
+              "api_image": "#/$defs/ExternalImageResult",
               "cutout": "#/$defs/CutoutResult",
               "render_background": "#/$defs/BackgroundResult"
             },
@@ -156,6 +320,9 @@
             },
             {
               "$ref": "#/$defs/BackgroundResult"
+            },
+            {
+              "$ref": "#/$defs/ExternalImageResult"
             }
           ]
         },

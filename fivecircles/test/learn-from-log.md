@@ -5,3 +5,5 @@
 - 모킹 테스트와 실제 GPU 통합·이미지 품질 증거를 구분한다.
 
 - B1: deprecated Pillow API는 tests에서도 warning-as-error로 잡는다. 실행 예제는 문서에 명시한 루트 모듈 명령으로 직접 검증한다. [근거](errorlogs/2026-10-22-relay-b1.md).
+
+- B10: 이미지 디코더의 경고 계열을 직접 확인한다. 응답 이후 decode/크기 실패를 전송 여부 미확인으로 분류하지 않는다. [재현·수리](errorlogs/2026-10-22-relay-b10.md).

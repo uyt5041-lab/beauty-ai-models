@@ -13,16 +13,16 @@ from pydantic import Field, StrictBool, TypeAdapter, ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from .assets import LocalAssetStore
-from .contracts import (AssetRef, BackgroundRequest, Contract, CutoutRequest, ImageJob,
-                        ImageRequest, ImageResult, VisualBrief)
+from .contracts import (AssetRef, BackgroundRequest, Contract, ExternalImageRequest, ImageJob,
+                        ImageRequest, VisualBrief)
 from .errors import GatewayError
-from .image_worker import SingleHostWorker
+from .image_worker import Processor, SingleHostWorker
 from .image_edits import ImageEditStore
 from .job_ledger import JobExecution, JobLedger, JobTiming
 from .product_approval import ProductApprovalStore
 
 
-_REQUEST = TypeAdapter(Annotated[CutoutRequest | BackgroundRequest, Field(discriminator="kind")])
+_REQUEST = TypeAdapter(Annotated[ImageRequest, Field(discriminator="kind")])
 _MAX_JOB_BYTES = 64 * 1024
 
 
@@ -59,10 +59,11 @@ async def _read_limited(request: Request, limit: int) -> bytes:
 
 def create_app(ledger: JobLedger, assets: LocalAssetStore,
                credentials: Mapping[str, UUID],
-               processor: Callable[[ImageRequest, UUID], ImageResult] | None = None,
+               processor: Processor | None = None,
                *, approvals: ProductApprovalStore | None = None,
                request_validator: Callable[[ImageRequest], None] | None = None,
-               edits: ImageEditStore | None = None) -> FastAPI:
+               edits: ImageEditStore | None = None,
+               provider_attempts=None) -> FastAPI:
     """Bind a server-owned bearer credential to one project, never to user input.
 
     With no processor, requests stay durably queued. A compatible separate
@@ -116,6 +117,15 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
             "MODEL_UNAVAILABLE": 422,
             "EDIT_NOT_FOUND": 404, "EDIT_CONFLICT": 409,
             "IMAGE_JOB_NOT_READY": 409, "EDIT_STORAGE_ERROR": 503,
+            "PROVIDER_CALLS_DISABLED": 503, "PROVIDER_CONFIG_INVALID": 503,
+            "PROVIDER_INPUT_INVALID": 422, "PROVIDER_AUTH": 502,
+            "PROVIDER_RATE_LIMIT": 429, "PROVIDER_QUOTA_EXCEEDED": 429,
+            "PROVIDER_POLICY_REJECTED": 422, "PROVIDER_REQUEST_REJECTED": 422,
+            "PROVIDER_RESPONSE_INVALID": 502, "PROVIDER_RESPONSE_TOO_LARGE": 502,
+            "PROVIDER_SUBMISSION_UNKNOWN": 502,
+            "PROVIDER_BUDGET_EXCEEDED": 409, "PROVIDER_ATTEMPT_NOT_FOUND": 404,
+            "PROVIDER_ATTEMPT_CONFLICT": 409, "PROVIDER_ATTEMPT_STORAGE_ERROR": 503,
+            "PROVIDER_OUTPUT_INVALID": 502, "PROVIDER_RESULT_STORAGE_FAILED": 503,
         }
         code = exc.code if exc.code in statuses else "INTERNAL_ERROR"
         return JSONResponse(status_code=statuses.get(code, 500), content={"detail": {"code": code}})
@@ -165,11 +175,14 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
             await run_in_threadpool(request_validator, payload)
         if approvals is not None and isinstance(payload, BackgroundRequest):
             await run_in_threadpool(approvals.require_approved, payload, project_id)
-        refs = [payload.source]
-        if isinstance(payload, BackgroundRequest):
-            refs.extend([payload.product_rgba, payload.preserve_mask])
+        if isinstance(payload, ExternalImageRequest):
+            refs = payload.product_images + payload.reference_images
+        else:
+            refs = [payload.source]
+            if isinstance(payload, BackgroundRequest):
+                refs.extend([payload.product_rgba, payload.preserve_mask])
         for ref in refs:
-            await run_in_threadpool(assets.read, ref, project_id=project_id)
+            await run_in_threadpool(assets.read_bytes, ref, project_id=project_id)
         return await run_in_threadpool(ledger.submit, job_id, project_id, payload)
 
     @app.get("/internal/v1/jobs/{job_id}", response_model=ImageJob)
@@ -183,6 +196,17 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
     @app.get("/internal/v1/jobs/{job_id}/execution", response_model=JobExecution)
     async def get_job_execution(job_id: UUID, project_id: UUID = Depends(project)):
         return await run_in_threadpool(ledger.execution, job_id, project_id)
+
+    @app.get("/internal/v1/jobs/{job_id}/provider")
+    async def get_job_provider(job_id: UUID, project_id: UUID = Depends(project)):
+        # Authorize against the internal job before looking up provider receipts.
+        await run_in_threadpool(ledger.get, job_id, project_id)
+        if provider_attempts is None:
+            raise GatewayError("PROVIDER_ATTEMPT_NOT_FOUND", "Provider attempt was not found.")
+        receipt = await run_in_threadpool(provider_attempts.get, job_id, project_id)
+        if receipt is None:
+            raise GatewayError("PROVIDER_ATTEMPT_NOT_FOUND", "Provider attempt was not found.")
+        return receipt
 
     def product_store() -> ProductApprovalStore:
         if approvals is None:

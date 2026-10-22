@@ -139,3 +139,26 @@
 - 현재 이미지 구현 목표는 외부 API 래퍼다. 이전 로컬 GPU 복구/튜닝 후보는 현재 MVP 우선 작업에서 제외하며 자체호스팅 재선택 시에만 다시 검토한다.
 - 다음 후보는 원본 imageTodo의 API-01 제공자/모델 조사와 기능·비용 대조, 이어 API-02 어댑터다. 제공자·모델은 미정, 외부 API 구현/실호출 미착수.
 - 이번 작업은 직접 사용자 정정을 반영한 문서 수정과 별도 ChatGPT 리서치 전달 준비다. B9 HTML BLOCKED를 해제하거나 기존 보고서 검증을 PASS로 바꾸지 않는다.
+
+
+## B10 · OpenAI 이미지 API 래퍼 (실호출 금지)
+
+0. Scope Intake: native, plan/models. 사용자 직접 OpenAI/API누끼 구현 요청. root 통합·시도/예산·문서/Git, 독립 adapter 및 contract/runtime 작업 위임. 실제API 호출 금지.
+1. Start Report: B9 로컬모델 flow는 역사자료. 새 external target에 기능차단→자산검증→제출예약→OpenAI→decode/저장→receipt를 명시한다.
+2. Relay Unit Selection: API-02~05의 upstream 연결. 호출차단/계약 4+3+2+2-1=10, 외부시도 3+3+2+2-2=8, 실품질 1+2+1+0-3=1(금지). B10 오프라인 end-to-end를 단일배치로 선택.
+3. Doc / Contract: openai-images.md COMPLETED, 사용자의 실제호출금지와 생성형누끼 한계를 사전 설명함.
+4. Implementation: IN_PROGRESS. 별도 api_image 요청/응답·고정 endpoint·0 default livecalls·영속시도·자산저장·runtime.
+5. Validation + Report: test-runner/mermaid-flow-report. 모의HTTP/SQLite통합·기존회귀·패키지·정적flow/PNG/HTML. 실제provider NOT_RUN(user constraint). AdminAI ledger NOT_APPLICABLE(BeautyAI).
+6. Repair Loop: 실패/검토를 같은배치에서 수리하고 기록한다.
+7. Push / Publication: PENDING. 기존 승인된 plan/models 일반push/ff-only/readback. PR/협업일지 변경 없음. 운영CD NOT_APPLICABLE(비활성 API 래퍼 소스, 배포 요청 없음).
+8. Closeout Report: PENDING. 현재graph와모의검증/실품질GAP 분리.
+9. Relay Shot: 검증·게시 후 원본TODO 재점검. 현재는 B10 진행 중.
+10. Final Ledger: Doc COMPLETED; Implementation/Validation/Repair/Push/Report IN_PROGRESS; 실호출/품질/팀인수 NOT_RUN.
+
+### B10 검증·게시 전 closeout
+
+- validation: 전체806 tests51.05s, LOCAL 신규182 tests3.68s, mock CLI 각3건/실제제공자0회, wheel·격리import·pip check·현재schema4개·설정·diff·비밀패턴 PASS. PNG 경고 분류1건을 수리했다.
+- logall: [작업 기록](worklog.md), [최근 변경](update.md), [B10 검증](../test/relay-b10.md), 원본 TODO의 오프라인 완료와 실호출 미완료, 현재/목표 흐름을 갱신했다.
+- flow: 오프라인 wrapper 연결PASS, 전체서비스GAP/PARTIAL. PNG2개 직접확인/HTML정적검사, 브라우저최종검증은 기존BLOCKED를유지하고우회하지않음.
+- local: 공개대상192파일동기화/byte parity PASS, 사용자파일충돌0. 기존26개백업·66개갱신, 비밀값/가중치/생성물불변.
+- publication: plan/models 일반push와 원격readback은 다음 단계에서 기록. 운영CD NOT_APPLICABLE(비활성 참조코드전달, 배포대상/요청없음).

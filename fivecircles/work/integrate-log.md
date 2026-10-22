@@ -69,3 +69,10 @@
 - 전체521 tests15.01s·실제TCP 응답유실4건·단일PUT/processor·동일ID복구·기한상태구분·오류코드수리·wheel/lazy import·flow/browser PASS.
 - 로컬 beautyAi145 tracked파일 동일 반영,21파일변경/추가 전 백업. 로컬521 tests68.92s/설정검사PASS. 모델 코드는 바뀌지 않아 추가 GPU 실행은 하지 않았다.
 - 로컬 클라이언트 publication이며 운영배포 NOT_APPLICABLE. 운영프록시/GPU장애·광고품질·팀인수로 확대하지 않는다.
+
+## 2026-10-22 · B10 게시 준비
+
+- 기준 원격 `64124ed119dc6cf96a4e211e6b96d2d62e26060a`를 ff-only로 수신하고 기존 스키마 초안을 보존했다. 게시 직전 HEAD와 origin/plan/models는0/0.
+- 전체806 tests51.05s, 로컬신규182 tests3.68s, mock CLI3건/실제제공자0회, wheel·격리import·pip check·schema4개·설정·diff·비밀패턴 PASS.
+- 로컬공개파일192개동기화, 기존26개백업·66개갱신·충돌0·byte parity PASS. 백업은 Git 제외 outputs/relay-backup-b10-20261022에 보존했다.
+- PR·협업일지브랜치·force push·운영배포 없이 plan/models에 코드와문서를전달한다. 실제소스SHA·원격readback은 게시후receipt에기록한다.

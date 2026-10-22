@@ -2,7 +2,7 @@
 
 ## 현재 공개 저장소 운영
 
-**2026-10-22 최신 방향:** LLM은 김다혜, 이미지 모델은 pi의 외부 API 래퍼로 구현합니다. 제공자·모델은 미정이며 리서치 후 선정합니다. 현재 외부 이미지 API 연동은 미구현입니다. 아래 내부 서버·BiRefNetLite·SDXL 설치/호출 예제는 보존하는 로컬 실험 안내이며 MVP 필수 구축 순서가 아닙니다. 최신 작업은 [이미지 TODO](docs/imageTodo.md)와 [전환 계약](fivecircles/architecture/contract/image-runtime.md#외부-이미지-api-전환--2026-10-22-사용자-정정)을 따릅니다.
+**2026-10-22 최신 결정:** LLM은 김다혜, 이미지 생성·편집·누끼는 pi의 **OpenAI API 래퍼**로 구현합니다. B10은 실제 호출 없이 내부 연결을 구현하는 범위입니다. 기본 모델은 `gpt-image-2.5-sunburst-2026-09-08`, 허용 대안은 `gpt-image-2-2026-04-21`이며 실제 계정 권한·품질은 미확인입니다. 아래 BiRefNetLite·SDXL 예제는 보존한 로컬 실험 안내이며 MVP 필수 순서가 아닙니다. 최신 기준은 [이미지 TODO](docs/imageTodo.md)와 [OpenAI 계약](fivecircles/architecture/contract/openai-images.md)을 따릅니다.
 
 2026-10-22 수신한 확정 MVP와의 대조는 [ssotAlignment.md](docs/ssotAlignment.md)를 따릅니다. 아래 제공받은 README 원문은 과거 설명입니다. 현재 MVP는 카피·이미지·최종 광고 각각1개, 최종4:5이며 부분 수정 UI·복수 시안·다른 비율/플랫폼은 고도화입니다. 기존 내부 revision/hash/cache 보호는 계속 사용합니다.
 
@@ -21,6 +21,36 @@
 - [TEST_REPORT.md](TEST_REPORT.md): 이 브랜치에서 다시 실행한 검증과 미검증 범위.
 - [원본 검증 기록](docs/TEST_REPORT.original.md): 제공받은 ZIP의 과거 검증 기록.
 - [CONTRIBUTING.md](CONTRIBUTING.md): 팀의 브랜치·검토·통합 규칙.
+
+## OpenAI 이미지 래퍼 · 실제 호출 없는 예제
+
+현재 실제 API 호출은 금지되어 있습니다. 다음 명령은 키와 환경변수를 읽지 않고 `httpx.MockTransport`만 사용합니다. 생성·편집·누끼 요청, 내부 job, 제출 기록과 다운로드 연결을 합성 fixture로 확인합니다.
+
+```bash
+python -m pip install -e '.[inference,test]'
+python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
+```
+
+새 run 폴더에 `mock-generate.png`, `mock-edit.png`, `mock-cutout.png`, `report.json`을 저장합니다. PNG의 `MOCK ONLY - NOT AI OUTPUT` 표시는 실제 모델 결과가 아님을 뜻합니다. 사용량·예약액도 합성 값이며 `actual_provider_calls=0`, `quality_approval=NOT_ASSESSED`입니다.
+
+| 계약 | 현재 의미 |
+| --- | --- |
+| 생성 `generate` | 제품 자산 없이 생성. 참고 자산은 선택 입력 |
+| 편집 `edit` | 제품 1~5장·참고 0~5장. 자산 순서를 보존하고 중복 자산은 거절 |
+| 누끼 `cutout` | 제품 1장·참고 없음·고정 프롬프트로 생성형 투명 배경 편집. 픽셀·라벨 보존 보장 없음 |
+| 결과 | PNG 1장·`needs_manual_check=true`. 기존 세 레이어 결과와 별도 타입 |
+| 기본 출력 | 1152×1440, 4:5. 최종 한글 합성·검토·다운로드 서비스는 별도 연결 필요 |
+| 프롬프트 | 김다혜가 생성. negative는 `Avoid` 지시로 명시 전달하며 seed·임의 옵션은 받지 않음 |
+
+`inference_runtime.build_app`은 `OpenAIImagesConfig(live_calls=False)`, 이미지 예산 `0`, 요청별 예약액 `1`을 기본으로 조립합니다. CLI도 `BEAUTY_OPENAI_IMAGE_LIVE_CALLS=false`, `BEAUTY_IMAGE_BUDGET_USD=0`이 기본입니다. 실제 키가 있어도 이것만으로 호출 권한이 생기지 않습니다. 실제 호출은 계정의 모델 권한·잔액, 운영 예산·입력 권리를 확인하고 별도 승인을 받은 뒤에만 활성화합니다. 현재 승인 범위는 오프라인 구현입니다.
+
+POST 전에 작업 ID·요청 hash·예약을 SQLite에 기록하고 고정 job당 POST를 한 번만 시도합니다. timeout·5xx·응답 유실은 `PROVIDER_SUBMISSION_UNKNOWN`이며 자동 재제출하지 않습니다. 조회는 `GET /internal/v1/jobs/{job_id}/provider`로 내부 기록만 반환합니다. 제공자의 원격 작업 조회·정확히 한 번 처리·자동 환불/정산을 보장하지 않습니다.
+
+제출한 요청의 예약은 과금 미확인·결과 검증/저장 실패에도 유지합니다. 예약액은 실제 가격이나 청구액이 아니며 LLM과 공유하는 팀 예산의 잔액을 조회하지 않습니다. `usage`는 관찰값만 저장하고 없으면 `null`입니다. 응답은 base64 PNG만 받고 URL-only 응답은 거절합니다.
+
+단일 PNG를 기존 `BackgroundResult`의 세 레이어 결과로 바꾸거나 기존 제품 승인·편집 캐시를 자동 통과시키지 않습니다. 생성형 누끼는 사람이 제품 형태·라벨·경계를 확인해야 합니다. 실 API·계정 권한·제품 품질·비용은 아직 검증하지 않았고 모델 성능 우위를 주장하지 않습니다.
+
+[2026-10-22 스키마 초안](docs/schema-draft-2026-10-22/)은 당시 전달 기록으로 수정하지 않습니다. 현재 `api_image` 단일 PNG 계약은 [OpenAI 계약](fivecircles/architecture/contract/openai-images.md)과 코드 스키마가 기준입니다. 과거 B9의 624 tests·MPS 실행 기록은 B10 검증 총수나 OpenAI 실측이 아닙니다.
 
 ## 대상 저장소의 기존 README 원문
 

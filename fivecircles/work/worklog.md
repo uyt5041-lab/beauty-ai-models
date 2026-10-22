@@ -115,3 +115,19 @@
 - 요구사항/설계/README/역할/원본 TODO를 정정했다. 기존 완료35개·SSOT12개는 보존하고 외부 API 작업 API-01~06을 미완료로 추가했다. 로컬 GPU 설치·튜닝·CUDA 이전은 자체호스팅 재선택 시만 적용한다.
 - 코드·기존 모델·결과·키는 변경하지 않았다. 기존624tests·MPS6건은 로컬 엔진 근거이며 외부 API 실호출·제품 품질·팀 인수 근거가 아니다. 이번 검증은 문서 정적 검사다.
 - Ego 리서치 창은 열었지만 ChatGPT 로그아웃 상태여서 로그인 제어를 넘겼다. 아직 Pro·최대 추론 설정 확인/프롬프트 전송/답변 수신은 하지 않았다. 준비한 연구 질문을 로그인 완료 뒤 같은 창에서 전달한다.
+
+
+## 2026-10-22 · B10 OpenAI API 래퍼 구현 전
+
+- Intent: 사용자 OpenAI 선택·API 누끼·실호출 금지에 따라 오프라인 검증 가능한 래퍼를 구현한다.
+- 계약: architecture/contract/openai-images.md. legacy wire/hash와 새 api_image 단일 결과를 구분한다.
+- Conflict: 과거 B9 HTML BLOCKED로 이전 relay는 정지했으나 현재 사용자가 새 구현을 직접 요청했다. Winner: 현재 사용자 지시. Resolution: B9 검증을 PASS로 바꾸거나 browser 차단을 우회하지 않고 B10의 코드·모의통합을 수행한다.
+- 검증: 가짜 HTTP 응답·프로젝트 자산/SQLite·full regression. 실제 키·API/모델 호출·운영 배포 없음.
+- 사전 상태: clean plan/models, 원격 schema 초안 64124ed를 ff-only로 수신. 기존 초안 스냅샷 보존.
+
+## B10 구현·검증 closeout 전 기록 · 2026-10-22
+
+- 구현: api_image 생성/편집/API 누끼, 기본 차단, 고정 provider 전송, 영속 시도·예약, 안전한 PNG 저장, 내부 worker/receipt와 mock CLI.
+- 전체806 tests PASS51.05s, mock CLI actual_provider_calls=0, mock_provider_calls=3. 출력 경고 분류 문제 수리와 회귀 [근거](../test/errorlogs/2026-10-22-relay-b10.md).
+- native 역할 분담: root는 attempt/processor/runtime·통합 검증, 계약/worker/API·예제 담당과 adapter 담당, 문서 담당을 제한된 파일로 병렬 위임했다. 실제 모델/키/제공자 호출 없음.
+- 게시 대상 plan/models, PR/협업일지/배포 없음. 실제 API 인수와 서비스 UI/renderer는 이번 전달 완료로 표시하지 않는다.
