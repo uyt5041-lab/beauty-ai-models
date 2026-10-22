@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-22",
+  "source_commit": "64124ed119dc6cf96a4e211e6b96d2d62e26060a",
+  "source_sha256": "de046108a325830fb21bc6e9823b1d8c7335818641ee57078e306d6f46f6fbd7",
+  "total_checkboxes": 130,
+  "report_checked": 26,
+  "percentage": 20.0,
+  "future_report_checked": 0,
+  "source_unchanged": true,
+  "local_skill_matches_repository_copy": true,
+  "skill_structure": "PASS",
+  "policy_tests_passed": 7,
+  "markdown_html_numeric_parity": true,
+  "all_local_links_resolved": true,
+  "model_or_external_api_invoked": false
+}

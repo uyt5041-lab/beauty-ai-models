@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/uyt5041-lab/beauty-ai-models",
+  "source_branch": "plan/models",
+  "journal_branch": "박지수_협업일지",
+  "canonical_todo": "docs/imageTodo.md",
+  "journal_directory": "worklogs/YYYY-MM-DD",
+  "author": "박지수",
+  "team": "고급프로젝트 2팀",
+  "date_zone": "Asia/Seoul",
+  "date_filter": "section start date; later planned checks stay unchecked in the journal",
+  "model_owner": "pi: image API wrapper; 김다혜: text",
+  "contract": "contracts/collaboration-journal.md"
+}
