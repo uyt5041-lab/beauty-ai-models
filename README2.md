@@ -7,7 +7,7 @@
 - 별도 브랜치 `박지수_협업일지`: 날짜별 Markdown·HTML 기록을 관리하며 PR·코드 브랜치 병합 없이 유지합니다.
 - 원본 두 브랜치의 Git 이력을 보존해 이전했습니다. 아래 원본 설명과 `CONTRIBUTING.md`의 팀 규칙은 출처 기록입니다. 원본의 `dev`·PM·PR 절차를 이 공개 저장소의 필수 운영 규칙으로 적용하지 않습니다.
 - 실제 비밀값·생성 이미지·로컬 설정·가중치·캐시는 기존 `.gitignore` 기준으로 제외합니다.
-- 이번 이전은 기존 원격 브랜치 내용만 포함합니다. 로컬에서 작성한 `llmTodo.md`, `imageTodo.md`는 이 이전에 포함되지 않았습니다.
+- 초기 이전은 기존 원격 브랜치만 포함했고, 이후 `00e455e`에서 `docs/llmTodo.md`, `docs/imageTodo.md`, `docs/modelIntegrationReview.md`를 추가했습니다.
 
 루트 [README.md](README.md)는 사용법·기능·아키텍처·보완점·하지 말 것으로 제한했습니다.
 추가 호출 예제와 상세 설계는 아래 자료를 참고하세요.
@@ -166,3 +166,27 @@ GPU 동시 실행은 inference 서버에서 1개로 직렬화합니다. api 클�
 - Diffusers 인페인팅: https://huggingface.co/docs/diffusers/using-diffusers/inpaint
 
 법률/가이드라인의 최신 내용은 이번 작업에서 검증하거나 구축하지 않았습니다. 이 패키지의 API 설계와 법규 데이터의 정확성을 구분하세요.
+
+## FiveCircles 작업 시작
+
+프로젝트에 맞춘 [FiveCircles 안내](fivecircles/README.md)를 읽고 시작합니다. “fivecircles 초기화” 또는 “이미지 TODO의 다음 항목 진행”으로 요청할 수 있습니다.
+
+- [담당·협업 경계](fivecircles/agent/collaboration-protocol.md): 이미지 pi, 텍스트 김다혜.
+- [작업 인덱스](fivecircles/architecture/todolist.md): 기존 TODO를 참조하며 10/30 M1·11/6 이미지 M2를 유지합니다.
+- [테스트 정책](fivecircles/test/testpolicy.md), [Git 규칙](fivecircles/agent/git.md), [원본 출처·버전](fivecircles/UPSTREAM.md).
+- 설정 확인: 저장소 루트에서 `python3 scripts/check_fivecircles.py`.
+- 프로젝트 내부 스킬은 `.agents/skills/fivecircles/SKILL.md`에 있습니다.
+
+## 로컬 제품 레이어 준비 (B1)
+
+저장소 루트에서 이미 누끼를 처리한 RGBA PNG와 `VisualBrief` JSON을 전달합니다.
+
+```bash
+python -m examples.prepare_product product-rgba.png visual.json \
+  --project-id 00000000-0000-0000-0000-000000000001 \
+  --store outputs/local-assets
+```
+
+업로드를 정규화하고 제품 후보·보호 마스크·흰 배경의 합성 검증 preview를 저장합니다. 반환 자산은 해당 프로젝트에서만 읽을 수 있습니다. `needs_approval=true`이며 실제 누끼/배경 AI나 사용자 승인을 수행하는 명령은 아닙니다. 입력 사진과 생성 파일은 Git에서 제외합니다.
+
+일별 계획은 마일스톤 안내이며 의존성이 준비된 작업은 먼저 완료할 수 있습니다. [현재 구현과 남은 흐름](fivecircles/architecture/spec/image-runtime-flow.html)을 참고하세요.

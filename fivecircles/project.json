@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "project": "beautyAi",
+  "timezone": "Asia/Seoul",
+  "repository": {
+    "url": "https://github.com/uyt5041-lab/beauty-ai-models.git",
+    "code_branch": "plan/models",
+    "journal_branch": "박지수_협업일지",
+    "merge_policy": "ff-only",
+    "create_pr": false,
+    "auto_push": false
+  },
+  "framework": {
+    "url": "https://github.com/uyt5041-lab/fivecircles",
+    "ref": "main",
+    "commit": "2c4cc6132d95c2355e58d76aafceb9c9e8c3b2e8",
+    "license": "CC-BY-4.0",
+    "mode": "selective-vendored-adaptation"
+  },
+  "roles": {
+    "image": "pi",
+    "text": "김다혜",
+    "api_assets_renderer": null
+  },
+  "paths": {
+    "requirements": "fivecircles/requirements/current.md",
+    "decisions": "fivecircles/requirements/decisions.md",
+    "spec_index": "fivecircles/architecture/spec/README.md",
+    "work_index": "fivecircles/architecture/todolist.md",
+    "image_todo": "docs/imageTodo.md",
+    "llm_reference_todo": "docs/llmTodo.md",
+    "integration_review": "docs/modelIntegrationReview.md",
+    "test_policy": "fivecircles/test/testpolicy.md"
+  },
+  "commands": {
+    "setup_check": [
+      "python3",
+      "scripts/check_fivecircles.py"
+    ],
+    "install_test": [
+      "python",
+      "-m",
+      "pip",
+      "install",
+      "-e",
+      ".[test]"
+    ],
+    "unit_tests": [
+      "python",
+      "-m",
+      "pytest",
+      "-q",
+      "-W",
+      "error"
+    ]
+  },
+  "milestones": [
+    {
+      "id": "M1",
+      "date": "2026-10-30",
+      "scope": "image integration",
+      "status": "planned"
+    },
+    {
+      "id": "M2",
+      "date": "2026-11-06",
+      "scope": "image detail and quality completion",
+      "status": "planned"
+    }
+  ],
+  "open_decisions": [
+    "basic safe zone and copy limits",
+    "English prompt/version/hash contract",
+    "M1 export approval policy",
+    "API/assets/renderer owner"
+  ],
+  "automatic_execution": false
+}

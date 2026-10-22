@@ -1,0 +1,85 @@
+{
+  "source_url": "https://github.com/uyt5041-lab/fivecircles",
+  "source_commit": "2c4cc6132d95c2355e58d76aafceb9c9e8c3b2e8",
+  "fetched_at": "2026-10-22T08:48:02+09:00",
+  "license": "CC-BY-4.0",
+  "files": [
+    {
+      "source_path": "LICENSE",
+      "installed_path": "fivecircles/LICENSE",
+      "upstream_sha256": "f61a1625f4df5fe390b891bb3f1ef2780010b8a2cb7636468b7e5590c4fcf257",
+      "installed_sha256": "f61a1625f4df5fe390b891bb3f1ef2780010b8a2cb7636468b7e5590c4fcf257",
+      "modified": false
+    },
+    {
+      "source_path": "agent/agent-guidelines.md",
+      "installed_path": "fivecircles/agent/agent-guidelines.md",
+      "upstream_sha256": "ca2d5a92675b699b6ae7cff47432e84f9d5a4c9dee8bb981a07c0b79bb156ff6",
+      "installed_sha256": "3179f0a19d892ffba1d80d64b2562e6b6961ea3ab66c403cd8eec52d69896340",
+      "modified": true
+    },
+    {
+      "source_path": "agent/authority.md",
+      "installed_path": "fivecircles/agent/authority.md",
+      "upstream_sha256": "5e81f2c21c05ea0c0dbe90b9439820ad319a71b2038f45785bef7b57c39f4f74",
+      "installed_sha256": "f9b2bc66b8887ec52fd118f2fa0b4c3e977b1a52d757e3eff194b5495101667a",
+      "modified": true
+    },
+    {
+      "source_path": "agent/workflow.md",
+      "installed_path": "fivecircles/agent/workflow.md",
+      "upstream_sha256": "acf243ef33c4be679cc6320dee3fa2ad30f11aae048d2f089517e4277aa98f8a",
+      "installed_sha256": "f6a8f7b4a46cfef6e283ef7a1c617700f93fe0546b98b5981d338f6f0c57d4a7",
+      "modified": true
+    },
+    {
+      "source_path": "agent/policies.md",
+      "installed_path": "fivecircles/agent/policies.md",
+      "upstream_sha256": "989de6ce14347a47d81fd55992988b8295990afd9e1b8cd54f254e25b97ed1e8",
+      "installed_sha256": "64f677f06b2791fe6e0038f392a7e80307c31b9f43dc014bffc1b97afd8a6aac",
+      "modified": true
+    },
+    {
+      "source_path": "agent/methodology.md",
+      "installed_path": "fivecircles/agent/methodology.md",
+      "upstream_sha256": "29c7876cd80f9566c89ae9e1ddc69403f33251005648447a8d7386259f09d871",
+      "installed_sha256": "8dd7c06b980036fc137a6add540895df57c92d98a6cc31c37a1506adef1c50db",
+      "modified": true
+    },
+    {
+      "source_path": "work/workpolicy.md",
+      "installed_path": "fivecircles/work/workpolicy.md",
+      "upstream_sha256": "8c5951c7953761f1e90ec93a033bdc5e4008c1d2e04ae7ecbe350e1c16832059",
+      "installed_sha256": "c225995ba18839d0ffe17ab71416f02605b61c5fd6ae0a4af5f013eb24619fdd",
+      "modified": true
+    },
+    {
+      "source_path": "requirements/debates/README.md",
+      "installed_path": "fivecircles/requirements/debates/README.md",
+      "upstream_sha256": "a6148322640f884795c8f549fb159bab4043c200c38b38880f545c4fcbe5e60a",
+      "installed_sha256": "a6148322640f884795c8f549fb159bab4043c200c38b38880f545c4fcbe5e60a",
+      "modified": false
+    },
+    {
+      "source_path": "agent/skills/protocol_quick_debug.md",
+      "installed_path": "fivecircles/agent/skills/protocol_quick_debug.md",
+      "upstream_sha256": "ed95f812abef252ba7dc840d60cd79376fc1f26a015e91ecbf2764074be916f0",
+      "installed_sha256": "86dd920636b0f94fef3c023229347af0ea94a620c8e0736de285cf95700999b7",
+      "modified": true
+    },
+    {
+      "source_path": "agent/skills/protocol_logging_summary.md",
+      "installed_path": "fivecircles/agent/skills/protocol_logging_summary.md",
+      "upstream_sha256": "8b2d6ba7b0f9188e76e60c572b99a009d027833d5848a498eb4154474e8ffb79",
+      "installed_sha256": "1cac7436baaa07394b465e13fa430099471cf9ffcfc04b9674cbb1acd1ef9466",
+      "modified": true
+    },
+    {
+      "source_path": "agent/skills/fivecircles/SKILL.md",
+      "installed_path": "fivecircles/agent/skills/fivecircles/SKILL.md",
+      "upstream_sha256": "4c87810ce2d53f4d23f95b8170d3a40176f458125899f368f3c3d0ee74904cf7",
+      "installed_sha256": "0ec5558109161f441b07adfb125f41f25c86e43cc844e111d76a80c4750cc7c3",
+      "modified": true
+    }
+  ]
+}
