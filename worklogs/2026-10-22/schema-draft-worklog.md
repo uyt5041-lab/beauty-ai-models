@@ -1,123 +1,131 @@
 # 박지수 협업일지
 
-2026년 10월 22일 · 스키마 초안 작성 및 공유
+2026년 10월 22일 · 모델 작업 완료 체크와 스키마 초안
 
 일지 ID: BEAUTY-SCHEMA-DRAFT-20261022
 
-## 기록 범위
+이전 스키마 작업일지의 ID와 URL을 유지하고 본문을 8항목으로 고쳤다. 기록 범위를 당일 모델 작업까지 넓혔다. [작성 계약](../../contracts/collaboration-journal.md)에 따른다.
 
-이번 기록은 스키마 초안 작성, 형식 확인, 공개 문서 게시만 다룬다. 전체 모델 구현 일지가 아니다. 초안 작성 시각은 2026-10-22 18:16:52 KST, 게시 준비 확인 시각은 2026-10-22T18:52:31+09:00다. 실행 시각을 알 수 없는 항목에 시각을 붙이지 않았다.
+## [1] 오늘 날짜 / 이름 / 팀명
 
-## 이번 작업
+- 날짜: 2026-10-22 (Asia/Seoul)
+- 이름: 박지수 (작업 식별자 pi)
+- 팀명: 고급프로젝트 2팀
+- 기록 기간: 2026-10-22 00:00 KST부터 2026-10-22T19:05:07+09:00까지
+- 작성 지원: Codex. 원본 TODO와 저장소 기록으로 확인한 작업을 정리했다. 본인이 제공하지 않은 감정이나 팀원 수신 사실은 쓰지 않았다.
 
-| 상태 | 작업 | 확인한 내용과 남은 점 |
+## [2] 오늘 맡은 역할 및 구체적인 작업 내용
+
+이미지 담당으로 로컬 자산·작업 API·제품 보존 기반과 실험용 이미지 엔진을 구현·검증한 기록을 정리했다. 후속 사용자 결정에 따라 현재 MVP 방향을 외부 이미지 API 래퍼로 맞췄다. 텍스트·카피·영어 이미지 프롬프트는 김다혜의 담당이다.
+
+오늘 시작 전 이미지 TODO에는 완료 체크가 0개였고, 현재 원본에는 35개다. 35개 모두 원본 완료일이 2026-10-22이고 B1~B9 검증 문서가 연결돼 있다. 프레임워크 도입 3개와 문서 정리도 확인했다. B1~B9 요약은 동일 작업의 묶음이므로 완료 수에 다시 더하지 않는다.
+
+### 작업 순서와 검증 기록
+
+아래 시각은 실행 시작/종료 시각이 아닌 **Git 커밋 기록 시각(KST)**이다. 실제 실행 결과는 각 검증 문서에 따로 남아 있다. 기존 검증 기록을 확인했으며 일지를 쓰기 위해 모델이나 전체 테스트를 다시 실행하지 않았다.
+
+| 커밋 기록 시각 | 작업 | 검증 결과와 범위 | 근거 |
+| --- | --- | --- | --- |
+| 12:05:36 | B1 자산 검증·제품 캔버스 | 72 tests; 파일/SQLite/캔버스 및 CLI 기록 | [1bc4fea](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b1.md) |
+| 12:26:13 | B2 작업 저장·인증 API·worker | 112 tests; 실제 TCP 모의 처리기와 프로세스 복구 | [8cb6402](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b2.md) |
+| 15:08:54 | B3 제품 후보 승인·고정 프로필·재합성 | 148 tests; 실제 TCP template 실행. AI 생성 아님 | [dbba5da](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b3.md) |
+| 15:22:50 | B4 프롬프트 버전·revision·캐시 | 201 tests; 오래된 결과 차단 및 문구 변경 이미지 재사용 | [a1b1602](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b4.md) |
+| 15:32:57 | B5 평가 도구·job 경과 시간 | 280 tests; 권리/정답 미확인 상태를 값과 구분 | [c0c1240](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b5.md) |
+| 15:48:24 | B6 로컬 BiRefNetLite 누끼 | 339 tests; 합성 병의 실제 MPS 실행. 실사진 품질 인수 아님 | [a7f3957](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b6.md) |
+| 16:25:24 | B7 로컬 SDXL 배경 | 433 tests; 512 합성 입력 실행과 제품 재합성 | [b71fadc](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b7.md) |
+| 16:37:04 | B8 동일 ID 제출 조정 | 521 tests; 응답 유실 후 PUT/처리 각 1회 확인 | [1e05f94](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b8.md) |
+| 17:20:55 | B9 실행 관찰·반복·크기 측정 | 624 tests; MPS 누끼1+배경5, 512 두 번 hash 일치 | [858c6f7](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b9.md) |
+| 17:22:42 | B9 게시·동기화 기록 | 독립 소스 624 tests 기록; 테스트 수 중복 합산 안 함 | [9f1d133](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/work/integrate-log.md) |
+| 18:14:18 | 외부 이미지 API 방향으로 문서 정렬 | LLM 김다혜, 이미지 API 래퍼 pi; 제공자 미정 | [bddddde](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/ssotAlignment.md) |
+| 18:52:53 | 연동 스키마 초안 게시 | 기존 13종·제안 2종·예제 4종. 초안·팀 미합의 | [64124ed](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/schemaDraft.md) |
+
+FiveCircles 도입 검증은 08:49:40 KST 기록으로 확인했다. 출처와 라이선스, 역할·문서·프로젝트 스킬, 기존 파일 보존 및 두 소스의 공통 파일을 검사했다. [도입 검증](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/setup-validation.md).
+
+SSOT 대조표와 구현 TODO도 작성해 입력 사진 2~5장, 참고 배경 0~5장, 카피/이미지 각 1개, 사용자 검토, 최종 4:5 한글 합성·캡션/태그가 현재 구현과 어디서 다른지 정리했다. 문서 정리는 해당 기능 구현 완료를 뜻하지 않는다.
+
+### 오늘까지의 예정 체크와 완료 항목
+
+단계별 시작 예정일로 나눴다. 계획에 여러 날짜가 함께 있어 개별 항목의 마감일과는 구분한다.
+
+| 구분 | 원본 완료 체크 수 | 기록 |
 | --- | --- | --- |
-| 완료 | 기존 코드에서 계약 추출 | Pydantic 계약 13종을 JSON Schema로 추출하고 원본 코드와 다시 비교했다 |
-| 완료 | 서비스 입력과 이미지 전달 초안 | ServiceIntakeDraft, ImageHandoffDraft 2종을 제안했다. 팀 미합의이며 서비스 구현은 아직 없다 |
-| 완료 | 가상 예제와 형식 확인 | 예제 4종을 작성했다. 최초 작성 때 제안 모델 검증과 사진 1장/6장, revision 불일치 거절을 확인했다 |
-| 완료 | 게시 자료 검사 | 기존 계약 예제 2종 재검증, JSON 파싱, 내부 참조, 로컬 절대 경로 제거, 비밀값 패턴 검사를 수행했다 |
-| 완료 | plan/models 게시 | 초안과 안내 문서 23개 파일을 64124ed에 올리고 원격 HEAD를 확인했다 |
-| 신규/보류 | 팀 계약 확정 | 다혜님 실제 스키마와 비교하고 필드 의미, Safe Zone, 카피 길이, 승인 및 출력 계약을 맞춰야 한다 |
+| 10/22 이전 시작 예정일을 포함하는 단계 | 26 | 자산/마스크 계약, 실행 프로필·재현 범위, 누끼, 평가/시간 도구, 작업 신뢰성, revision/추적 |
+| 10/23 이후 시작 단계에서 앞당겨 완료 | 9 | 캔버스 정렬 4개, 배경 생성 2개, 승인 제품 재합성/저장 3개 |
+| 합계 | 35 | 같은 항목을 중복 집계하지 않음 |
 
-코드의 모델 생성, API 연동, 광고 품질 또는 팀 인수가 완료됐다는 기록은 아니다. 기존 구현 TODO의 체크 상태는 바꾸지 않았다.
+**[완료 체크 35개 전체와 원본 줄번호](completed-checks.md)**에 모든 항목, 계획 단계, 완료일과 검증 범위를 실었다. [동일 자료 JSON](completed-checks.json)도 함께 보관한다. 체크 상태의 기준은 원본 `docs/imageTodo.md`다.
 
-## 원천과 Git 확인
+현재 외부 이미지 API-01~06과 SSOT-01~12는 미체크 상태다. 아래 묶음은 해당 단계의 전체 미완료 수이며, 모두 오늘이 마감이라는 뜻은 아니다.
 
-| 원천 | 확인 결과 |
+| 단계 | 완료 / 미완료 | 아직 남은 내용 |
+| --- | --- | --- |
+| 단계 1-A. SSOT 입력 범위와 자산 계약 확정 | 3 / 5 | 실제 제품 수집·평가 기준, 최종4:5와 입력/참조 계약 합의 |
+| 단계 1-B. 모델·파이프라인·GPU 환경 확정 | 2 / 6 | 현재 외부 API 제공자·모델 및 지원 기능 결정. GPU 구축은 재선택 시에만 적용 |
+| 단계 2-A. 누끼와 제품 레이어 생성 | 3 / 4 | 실제 제품의 펌프·투명/반사·라벨·얇은 경계 품질과 수동 검토 |
+| 단계 3-A. 고정 평가셋과 이미지 품질 | 2 / 8 | 실제 평가셋·정답·사람 판정과 실패 분류 |
+| 단계 3-B. 성능·메모리·비용 측정 | 3 / 5 | 서비스 목표·실제 API 비용·최대 자원/성능 기준 |
+| 단계 4-A. private inference 서버와 작업 신뢰성 | 9 / 2 | 실제 운영 환경에서 남은 장애 시나리오와 외부 API 제출 조정 |
+| 단계 4-B. API·내부 revision/cache·검토 흐름 연결 및 인계 | 4 / 4 | 김다혜 실제 산출물·사용자 검토·렌더러·팀 인수 연결 |
+
+### 스키마 초안 공유
+
+기존 코드에서 추출한 계약 13종, 제안 2종, 가상 예제 4종을 [plan/models의 스키마 안내](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/schemaDraft.md)에 게시했다. **초안·팀 미합의**로 표시했으며 다혜님이 만든 계약이나 확정 API로 설명하지 않았다.
+
+현재 코드 계약과 JSON Schema의 일치, JSON 파싱/내부 참조, 공개 파일의 로컬 절대 경로 제거와 비밀값 패턴을 확인했다. 최초 초안 작성 때 제안 예제와 사진 1장/6장 및 revision 불일치 거절을 확인했다. 게시 검사에서 그 제안 런타임 검증을 다시 실행한 것으로 적지 않았다.
+
+스키마 상세 본문과 기존 스키마 작업 기록은 **[스키마 별첨](schema-draft-details.md)**으로 보존했다.
+
+### 관측 원천
+
+| 원천 | 기준과 차이 |
 | --- | --- |
-| 코드 저장소 plan/models | 게시 전 bdddddea453c0eab23c99cfa37b9ee15f9b386ca, 로컬과 origin 전용 커밋 각 0개. 읽은 코드 해시와 추출 원본이 일치했다 |
-| 협업일지 브랜치 | 게시 전 de7659d870c0ba3d21b4491433d807fea55de060. 기존 10/20 기록을 보존하고 이번 기록을 추가한다 |
-| 원본 beautyAi 폴더 | Git 저장소가 아니므로 origin/브랜치 비교 대상에서 제외했다. 이 게시에서 수정하지 않았다 |
-| 자료 범위 | 기존 원본 imageTodo.md, 모델 연결 문서와 API 전환 계약을 참고했다. 현재 구현 체크 상태의 신규 완료를 주장하지 않는다 |
+| plan/models 원격 | `64124ed119dc6cf96a4e211e6b96d2d62e26060a`을 고정해 읽음 |
+| 당일 시작 전 원격 이력 | `00e455e979f3061b3a1aed9609d994bc713757e4`. 이미지 완료 체크 0개 |
+| 참고 코드 checkout | 현재 `bdddddea453c0eab23c99cfa37b9ee15f9b386ca`. 미커밋 변경 없음. origin보다 스키마 문서 커밋 1개 뒤이며 TODO 내용은 동일 |
+| 원본 beautyAi 소스 | Git 저장소가 아님. 이미지·LLM·프레임워크 TODO는 참고 checkout과 일치 |
+| 협업일지 원격 | 수정 전 `c6a240ac0e5269ebe877eef8060d3f8e07aeeebe`. 기존 기록을 보존하고 이 형식 수정만 게시 |
 
-[게시한 스키마 안내](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/schemaDraft.md) · [초안 본문](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/schema-draft-2026-10-22/README.md) · [검증 범위](https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/schema-draft-2026-10-22/publication-validation.json)
+## [3] 오늘 작업 완료도 체크
 
-## 확인 범위와 주의점
+**75% (작성 지원자가 근거로 정리한 잠정 평가, 본인 확인 필요).**
 
-현재 방향은 김다혜가 텍스트와 영어 프롬프트, pi가 외부 이미지 API 래퍼를 맡는 것이다. 외부 제공자와 모델은 미정이다. 기존 로컬 모델용 마스크나 세 레이어 출력을 모든 제공자의 필수 결과로 정하지 않았다.
+당일 목표였던 로컬 처리 기반, 합성 입력의 실제 모델 기술 검증, 실행 관찰과 문서 공유는 끝냈다. 실제 제품 품질·서비스 통합·사용자 검토·최종 한글 렌더러가 남았고 외부 API 전환 후의 제공자 선정과 래퍼 구현도 미완료다. 이 값은 전체 MVP 완료율이나 `35/130`의 산술 비율이 아니다.
 
-다혜님의 10/20 협업일지는 스키마를 다음 할 일로 적었다. 이번 초안을 다혜님 산출물이나 팀 확정본으로 표시하지 않았다. 공유 드라이브 내부와 이후 구현 여부는 미확인이다.
+## [4] 오늘 협업 중 제안하거나 피드백한 내용
 
-문서 게시에서는 JSON과 원본 계약 일치를 검사했다. 기존 제안 모델 검증은 최초 초안 작성 때의 결과이며 게시 단계에서 다시 실행한 것으로 적지 않았다. 실제 외부 이미지 API나 GPU는 호출하지 않았다.
+- 텍스트 담당과 이미지 담당 사이의 필드·revision·프롬프트 버전, Safe Zone·카피 길이 및 출력 계약을 문서로 정리했다. 10/26 조기 합의 요청을 팀 수락으로 표시하지 않았다.
+- 사용자 지시인 외부 이미지 API 전환을 반영했다. 이 방향을 본인이 제안한 아이디어로 기록하지 않았고 기존 로컬 실험 결과는 보존했다.
+- 스키마를 비교 가능한 파일과 예제로 GitHub에 게시했다. 문서 게시 사실과 팀원이 읽거나 동의했다는 사실을 구분한다. 팀원 수신·인수 확인은 아직 없다.
 
-## 스키마 초안 내용
+## [5] 오늘 분석/실험 중 얻은 인사이트나 발견한 문제점
 
-## BeautyAI 연동 스키마 초안
+합성 입력에서 누끼·배경 실행이 성공해도 실제 제품 광고 품질을 보장하지 않는다. B9의 배경 5건은 승인된 불투명 제품 영역 mismatch 0이었지만 꽃 표현 편차와 제품 주변 잔상이 남았다. 부분 투명·라벨·원본 전체 보존을 통과했다고 확대하지 않았다.
 
-**초안 · 팀 미합의 · 2026-10-22.** 다혜님 작성물이 아니라 현재 코드와 SSOT를 읽어 만든 비교용 자료다. 운영 API나 확정된 팀 계약으로 사용하지 않는다. 이 게시에서는 문서와 스키마 스냅샷만 추가한다. 실행 코드와 기존 계약은 바꾸지 않는다.
+B7에서는 Diffusers에서 제거된 `pipeline.enable_vae_tiling()` 때문에 실제 실행이 2번 실패했다. `pipeline.vae.enable_tiling()`로 바꾸고 실제 설치 API 확인을 보완한 뒤 기술 실행을 확인했다. 대체 backend 테스트 통과만으로 실제 라이브러리 호환을 보장할 수 없었다.
 
-### 목적과 범위
+B5의 FIFO manifest 읽기 대기, B8의 원문 오류 코드 노출 가능성도 수정한 기록을 확인했다. 작업 후 메모리 snapshot은 peak VRAM이 아니며, ledger 경과 시간도 순수 GPU 연산 시간이 아니다.
 
-김다혜(텍스트) → pi(이미지 외부 API 래퍼) → 서비스/최종 렌더러가 주고받을 내용을 정리한다. 외부 이미지 제공자와 모델은 아직 미정이다. 기존 로컬 누끼·SDXL 계약을 모든 외부 API에 강제하지 않는다.
+스키마 역시 필드 모양이 맞는 것과 팀이 같은 의미로 사용하는 것은 다르다. 기존 요청의 마스크·seed·세 레이어 반환을 외부 제공자가 지원한다고 가정하지 않기로 정리했다.
 
-| 자료 | 상태 | 핵심 내용 |
-| --- | --- | --- |
-| current/*.schema.json | 현재 Python 코드에서 추출한 스냅샷, 팀 합의 미확인 | 13종 기존 계약. 로컬 이미지 실험 계약 포함 |
-| proposed/ServiceIntakeDraft.schema.json | 새 제안, 미구현 | 제품 정보, 제품 사진 2~5장, 배경 참고 0~5장, 광고 목적 |
-| proposed/ImageHandoffDraft.schema.json | 새 제안, 미구현 | 현재 카피·영어 프롬프트·검토 상태·입력 사진·revision 전달 |
-| examples/*.json | 가상 값으로 검증한 예제 | 실제 제품·실제 자산 ID·광고 승인·API 호출 결과 아님 |
-| source-snapshot.json | 읽은 소스 식별 | Git HEAD와 작업 중인 원본 파일 해시. HEAD만으로 미커밋 문서까지 재현되지 않음 |
+## [6] 일정 지연이나 협업 중 어려웠던 점
 
-### 지금 주고받을 최소 항목
+서비스/API/렌더러 담당의 이름과 인수, 실제 제품 평가 자료와 기준, 외부 제공자·모델·인증·예산이 아직 확정되지 않았다. 이를 구현 완료로 표시하면 10/30 통합 판단이 잘못될 수 있다.
 
-| 구간 | 계약과 필수 필드 | 담당/주의 |
-| --- | --- | --- |
-| 제품 분석 | ProductObservation: container_shape, visible_colors, label_text, uncertainties | nullable 필드도 현재 코드는 키 자체를 요구한다. 사진 관찰은 효능의 확인 근거가 아니다 |
-| 확인된 제품 정보 | ProductFacts: product_id, revision, product_name, functional_status, functional_categories, confirmed_claims | 관찰·시장 조사와 사용자 확인 사실을 구분한다 |
-| 카피 | CopyBundle: headline, subheadline, cta, caption, hashtags[], badges[] | 다혜 담당. 템플릿별 최대 길이는 미합의 |
-| 자동 검수 | ReviewReport: status, snapshot_hash, copy_revision, product_revision, rule_pack_version, prompt_version, configured_review_model, issues[], uncertainties[], meta | 사용자 검토와 별개. legal_approval은 false |
-| 영어 이미지 프롬프트 | ImagePrompt: positive, prompt_version, source_revision; negative 기본 빈 문자열, language 기본 en | positive 1~4000자, negative 최대 2000자. 공백만인 positive/version은 런타임에서 거절 |
-| 이미지 의도 | VisualBrief: concept, 스타일/템플릿 ID·버전, 작업 크기, product_box, text_safe_zone | 기존 로컬 계약. 좌표 0~1, 영역 비중첩 및 작업 크기 배수 검사는 코드에 있음 |
-| 기존 로컬 이미지 요청/응답 | CutoutRequest, BackgroundRequest, ImageJob | 외부 API의 신규 확정 계약이 아님. 모든 제공자가 마스크·세 레이어를 준다고 가정하지 않음 |
+GCP 인증 제약과 B9 최종 흐름 HTML의 브라우저 정책 차단은 각각 원래 기록에 남아 있다. 현재 외부 API 방향에서 GCP GPU 구축을 필수 선행조건으로 잡지 않는다. 차단된 B9 최종 화면을 PASS로 바꾸지 않았다.
 
-CampaignDraft의 variants는 현재 JSON Schema 자체에 1개 제한이 없다. MVP에서는 호출·응답 검증으로 한 개를 선택하는 계약을 추가 합의해야 한다. 제품 특징·광고 목적은 기존 ProductFacts에 모두 들어 있지 않아 ServiceIntakeDraft에서 제안했다.
+앞서 협업일지를 스키마 작업 보고서 형식으로 올려 공식 8항목을 빠뜨렸다. 이번 수정에서 작성 계약을 브랜치에 남기고 본문을 고쳤으며 스키마와 상세 완료 체크는 별첨으로 연결했다. 개인적인 협업 소감은 제공된 기록이 없어 추가하지 않았다.
 
-### 새 제안 사용 조건
+## [7] 오늘 발표 준비나 커뮤니케이션에서 기여한 부분
 
-ServiceIntakeDraft의 최종 비율 4:5, 후보 수 1, 채널 instagram_feed는 MVP 초안이다. **최종 픽셀 크기는 미정**이며 작업용 캔버스와 구분한다. 제품 사진이 같은 제품인지, 파일 권한이 맞는지는 이 JSON만으로 검증되지 않는다. 기능성 제품의 기능성 종류 필수화는 제안 규칙이며 팀 확정 전이다.
+완료35개와 미완료 범위, SSOT 차이, 스키마 초안 및 실행 검증 근거를 다른 담당자가 찾아볼 수 있게 GitHub 문서로 정리했다. 8항목 작성 계약과 날짜별 Markdown·HTML 및 인덱스도 마련했다.
 
-ImageHandoffDraft에서 source_revision은 copy_revision을 뜻하도록 제안했다. 기존 코드의 의미가 팀 전체에서 확정됐다는 뜻은 아니다. copy_review의 revision 및 프롬프트 revision이 맞아야 하며, copy_hash는 현재 CopyBundle의 canonical hash와 별도 비교해야 한다. 예제는 pending이므로 생성 실행 승인 예제가 아니다. 실제 호출 전 현재 카피에 대한 사용자 검토·자동 검수 정책을 서비스가 확인해야 한다.
+슬라이드 작성·발표 연습·팀 시연을 수행했다는 근거는 없다. 문서 공개를 팀 설명 완료나 공동 인수로 기록하지 않았다.
 
-키·Bearer 토큰·제공자 서명 URL은 스키마나 공개 예제에 넣지 않는다. product_photos/reference_photos는 업로드 후 서비스가 돌려준 AssetRef로 연결한다. 예제의 자산은 존재하지 않는다.
+## [8] 내일 목표 / 할 일
 
-### 기존 HTTP와 제안의 구분
+1. 다혜님 스키마 초안을 받으면 제품 분석·카피·검수·영어 프롬프트 필드와 revision 의미를 대조한다. 차이 목록과 정상/실패 예제를 남긴다. 미제공이면 미확인으로 유지한다.
+2. 외부 이미지 API 제공자의 입력 수·참고 구도·마스크·seed·negative prompt·4:5 지원·가격·조건을 확인한다. 실제 지원 기능표와 API-01 차이 목록을 만든다.
+3. 실제품 사진의 권리·동일 제품 묶음·라벨·펌프·투명/반사 유형과 평가 기준을 확보한다. 합성 fixture 결과와 분리한다.
+4. API·자산·렌더러 담당과 Safe Zone·카피 길이·사용자 검토·최종 파일 계약을 확인한다. 담당 수락과 다음 연결 작업을 문서로 남긴다.
 
-현재 내부 API는 POST /internal/v1/assets → AssetRef, PUT /internal/v1/jobs/{job_id} → ImageJob, GET /internal/v1/jobs/{job_id} → ImageJob을 제공한다. PUT은 CutoutRequest 또는 BackgroundRequest를 받는다. ServiceIntakeDraft/ImageHandoffDraft를 이 경로로 보내면 현재 구현에서는 거절된다. 다혜님의 텍스트 모듈을 함수로 받을지 별도 API로 받을지와 SSE 이벤트는 아직 합의 대상이다.
-
-기존 ImageJob 상태는 queued/running/succeeded/failed/interrupted다. 외부 제공자 접수 여부가 불확실한 상태·제공자 요청 ID·사용량·오류 계약은 아직 추가 설계가 필요하다. 기존 내부 PUT 재사용이 외부 API의 1회 과금을 보장하지 않는다.
-
-### 다음 합의할 항목
-
-아래 목록은 초안 검토 질문이다. 구현 진행 상태는 저장소의 `docs/imageTodo.md` 한 곳에서 관리한다.
-
-- [ ] 다혜님 실제 스키마와 필드명·타입·enum·nullable/누락 차이 비교.
-- [ ] source_revision 의미, copy/product/prompt 버전 및 hash 계산 방식 확정.
-- [ ] 제품 사진 2~5장·참고 0~5장, 동일 제품 확인, 사진별 역할과 우선순위 결정.
-- [ ] 카피 사용자 검토와 이미지 사용자 검토를 별도 계약으로 정의. 수정 시 과거 검토 무효화.
-- [ ] 최종 4:5 픽셀 크기, Safe Zone, 템플릿별 글자 수·폰트·줄 수 결정.
-- [ ] 외부 API 제공자 선정 후 입력 수·negative prompt·마스크·seed·결과 레이어 지원 확인.
-- [ ] 외부 결과 자산, 제공자 ID, 불확실 제출·타임아웃·429·정책 거절·비용 구조 정의.
-- [ ] 최종 이미지 + 동일 카피 revision의 caption/hashtags 다운로드 응답 합의.
-- [ ] 서비스/API/렌더러 담당 및 교차 테스트 인수자 확정.
-
-### 검증 범위
-
-기존 Pydantic에서 JSON Schema 13종을 추출하고, 제안 2종과 예제 4종을 생성했다. 예제는 해당 Pydantic 모델로 통과했고 제품 사진 1장/6장, 카피 revision 불일치를 거절하는지 확인했다. Pydantic의 필드 간 검증은 JSON Schema만으로 모두 표현되지 않는다. 이 확인은 실제 팀 연동·외부 API·이미지 품질 테스트가 아니다.
-
-### 다혜님 작업 확인 근거
-
-[협업일지 (김다혜)](https://app.notion.com/p/3feb13f77dbd80bfb313fd9e82488278)의 10/20 기록에는 텍스트 체크리스트 수정, 제품 사진 촬영, 광고 문구 10개 수집을 했다고 적혀 있다. 스키마 초안(제품 분석/기획안·카피/규제 검수 리포트), text_module 디렉터리, OpenAI 연결 테스트는 다음 할 일로 기재돼 있다. 실행 성공이나 파일 제공을 확인한 것은 아니다.
-
-[텍스트 체크리스트](https://app.notion.com/p/3ffb13f77dbd80e6a5eec41286b29aaa)는 스키마 10/23 초안·10/26 확정, 이미지에 제품 분석 JSON·영어 프롬프트 전달을 계획한다. 확인한 두 페이지와 팀 작업 링크에서는 실제 스키마/코드 첨부를 찾지 못했다. 공유 드라이브 내용은 미확인이다. 로컬 두 프로젝트 범위의 이름·스키마 검색에서도 다혜님 작성물로 식별되는 파일은 찾지 못했다. 기존 schemas/를 다혜님 산출물로 볼 근거는 없다.
-
-## 후속 확인
-
-- 다혜님 스키마를 받으면 필드명, 타입과 revision 의미를 대조한다.
-- 서비스/API/렌더러 담당과 카피·이미지 사용자 검토 상태를 합의한다.
-- 외부 제공자 선정 뒤 실제 요청과 출력 및 오류 계약을 확정한다.
-
-## 게시 기록
-
-plan/models에는 초안 문서만 추가했고, 협업일지는 별도 브랜치에 유지한다. 두 브랜치를 병합하거나 PR을 만들지 않는다. 이 기록의 원격 저장과 링크 열기 확인은 푸시 직후 별도로 수행한다. Notion 편집과 Discord 전송은 이번 요청 범위에 포함하지 않았다.
-
-작성 지원: Codex.
+목표 마일스톤은 10/30 서비스 통합, 11/06 이미지 디테일·고도화다. 날짜를 기다리는 작업 순서가 아니라 준비된 의존성부터 진행한다. 현재 미완료를 날짜만으로 완료 처리하지 않는다.
