@@ -12,3 +12,9 @@
 - 자산 저장/검증과 제품 캔버스/보존 검사를 추가. 원본 이미지 TODO 8개를 근거 범위로 체크.
 - 72 tests 및 CLI 파일 저장, Mermaid 보고서 브라우저 검증 PASS. [상세](../test/relay-b1.md).
 - 다음은 B2 영속 job/API. GCP 조회는 사용자 재인증 필요.
+
+## 2026-10-22 · 릴레이 B2
+
+- 인증 internal API·WAL ledger·단일 호스트 worker 구현. 원본 TODO의 로컬 신뢰성 7개만 추가 체크.
+- 전체 112 tests, health API 8 tests 및 loopback·프로세스 복구·시각 비교 PASS. [상세](../test/relay-b2.md).
+- 다음은 B3 profile·승인·adapter. 실제 GPU·운영 네트워크·팀 인수는 미검증.

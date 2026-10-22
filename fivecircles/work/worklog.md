@@ -21,3 +21,11 @@
 - 구현: assets.py, image_preparation.py, 실제 임시 파일/DB tests와 CLI.
 - 검증: 72 tests + CLI/시각 보고서 PASS. 실제 GPU/팀 인수는 미검증.
 - 계약/범위: [image-runtime](../architecture/contract/image-runtime.md). [B1 기록](../test/relay-b1.md).
+
+## 2026-10-22T12:24:52+09:00 · B2 · 구현/검증
+
+- 구현: job_ledger.py·image_worker.py·inference_api.py. 서버 소유 토큰/project 매핑, atomic ID/hash, POSIX 실행 잠금, durable queued 복구와 결과 검증.
+- 검토 수정: validation 오류의 임의 loc/입력 키를 제거하고 type만 반환. processor 없음은 queued 유지. health는 모델 readiness를 주장하지 않음.
+- 검증: 전체 112 tests PASS(8.52s), health API 8 tests PASS(2.31s). 실제 loopback TCP/SQLite/파일 및 다중 프로세스 종료/복구 검증.
+- 범위: 단일 호스트 동기 테스트 processor. 실제 GPU·외부 배포·광고 품질·팀 인수는 미검증. [B2 기록](../test/relay-b2.md).
+- 문서: README의 5개 절 유지, 이미지 TODO 로컬 신뢰성 7개 추가 체크, 목표/현재 흐름 갱신. 다음 B3 profile·승인·adapter.

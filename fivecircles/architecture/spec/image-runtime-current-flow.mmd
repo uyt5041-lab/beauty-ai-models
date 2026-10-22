@@ -1,19 +1,20 @@
 flowchart TB
-    A["A · 자산 모듈 구현<br/>LocalAssetStore · 파일 / DB 검증"]:::green
-    B["B · GAP: 영속 작업 API / ledger<br/>현재 HTTP 클라이언트만 존재"]:::red
-    C["C · GAP: 실제 누끼 모델<br/>GPU / 고정 모델 연결 미검증"]:::red
+    A["A · 자산 검증 / 저장<br/>LocalAssetStore · 파일 / DB"]:::green
+    B["B · 인증 internal API / WAL ledger<br/>project scope · atomic ID/hash"]:::green
+    W["단일 호스트 worker<br/>POSIX 실행 잠금 · queued 복구"]:::green
+    T["검증용 processor<br/>실제 누끼 / 배경 모델 아님"]:::gray
+    R["결과 파일 / 형식 / project 검증<br/>성공 commit · 안전한 실패 코드"]:::green
+    C["C · GAP: 실제 누끼 모델<br/>고정 profile / GPU 검증 필요"]:::red
     D["D · 캔버스 모듈 구현<br/>prepare_product_canvas"]:::green
-    E["E · GAP: 승인 서비스<br/>needs_approval=True 후보만 반환"]:::red
-    F["F · GAP: 실제 배경 모델<br/>프롬프트 / 버전 전달도 미완성"]:::red
-    G["G · PARTIAL: 합성 / 검사 helper<br/>파일 저장 모듈은 있음 · 실행 연결 필요"]:::amber
+    E["E · GAP: 제품 승인 서비스<br/>needs_approval=True 후보만 반환"]:::red
+    F["F · GAP: 실제 배경 모델<br/>프롬프트 / 버전 전달 미완성"]:::red
+    G["G · PARTIAL: 합성 / 검사 helper<br/>실모델부터 레이어 저장 연결 필요"]:::amber
     H["H · GAP: 편집 revision / 캐시<br/>입력 hash helper만 존재"]:::red
     I["I · GAP: 렌더러 / 내보내기<br/>실서비스 연결 없음"]:::red
-    J["J · GAP: 사람 평가 / 팀 인수<br/>품질 기준 / 실행 증거 필요"]:::red
-    T["로컬 검증용 RGBA 입력<br/>실제 누끼 결과 아님"]:::gray
-    U["로컬 검증용 scene 입력<br/>실제 생성 모델 결과 아님"]:::gray
-    A -.-> B -.-> C -.-> D -.-> E -.-> F -.-> G -.-> H -.-> I -.-> J
-    T --> D
-    U --> G
+    J["J · GAP: 사람 평가 / 팀 인수<br/>실제 광고 품질 증거 필요"]:::red
+    A --> B --> W
+    W --> T --> R
+    W -.-> C -.-> D -.-> E -.-> F -.-> G -.-> H -.-> I -.-> J
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
 classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px
 classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933,stroke-width:1.5px

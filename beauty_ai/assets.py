@@ -222,6 +222,13 @@ class LocalAssetStore:
             raise self._integrity_error() from exc
 
     def read(self, ref: AssetRef, *, project_id: UUID) -> Image.Image:
+        data = self.read_bytes(ref, project_id=project_id)
+        with Image.open(BytesIO(data)) as image:
+            image.load()
+            return image.copy()
+
+    def read_bytes(self, ref: AssetRef, *, project_id: UUID) -> bytes:
+        """Return the exact verified PNG bytes, preserving the reference hash."""
         self._uuid(project_id)
         if not isinstance(ref, AssetRef):
             raise ValueError("Expected an AssetRef")
@@ -250,7 +257,7 @@ class LocalAssetStore:
                             or getattr(image, "n_frames", 1) != 1):
                         raise self._integrity_error()
                     image.load()
-                    return image.copy()
+                    return data
         except (OSError, ValueError, SyntaxError, Image.DecompressionBombWarning,
                 Image.DecompressionBombError) as exc:
             raise self._integrity_error() from exc

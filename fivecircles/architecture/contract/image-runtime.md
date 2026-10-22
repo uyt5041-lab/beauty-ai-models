@@ -40,3 +40,20 @@
 ## 미확정
 
 실제 GPU 접근/예산/모델, 팀 승인자, 최종 사용자 인증·렌더러, Safe Zone·프롬프트 팀 계약은 확인되지 않았다. 로컬 구현 완료로 이 항목을 체크하지 않는다.
+
+## 배치 2 · 영속 job/API/단일 호스트 worker
+
+- SQLite `JobLedger(path)`: `submit(job_id, project_id, request) -> ImageJob`, `get(job_id, project_id) -> ImageJob`, `claim_next(owner_id) -> ClaimedJob | None`, `finish(job_id, owner_id, result=None, error_code=None) -> ImageJob`, `recover_interrupted() -> int`.
+- `ClaimedJob`: `job: ImageJob`, `project_id: UUID`, `request: ImageRequest`. 요청 스냅샷을 DB에 저장한다.
+- `submit`은 동일 project/ID/hash면 기존 상태를 반환한다. 타 프로젝트 ID는 `IMAGE_JOB_NOT_FOUND`, 동일 project/ID·다른 hash는 `IDEMPOTENCY_CONFLICT`. `BEGIN IMMEDIATE`와 PK로 동시 등록/claim을 직렬화한다.
+- 상태: queued → running → succeeded/failed. 종료가 확인된 이전 worker의 running만 interrupted. terminal은 다시 덮어쓰지 않는다. queued는 DB 검색으로 복구하며 인메모리 큐가 기준이 아니다.
+- `finish`는 현재 running의 owner가 일치해야 한다. result kind가 request kind와 맞는지 검사한다. 결과 파일 검증은 worker가 수행한 후 finish를 호출한다. 실패는 안정적인 error code만 저장한다.
+- `SingleHostWorker(ledger, assets, processor, *, poll_seconds=0.1)`: `start() -> bool`, `stop(timeout=None) -> bool`, `is_running` property. processor는 `(request, project_id) -> ImageResult` 동기 callable.
+- worker는 ledger DB 경로 옆의 POSIX flock을 실행 전체 동안 보유한다. 이미 잠긴 경우 start=False이며 다른 프로세스의 running을 조정하지 않는다. 잠금 획득 후에만 interrupted 복구, DB queued claim을 실행한다.
+- 종료 요청은 현재 processor가 끝날 때까지 잠금을 유지한다. join timeout은 실행 실패·중단의 증거가 아니며 잠금을 해제하지 않는다. worker 종료 후 OS가 잠금을 회수한 경우 다음 owner가 복구한다. 한 호스트/공유 로컬 FS만 지원한다. 다중 VM은 별도 조정기 필요.
+- 결과 AssetRef를 project 범위에서 실제 read/검증한 뒤 success. 저장 실패/잘못된 타입/processor 오류/OOM은 failed, 비밀정보 없는 code를 기록. 임의 예외 문자열은 API에 돌려주지 않는다.
+- FastAPI `create_app(ledger, assets, credentials, processor=None)`; credentials는 서버의 Bearer token→project UUID 매핑. 토큰으로 project를 결정하며 사용자가 body/header에서 project를 지정해 권한을 바꾸지 못한다.
+- PUT/GET `/internal/v1/jobs/{job_id}`는 기존 HTTPImageGateway wire 계약을 유지. 요청 자산의 파일/권한을 확인한 뒤 ledger에 commit하여 202. 동일 요청 재전송도 같은 job. GET은 200, 미존재/다른 프로젝트 404, hash 충돌 409, 인증 실패 401, 형식 422, 자산 오류 400.
+- POST `/internal/v1/assets`: 최대 업로드 바이트까지만 stream으로 읽고 store에 저장하여 201 AssetRef. GET `/internal/v1/assets/{asset_id}`는 인증된 project에서 검증된 PNG bytes 반환.
+- 응답 validation 오류는 유형만 공개한다. 위치에도 임의 사용자 키가 들어갈 수 있어 제외하며 입력값/토큰을 echo하지 않는다. default 앱은 외부 포트를 열지 않으며 테스트에서 명시적으로 loopback smoke를 수행한다.
+- tests: 실제 SQLite 동시 프로세스, 재개/claim/잘못된 owner, POSIX lock 경쟁·실행 중 stop timeout·crash 복구·result tamper, 인증·project scope·PUT idempotency·wait timeout. 테스트 processor는 모델 품질 증거가 아니다.
