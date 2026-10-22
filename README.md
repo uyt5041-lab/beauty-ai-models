@@ -59,6 +59,8 @@ python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 
 로컬 평가 도구는 `python -m beauty_ai.evaluation examples/evaluation_manifest.json --output outputs/evaluation-report.json`으로 실행합니다. 예제의 권리는 `unknown`이므로 이미지를 읽지 않고 미평가로 기록합니다. 실제 평가는 권리와 출처를 확인한 파일을 manifest 폴더 아래에 두고, 비공개 `data/`·`outputs/`에서 실행하세요. 기존 결과 파일은 덮어쓰지 않습니다.
 
+최신 B10은 **806 tests PASS**이며 로컬 beautyAi에서도 신규182개와 mock CLI를 확인했습니다. 실제 OpenAI 호출은0회입니다. [B10 검증](fivecircles/test/relay-b10.md).
+
 단계별 실행 명령은 [README2.md](README2.md), 기존 로컬 검증은 [B9 기록](fivecircles/test/relay-b9.md)을 참고하세요. **B9 당시 624 tests PASS + 실제 MPS 6 jobs/실행 관찰 PASS** 기록입니다. B10의 테스트 총수나 실제 OpenAI 호출 검증을 뜻하지 않습니다. 같은512 입력·seed의 두 번 실행에서 출력 hash가 같았습니다. B8 실제 TCP 응답 유실 조정 근거도 보존했습니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
 
 ## 2. 기능

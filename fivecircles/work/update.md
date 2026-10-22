@@ -96,3 +96,5 @@
 - OpenAI adapter, project 자산, durable attempt/예약액, job worker, receipt API, mock CLI를 연결했다. 실제 호출0회, 기본OFF·예산0.
 - 806 tests51.05s·mock CLI3건·pip check·wheel PASS. 출력 경고 분류 수리 포함. [검증](../test/relay-b10.md), [흐름](../architecture/spec/image-runtime-flow.md).
 - 실제 계정/품질/비용·최종 UI/렌더러·팀 인수는 미완료. Git 게시와 로컬 동기화는 [receipt](integrate-log.md)로 별도 확인한다.
+
+- B10 전달 확인: source `fb7305bfb9acc123a71092ab2bc715b402f64efa` 일반push/원격일치, local192파일일치. 다음 실API인수는 사용자 호출금지로 NOT_RUN, 릴레이 STOP_WITH_REASON. 문서 receipt는 별도커밋으로 같은브랜치에 남긴다.

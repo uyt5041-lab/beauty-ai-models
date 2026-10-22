@@ -162,3 +162,11 @@
 - flow: 오프라인 wrapper 연결PASS, 전체서비스GAP/PARTIAL. PNG2개 직접확인/HTML정적검사, 브라우저최종검증은 기존BLOCKED를유지하고우회하지않음.
 - local: 공개대상192파일동기화/byte parity PASS, 사용자파일충돌0. 기존26개백업·66개갱신, 비밀값/가중치/생성물불변.
 - publication: plan/models 일반push와 원격readback은 다음 단계에서 기록. 운영CD NOT_APPLICABLE(비활성 참조코드전달, 배포대상/요청없음).
+
+### B10 전달 확인과 다음 TODO 재검토
+
+- source publication: `fb7305bfb9acc123a71092ab2bc715b402f64efa`, origin/plan/models 동일 SHA readback PASS. tracked192파일 로컬동일, 소스폴더clean. [receipt](integrate-log.md).
+- 원본 TODO를 재확인했다. API-02·05 오프라인 구현과 API-01·03·04의 하위 소스 검증은 완료. 현재 발견된 래퍼 결함은 수리·회귀 검증했다.
+- 다음 최고 우선 간격은 실제 계정의 고정모델 접근과 API-06 제품 보존·누끼 alpha/라벨·비용/지연 인수다. 사용자 ‘호출은 아직하지말고’가 유지되므로 실행하지 않는다. 이후에는 호출 보류 해제와 운영예산 확인을 먼저 반영해야 한다.
+- SSOT 서비스 입력·다혜 LLM·카피/이미지 검토 UI·한글 renderer는 다른 담당과 연결할 서비스 작업이며, 현재 이미지 하위 래퍼 구현 완료와 구분한다.
+- **STOP_WITH_REASON**: 승인된 오프라인 래퍼 구현·검증·소스전달 완료. 다음 실제 API 검증은 명시적 호출금지에 해당한다. 타 담당 서비스 구현·로컬모델개선으로 범위를 넓혀 릴레이하지 않는다. 현재 코드와 기존결과는 보존한다.

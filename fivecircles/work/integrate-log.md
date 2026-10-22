@@ -76,3 +76,11 @@
 - 전체806 tests51.05s, 로컬신규182 tests3.68s, mock CLI3건/실제제공자0회, wheel·격리import·pip check·schema4개·설정·diff·비밀패턴 PASS.
 - 로컬공개파일192개동기화, 기존26개백업·66개갱신·충돌0·byte parity PASS. 백업은 Git 제외 outputs/relay-backup-b10-20261022에 보존했다.
 - PR·협업일지브랜치·force push·운영배포 없이 plan/models에 코드와문서를전달한다. 실제소스SHA·원격readback은 게시후receipt에기록한다.
+
+## 2026-10-22 · B10 source publication receipt
+
+- source SHA: `fb7305bfb9acc123a71092ab2bc715b402f64efa`. 일반 push `64124ed..fb7305b`, `git ls-remote --heads origin plan/models`의 SHA가 일치했다. source 게시 후 작업 폴더 clean 확인.
+- 공개 tracked192파일과 로컬 beautyAi byte parity PASS. 독립환경 신규182 tests3.68s, 전체 REPO806 tests51.05s, 모의CLI실제제공자0회. 비밀값·모델·생성물 제외.
+- Git 코드 전달 완료. 저장소에 CI workflow 없음. 운영 CD NOT_APPLICABLE: 기본 외부호출 차단 Python 래퍼와 문서 전달이며 배포대상/요청 없음.
+- 최종 HTML 브라우저 검증은 기존BLOCKED. PNG 직접/HTML정적 검증과 소스게시를 구분한다. 실계정·실품질·잔액·실제비용은 NOT_RUN.
+- 이 receipt와 TODO 재검토 결정은 별도 문서 커밋으로 같은 브랜치에 게시하며 source SHA는 위 값을 유지한다. PR·협업일지브랜치작업·force push 없음.
