@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import math
+import re
 import time
 from uuid import UUID
 
@@ -95,6 +97,77 @@ class HTTPImageGateway:
                 raise GatewayError(job.error_code or "IMAGE_JOB_FAILED", "Inference job did not succeed.")
             await asyncio.sleep(min(poll_seconds, max(0, deadline - time.monotonic())))
 
+    async def submit_and_wait(self, request: ImageRequest, *, job_id: UUID,
+                              deadline_seconds: float = 120,
+                              poll_seconds: float = 1) -> ImageJob:
+        """Submit once, then reconcile only through same-ID status reads.
+
+        One monotonic deadline covers submission, status requests and polling.
+        A missing record does not prove that the original PUT cannot still
+        commit. Expiry distinguishes an observed job from unconfirmed receipt;
+        neither outcome cancels server work or permits automatic resubmission.
+        """
+        for interval in (deadline_seconds, poll_seconds):
+            try:
+                valid = (not isinstance(interval, bool)
+                         and isinstance(interval, (int, float))
+                         and math.isfinite(interval) and interval > 0)
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise ValueError("Deadline and polling interval must be finite and positive")
+        deadline = time.monotonic() + deadline_seconds
+        # Keep the submitted payload and expected hash stable if the caller
+        # edits its original model while this operation is awaiting the server.
+        snapshot = request.model_copy(deep=True)
+        expected_hash = content_hash(snapshot)
+        observed = False
+
+        def inspect(job: ImageJob) -> ImageJob | None:
+            if job.job_id != job_id or job.request_hash != expected_hash:
+                raise GatewayError("IMAGE_PROTOCOL_ERROR", "Job response does not match submitted inputs.")
+            if job.result is not None and job.result.kind != snapshot.kind:
+                raise GatewayError("IMAGE_PROTOCOL_ERROR", "Result kind does not match the request.")
+            if job.status == "succeeded":
+                return job
+            if job.status in ("failed", "interrupted"):
+                raise GatewayError(job.error_code or "IMAGE_JOB_FAILED", "Inference job did not succeed.")
+            return None
+
+        remaining = deadline - time.monotonic()
+        if remaining > 0:
+            try:
+                async with asyncio.timeout(remaining):
+                    job = await self.submit(snapshot, job_id=job_id)
+            except (SubmissionUncertain, TimeoutError):
+                pass
+            else:
+                completed = inspect(job)
+                observed = True
+                if completed is not None:
+                    return completed
+
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                if observed:
+                    raise JobStillPending(job_id)
+                raise SubmissionUncertain(job_id)
+            try:
+                async with asyncio.timeout(remaining):
+                    job = await self.get(job_id)
+            except TimeoutError:
+                pass
+            except GatewayError as exc:
+                if exc.code != "IMAGE_JOB_NOT_FOUND" and not exc.retryable:
+                    raise
+            else:
+                completed = inspect(job)
+                observed = True
+                if completed is not None:
+                    return completed
+            await asyncio.sleep(min(poll_seconds, max(0, deadline - time.monotonic())))
+
     @staticmethod
     def _decode(response: httpx.Response, *, expected_id: UUID) -> ImageJob:
         try:
@@ -103,4 +176,10 @@ class HTTPImageGateway:
             raise GatewayError("IMAGE_PROTOCOL_ERROR", "Invalid inference response.") from exc
         if job.job_id != expected_id:
             raise GatewayError("IMAGE_PROTOCOL_ERROR", "Unexpected job ID.")
+        if (job.error_code is not None
+                and (job.status not in ("failed", "interrupted")
+                     or re.fullmatch(r"[A-Z][A-Z0-9_]{0,79}", job.error_code) is None)):
+            # A proxy or invalid peer must not turn arbitrary response text into
+            # an error code that callers may safely print. Match ledger rules.
+            raise GatewayError("IMAGE_PROTOCOL_ERROR", "Invalid job error code.")
         return job

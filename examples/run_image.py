@@ -58,8 +58,7 @@ async def run(args) -> dict:
             request = CutoutRequest(source=source, pipeline_profile_id=args.cutout_profile, pipeline_revision=revision)
             job_id = uuid4()
             print(json.dumps({"job_id": str(job_id)}), flush=True)
-            await gateway.submit(request, job_id=job_id)
-            job = await gateway.wait(job_id, expected_request=request)
+            job = await gateway.submit_and_wait(request, job_id=job_id)
             if job.status != "succeeded":
                 return job.model_dump(mode="json")
             return await json_response("POST", "/internal/v1/products/prepare", json={
@@ -84,8 +83,7 @@ async def run(args) -> dict:
             # Keep the printed ID to resolve an uncertain submission without regenerating.
             job_id = args.job_id
             print(json.dumps({"job_id": str(job_id)}), flush=True)
-            await gateway.submit(request, job_id=job_id)
-            return (await gateway.wait(job_id, expected_request=request)).model_dump(mode="json")
+            return (await gateway.submit_and_wait(request, job_id=job_id)).model_dump(mode="json")
         if args.command == "get-job":
             return await json_response("GET", f"/internal/v1/jobs/{args.job_id}")
         if args.command == "get-timing":

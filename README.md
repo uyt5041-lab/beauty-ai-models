@@ -44,7 +44,7 @@ python -m pytest -q -W error
 
 로컬 평가 도구는 `python -m beauty_ai.evaluation examples/evaluation_manifest.json --output outputs/evaluation-report.json`으로 실행합니다. 예제의 권리는 `unknown`이므로 이미지를 읽지 않고 미평가로 기록합니다. 실제 평가는 권리와 출처를 확인한 파일을 manifest 폴더 아래에 두고, 비공개 `data/`·`outputs/`에서 실행하세요. 기존 결과 파일은 덮어쓰지 않습니다.
 
-단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B7 기록](fivecircles/test/relay-b7.md)을 참고하세요. **전체 433 tests PASS + 실제 TCP/MPS 누끼·배경 CLI PASS**입니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
+단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B8 기록](fivecircles/test/relay-b8.md)을 참고하세요. **전체 521 tests PASS + 실제 TCP 응답 유실 조정 PASS**. B6/B7의 실제 MPS 누끼·배경 fixture 검증도 기록에 보존했습니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
 
 ## 2. 기능
 
@@ -53,7 +53,7 @@ python -m pytest -q -W error
 | `OpenAITextGateway` | 제품 이미지 관찰, 광고 기획·카피 후보 생성, 문맥 검수, 수정안 생성 |
 | 구조화 계약 | Pydantic 입력·출력 검증과 [JSON Schema](schemas/) 제공 |
 | `ReviewService` | 전체 카피의 규칙 검사와 LLM 검사 병합, 검토된 규칙집 확인, revision·해시로 검수 대상 식별 |
-| `HTTPImageGateway` | 내부 이미지 작업의 제출·조회·폴링, 작업 ID·입력 해시 확인, 불확실한 제출과 대기 상태 구분 |
+| `HTTPImageGateway` | 기존 제출·조회·폴링과 submit_and_wait 조정. PUT 1회·동일 ID 조회·단일 deadline, ID/hash 검사와 접수 미확인·대기 종료 구분 |
 | `inference_api.create_app` | Bearer 인증과 프로젝트 범위의 job PUT/GET·자산 업로드/조회·인증된 health 응답 |
 | `JobLedger` | SQLite WAL 기반 atomic ID/hash 등록, owner·terminal 보호, durable queued 조회, 접수→종료 wall-clock 기록 |
 | `SingleHostWorker` | 프로세스 간 POSIX 실행 잠금, 종료 확인 후 interrupted 복구, 결과 파일 검증 후 success |
@@ -96,6 +96,8 @@ python -m pytest -q -W error
 
 내부 API는 `PUT/GET /internal/v1/jobs/{job_id}`, `POST /internal/v1/assets`, `GET /internal/v1/assets/{asset_id}`를 제공합니다. 동일 프로젝트·작업 ID·입력 hash는 기존 작업을 반환하고, 같은 ID·다른 hash는 `409`입니다. 다른 프로젝트의 job·자산은 미존재와 같이 처리합니다. 접수는 DB commit 이후 응답하며, worker는 DB에서 queued 작업을 다시 찾습니다.
 
+`HTTPImageGateway.submit_and_wait`는 제출과 조회를 하나의 monotonic deadline으로 묶습니다. PUT은 한 번만 보내며 응답이 유실되면 같은 ID로 GET합니다. 404만으로 새 작업을 만들지 않습니다. 유효 job을 끝까지 보지 못하면 `SubmissionUncertain`, 접수는 확인했지만 완료를 확인하지 못하면 `JobStillPending`입니다. 두 상태 모두 서버 취소·실패를 뜻하지 않습니다. 서버 오류 코드는 제한한 형식·상태만 허용하며 임의 원문은 프로토콜 오류로 거절합니다. 기존 `submit/get/wait`는 그대로 사용할 수 있습니다. CLI prepare/render도 이 조정 메서드를 사용합니다.
+
 `POST /internal/v1/products/prepare`, `GET /internal/v1/products/{candidate_id}`, `PUT /internal/v1/products/{candidate_id}/approval`로 후보 준비·조회·승인을 수행합니다. 준비는 항상 미승인 상태이며 확인값 `true`와 정확한 candidate hash가 필요합니다. 자산·구도가 바뀌면 새 승인이 필요합니다. 저장된 승인은 호스트의 사용자 확인 전달 기록이며 사람 신원·최종 품질 인증이나 현재 편집 선택을 뜻하지 않습니다.
 
 `GET /internal/v1/health`는 인증 후 해당 앱의 worker 구성·실행 상태·안전한 fatal code를 알려줍니다. worker fatal은 `503`이며 `model_readiness`는 `not_assessed`입니다. health 성공은 모델 준비나 이미지 품질 증거가 아닙니다.
@@ -117,7 +119,7 @@ python -m pytest -q -W error
 - **제품 승인·편집:** 정확한 snapshot 승인과 늦은 result attach 차단을 구현했습니다. 실제 사용자 신원·승인 UI·편집 서비스와 최종 품질 승인은 별도로 연결해야 합니다.
 - **검수 데이터:** 출처·버전·검토 이력이 있는 규칙집, 제품 사실 확인, 카피 수정 후 재검수·DB revision 경쟁 검사가 필요합니다.
 - **품질·실환경:** 꽃 표현이 약하고 생성 제품 잔상이 관찰돼 광고 품질을 승인하지 않았습니다. 측정 도구는 구현했지만 실제 고정 평가셋·권리 근거·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실사진 모델 품질·반복 지연·VRAM·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
-- **운영:** 응답이 불확실한 제출의 job ID/hash 조회·조정 흐름, 실제 네트워크 접근 범위·비밀값 관리·배포·예산 상한·모델 모니터링을 구성해야 합니다. 로컬 HTTP/파일/DB 테스트와 운영 GPU 검증을 구분합니다.
+- **운영:** 제출 조정 메서드를 실제 UI의 대기/재조회와 운영 proxy에 연결하고, 네트워크 접근 범위·비밀값 관리·배포·예산 상한·모델 모니터링을 구성해야 합니다. 로컬 HTTP/파일/DB 테스트와 운영 GPU 검증을 구분합니다.
 
 ## 5. 하지 말 것
 

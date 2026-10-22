@@ -1,6 +1,8 @@
 flowchart TB
     A["A · 자산 검증 / 저장<br/>LocalAssetStore · 파일 / DB"]:::green
     B["B · 인증 internal API / WAL ledger<br/>project scope · atomic ID/hash"]:::green
+    O["제출 조정 / submit_and_wait<br/>PUT 1회 · 동일 ID GET · 하나의 deadline"]:::green
+    Y["기한 종료: 미관찰 / 관찰됨<br/>Uncertain / Pending · 취소 아님"]:::gray
     W["단일 호스트 worker<br/>POSIX 실행 잠금 · queued 복구"]:::green
     U["uploaded-alpha / 1<br/>이미 투명한 RGBA 입력만 처리"]:::gray
     C["C · BiRefNetLite 실제 누끼<br/>고정 revision / MPS fixture 검증"]:::green
@@ -19,6 +21,8 @@ flowchart TB
     V["별도 로컬 평가 입력<br/>버전 / 권리 선언 / 정답 mask"]:::gray
     K["평가 manifest CLI / mask·픽셀 지표<br/>권리 미확인 건너뜀 / 품질 NOT_ASSESSED"]:::green
     L["JobTiming API / CLI<br/>접수→terminal wall-clock / GPU 시간 아님"]:::green
+    O --> B
+    O --> Y
     V --> K -.-> J
     R --> L
     Q --> X

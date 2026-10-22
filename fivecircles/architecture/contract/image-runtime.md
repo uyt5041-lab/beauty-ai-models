@@ -120,3 +120,12 @@
 - pipeline output_type=np의float배열을finite/shape/range검사하고정규RGB로변환. 생성씬위에승인제품RGBA재합성, opaque픽셀일치확인후3layer저장. 부분투명/생성안전검사없음/품질미승인경고항상반환. SDXL기본pipeline에NSFWchecker가없으므로안전검사완료로표시하지않음.
 - 런타임 BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint로선택, BEAUTY_MODEL_ROOT/DEVICE공유. 기본bright-template유지. CLI render/select에 --background-profile과 --prompt <ImagePromptJSON> 추가. sampleprompt는밝은꽃소품장면을위한명시적예제이며LLM생성으로표시하지않음.
 - OpenRAIL++-M모델출처/라이선스를보존하고배포자가용도제한·고지를검토하도록기록. Git에는코드/manifest/문서만, 가중치/이미지/팀정보없음. 실제로컬실행·경과시간·메모리관찰을기록하되실제품사진품질·GCP CUDA·팀인수는별도다.
+
+## 배치 8 · 제출 응답 유실 조회·조정
+
+- `HTTPImageGateway.submit_and_wait(request, *, job_id, deadline_seconds=120, poll_seconds=1) -> ImageJob`를 추가한다. 기존 submit/get/wait 의미와 wire/hash는 바꾸지 않는다. 전체 작업을 시작할 때 하나의 monotonic 기한을 만들고 PUT은 한 번만 보낸다.
+- PUT의 전송 오류·5xx·408·425·429 또는 응답 대기 초과는 같은 job ID로 GET을 반복해 조정한다. 새 ID 생성·자동 PUT 재전송·취소를 수행하지 않는다. 조회404만으로 미접수를 확정하지 않으며 기한 내 조회한다.
+- 응답을 얻으면 기대 입력hash와job ID·result kind를 검사한다. succeeded만결과반환, failed/interrupted는기존오류코드반환. 입력불일치/프로토콜오류/인증거절은기다리며숨기지않는다.
+- 기한까지 올바른 job 레코드를 한 번도 확인하지 못하면 SubmissionUncertain을 유지한다. 접수된 job을 확인했으나 완료를 확인하지 못하면 JobStillPending이다. 타임아웃·클라이언트종료를GPU실패나취소로기록하지않는다.
+- CLI prepare/render는 출력한 ID를 유지하며 새 함수를 사용한다. 사용자가 계속 조회할 수 있도록 ID와 안전한오류코드를남기고prompt/토큰/서버원문은출력하지않는다.
+- 검증 예: 서버가 PUT을commit한뒤클라이언트가응답을잃어도같은ID조회→같은결과, PUT1회·processor1회. GET404/일시오류가계속되면재생성없이불확실상태로종료. 실제GPU/운영프록시장애검증은별도다.

@@ -93,7 +93,21 @@
 4. Implementation: COMPLETED. 모델준비와adapter파일분리, root runtime/CLI/실제실행통합.
 5. Validation: 전체433tests9.39s, 실제MPS/TCPCLI512x512 PASS, opaque770/mismatch0/SafeZone정확/다운로드hash일치. 배경14700.575ms는load/queue/storage포함. wheel/격리import/flow브라우저 PASS.
 6. Repair: 전부검정원출력저장차단. 실라이브러리에서제거된pipeline.enable_vae_tiling호출을vae.enable_tiling으로수정하고실API회귀2개추가. 최초2실패증거보존후세번째실행PASS. 꽃부족/제품잔상은광고품질미완료로기록.
-7. Push / Publication: PENDING. 로컬실행/Git전달, GCP배포NOT_RUN.
+7. Push / Publication: b71fadcaf22bebd67c9089c67d452e449d3596ea 일반push/원격SHA일치. 로컬141파일동일/433tests19.17s/모델파일검증PASS. GCP배포NOT_RUN.
 8. Closeout Report: B7 HTML/PNG/browser(Task Space143) PASS, GAP/PARTIAL. 실사진광고품질/팀renderer/사용자인수GAP유지.
-9. Relay: 실제평가데이터/공동인수의다음의존성확인.
+9. Relay: CONTINUE_WITH_NEXT_FORM. 동일job ID 제출응답조회·조정, 9점.
+10. Final Ledger: Doc/Implementation/Validation/Repair/Report/Push 완료. 아래 B8 폼.
+
+## B8 · 불확실 제출의 같은 작업 조회
+
+0. Scope Intake: native,plan/models. 기존 TODO4-A 응답유실/SubmissionUncertain 조정. gateway와통합검증을분리하고root가CLI/문서/Git을연결.
+1. Start Report: B7최종flow/receipt를사용. 상류B 제출응답유실경계PARTIAL.
+2. Relay Unit Selection: 3+3+2+2-1=9. 자동재제출없이같은ID/hash확인으로중복생성방지.
+3. Doc / Contract: image-runtime B8 COMPLETED. 기존submit/get/wait계약유지, 별도bounded orchestration함수와CLI연결.
+4. Implementation: COMPLETED. gateway submit_and_wait·CLI prepare/render 연결.
+5. Validation: 전체521tests15.01s. 신규84unit·실제TCP4. commit뒤응답유실주입→same-ID복구, PUT1회/processor1회, 파일hash/프로젝트권한/기한후worker계속실행PASS. wheel/격리importPASS.
+6. Repair: 실패error_code원문노출가능경계를ASCII안정코드80자/실패상태검사로제한. 정상코드/legacy경로회귀·재검토PASS.
+7. Push / Publication: PENDING. 로컬클라이언트변경, 운영배포NOT_APPLICABLE.
+8. Closeout Report: B8 HTML/PNG/browser(Task Space144) PASS, GAP/PARTIAL. 실제GCP/품질/서비스인수GAP유지.
+9. Relay: 반복/크기별실행·단계별측정후보점검.
 10. Final Ledger: PENDING.

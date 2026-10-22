@@ -280,13 +280,15 @@ pi는 모델 선정·누끼·배경 생성·제품 레이어 재합성·이미�
 
 **B2 검증 범위:** 아래 완료 항목은 단일 호스트·공유 로컬 파일시스템·동기 테스트 processor의 파일/DB/HTTP 및 프로세스 종료/잠금 검증이다. 실제 GPU·다중 VM·운영 네트워크·모델 품질 검증은 포함하지 않는다. 실행 중 join timeout에는 잠금을 유지하며, OS가 회수한 실행 잠금 획득 후에만 이전 running을 interrupted로 처리한다. [근거](../fivecircles/test/relay-b2.md).
 
+**B8 검증 범위:** `submit_and_wait`의 단일 deadline·PUT 1회·동일 ID 조회를 로컬 실제 TCP 서비스와 응답 유실 주입으로 검증했다. 404는 미접수 증거가 아니며 자동 PUT 재전송·새 ID 발급은 하지 않는다. 유효 job 미관찰은 Uncertain, 관찰 뒤 미완료는 Pending이다. 기한 뒤 서버 작업은 계속 실행돼 기존 ID로 완료 조회한다. 운영 proxy·사용자 UI·GCP 검증은 별도다. [근거](../fivecircles/test/relay-b8.md).
+
 - [ ] private inference API의 인증과 네트워크 접근 범위를 구성하고, 자산 소유권을 확인한다.
 - [x] 같은 작업 ID·같은 입력은 저장된 같은 작업으로 응답하고, 같은 ID·다른 입력은 409로 거절한다.
 - [x] 입력 hash와 작업 레코드를 원자적으로 저장한 뒤 접수 응답을 보내고, 동시 제출에서도 작업이 한 번만 등록되게 한다.
 - [x] `queued → running → succeeded/failed/interrupted` 상태와 저장 주체를 정의한다. `interrupted`는 중단을 확인한 경우에만 적용한다.
 - [ ] 프로세스가 여러 개여도 GPU 실행 제한과 작업 소유권이 유지되도록 한다. API 프로세스별 semaphore만으로 보장하지 않는다.
-- [ ] 응답 유실·전송 오류·5xx·408·425·429 제출 응답은 접수 여부가 불명확할 수 있으므로, 같은 ID 조회로 조정한다.
-- [ ] `SubmissionUncertain` 뒤 새 작업 ID를 즉시 발급하지 않는다. 재조회 결과·서버 권위·재제출 조건을 정하고 중복 실행 여부를 확인한다.
+- [x] 응답 유실·전송 오류·5xx·408·425·429 제출 응답은 접수 여부가 불명확할 수 있으므로, 같은 ID 조회로 조정한다.
+- [x] `SubmissionUncertain` 뒤 새 작업 ID를 즉시 발급하지 않는다. 재조회 결과·서버 권위·재제출 조건을 정하고 중복 실행 여부를 확인한다.
 - [x] `JobStillPending`은 클라이언트 대기 시간이 끝났다는 뜻으로 처리한다. GPU 취소·실패로 기록하지 않는다.
 - [x] 워커 재시작 시 DB와 실제 작업 상태를 대조하고, 실행 중이던 작업의 실패·중단·재시도 정책을 명시한다.
 - [x] 작업 commit 직후 대기열 등록 전에 프로세스가 종료돼도, 시작 시 저장된 `queued` 작업을 다시 찾아 실행한다.
@@ -322,11 +324,12 @@ pi는 모델 선정·누끼·배경 생성·제품 레이어 재합성·이미�
 | `submit` | `PUT /internal/v1/jobs/{job_id}` | 접수 응답은 이미지 완성 증거가 아님. 서버가 durable idempotency를 구현해야 함 |
 | `get` | `GET /internal/v1/jobs/{job_id}` | 응답 스키마와 작업 ID를 검사. 기대 요청을 받지 않으므로 입력 hash·작업 종류 대조는 별도 필요 |
 | `wait` | 기대 요청을 받아 `get`을 반복 | 기대 입력 hash와 성공 결과 종류를 대조하며, 대기 종료와 작업 종료를 구분 |
+| `submit_and_wait` | 하나의 deadline·PUT 1회·동일 ID GET | 404만으로 미접수/재제출 판정하지 않음. 유효 job 미관찰은 SubmissionUncertain, 관찰 후 미완료는 JobStillPending |
 
 - `IDEMPOTENCY_CONFLICT`: 같은 작업 ID가 다른 입력에 사용됐다.
 - `SubmissionUncertain`: 접수 여부를 확정할 수 없다. 같은 ID의 상태를 확인한다.
 - `JobStillPending`: 클라이언트의 대기 시간이 끝났다. 서버 작업은 계속 실행 중일 수 있다.
-- `IMAGE_JOB_NOT_FOUND`: 조회 시 서버에서 작업을 찾지 못했다. 불명확한 제출과 연관된 경우 재제출 정책에 따라 조정한다.
+- `IMAGE_JOB_NOT_FOUND`: 조회 시 서버에서 작업을 찾지 못했다. 불명확한 제출과 연관된 경우 `submit_and_wait`는 같은 ID로 제한 시간 안에서 재조회한다. 자동 PUT 재전송·새 ID 발급은 하지 않는다.
 - `IMAGE_PROTOCOL_ERROR`: ID·hash·타입·응답 구조 등 계약 불일치다. 정상 결과로 사용하지 않는다.
 
 현재 프로토콜에 취소 API·진행률·업스케일 작업 종류는 없다. 필요하면 담당과 계약을 추가하고 구현·검증한다. 이미 제공되는 기능으로 설명하지 않는다.
@@ -377,3 +380,5 @@ pi는 모델 선정·누끼·배경 생성·제품 레이어 재합성·이미�
 2026-10-22 B6: 고정 BiRefNetLite 4개 파일 검증·선택 의존성·명시 장치 adapter를 구현했다. 전체 **339 tests PASS(4.30s)**와 실제 TCP CLI/MPS 누끼 실행을 별도로 확인했다. 합성 병 512×512의 RGB 유지·alpha 0..255·RGBA/마스크·미승인 후보·수동 경고가 근거다. 2-A 기존 항목 2개만 추가 체크했다(누적 27개). 실사진 품질·배경 모델·CUDA·최종 품질·팀 인수는 미완료다. 다음 B7 후보는 로컬 실제 배경 모델이다. [검증](../fivecircles/test/relay-b6.md) · [설치/이전](localModelSetup.md).
 
 2026-10-22 B7: 고정 SDXL fp16 20개 파일 준비·검증, inpaint adapter·두 tokenizer·제품/여백 복원과 CLI를 연결했다. 전체 **433 tests PASS(9.39s)**. 실제 API 변경으로 실패한 2회를 보존·수리한 뒤 세 번째 MPS 실행에서 512×512 기술 검증을 통과했다. 2-C 기존 생성·보호 조건 2개만 추가 체크했다(누적 29개). 꽃 표현·제품 잔상 문제, 실사진·반복/크기·단계 trace·CUDA·팀 인수는 남아 있다. [B7 기록](../fivecircles/test/relay-b7.md).
+
+2026-10-22 B8: 기존 submit/get/wait를 유지한 동일 ID 제출 조회·조정 메서드와 CLI를 연결했다. 전체 **521 tests PASS(15.01s)**, 신규 84 unit + 4 실제 TCP 시험으로 commit 뒤 응답 유실·PUT/처리 각 1회·404/기한/오류 경계를 확인했다. 서버 오류 코드의 임의 원문 노출을 제한 형식·실패 상태 검사로 수리했다. 4-A 기존 항목 2개만 추가 체크했다(누적 31개). 로컬 반복/크기/단계 trace·실사진 품질·CUDA·렌더러·팀 인수는 별도다. [B8 기록](../fivecircles/test/relay-b8.md).

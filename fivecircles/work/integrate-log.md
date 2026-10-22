@@ -46,3 +46,10 @@
 - 코드339tests4.30s, 실제MPS/TCPCLI BiRefNetLite합성fixture, 해시검증/평가연결, wheel/isolatedlazyimport, flow/browserPASS.
 - 로컬beautyAi132tracked파일일치, 별도Python3.11가상환경설치. 로컬339tests8.86s/설정/가중치검증PASS. 가중치는models/,실행결과는outputs/로Git제외.
 - 로컬실누끼실행증거이며GCP배포NOT_RUN. 실제제품사진품질/배경AI/팀인수는미검증.
+
+## 2026-10-22 · B7 publication
+
+- source SHA: `b71fadcaf22bebd67c9089c67d452e449d3596ea`. FF 확인 후 일반 push, 원격 plan/models SHA 일치.
+- 전체433 tests9.39s, 실제 MPS 누끼·SDXL/TCP CLI512×512, 결과 파일/hash·제품770픽셀·Safe Zone, 최종wheel/lazy import·flow/browser PASS.
+- 로컬 beautyAi141 tracked파일 동일 반영, 기존30파일 변경/추가 전 백업. 독립 로컬 환경433 tests19.17s·pip check·두 모델 파일 검증 PASS. 모델/결과/캐시는 Git 제외.
+- 코드 publication과 로컬 실행 증거다. GCP 배포 NOT_RUN. 광고 품질·실사진·팀 인수는 미검증이며 꽃 표현 부족·제품 잔상을 기록했다.

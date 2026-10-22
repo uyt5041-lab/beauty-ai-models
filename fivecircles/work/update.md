@@ -51,3 +51,10 @@
 - 고정 SDXL fp16 파일·inpaint adapter·두 tokenizer·제품/여백 복원·CLI를 연결했다. TODO 2-C의 2개만 추가 체크했다(누적 29개).
 - 전체 433 tests PASS(9.39s), 실제 MPS 512 fixture의 opaque 770/mismatch 0·Safe Zone exact·3개 레이어 PASS. 제거된 VAE API로 실패한 2회를 수리·보존했다. [검증](../test/relay-b7.md).
 - 꽃 표현 부족·제품 잔상이 있어 품질/안전은 NOT_ASSESSED. 다음 로컬 후보는 반복/크기·단계 trace·제출 조회 조정이며 실제 품질·CUDA·팀 인수는 별도다.
+
+
+## 2026-10-22 · 릴레이 B8
+
+- 단일 deadline·PUT 1회·동일 ID GET의 제출 조정과 CLI를 연결했다. 원본 TODO 4-A의 2개만 추가 체크했다(누적 31개).
+- 전체 521 tests PASS(15.01s), 신규 84 unit + 4 실제 TCP 시험으로 commit 뒤 응답 유실·단일 실행·미관찰/관찰 후 기한 종료를 확인했다. 오류 원문 노출을 코드 형식·상태 검사로 수리했다. [검증](../test/relay-b8.md).
+- 다음 후보는 로컬 반복/크기·단계별 trace다. 운영 proxy·실사진 품질·CUDA·렌더러·팀 인수는 별도다.

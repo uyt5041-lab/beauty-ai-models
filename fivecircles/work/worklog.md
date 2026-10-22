@@ -72,3 +72,12 @@
 - 기록: background ledger 14700.575ms/CLI 15.343s는 로딩·대기·파일 포함. MPS 메모리는 작업 후 snapshot이며 peak 아님.
 - 문서: README 5절·설치 안내·원본 TODO 2개 체크(누적 29개)·흐름/브라우저 비교. 꽃 표현 부족·제품 잔상으로 광고 품질 미평가.
 - 다음: 로컬 반복·크기·단계 trace·응답 유실 조회/조정 후보가 남아 있다. 실사진·CUDA·팀 인수는 별도. [검증](../test/relay-b7.md).
+
+
+## 2026-10-22 · B8 · 구현/검증
+
+- 구현: HTTPImageGateway.submit_and_wait·CLI. 요청 snapshot과 단일 monotonic deadline, PUT 1회·동일 ID GET, 자동 재제출/취소 없음.
+- root 검증: 전체 521 tests PASS(15.01s, -W error), 신규 84 unit + 4 실제 TCP 응답 유실/기한 시험, wheel·격리 lazy import PASS. DB commit 뒤 유실 주입에서도 PUT/processor 각 1회였다.
+- 수리: failed.error_code의 임의 원문 노출 공백을 제한한 ASCII 코드·길이·실패 상태 검사로 막고 legacy 경로도 회귀했다. 정상 서버 코드는 유지한다.
+- 문서: README 5절·원본 TODO 2개 체크(누적 31개)·흐름/브라우저 비교. 실제 GPU 재호출·운영 proxy·광고 품질을 이번 검사로 완료하지 않는다.
+- 다음: 로컬 cold/warm·크기·단계 trace와 메모리 관찰 계약. 실사진·CUDA·렌더러·팀 인수는 별도. [검증](../test/relay-b8.md).

@@ -2,7 +2,7 @@
 
 ## 최신 릴레이 검증 · 2026-10-22
 
-- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **433 passed in 9.39s**.
+- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **521 passed in 15.01s**.
 - B1 자산·캔버스72 → B2 API·작업 저장/복구112 → B3 승인·제한 profile·로컬 template148 → B4 프롬프트·편집/cache201 → B5 평가·작업 시간280 → B6 모델준비·누끼어댑터339 → B7 SDXL 고정 파일·어댑터·CLI433로 확장했다. 자동 테스트는 실제 가중치를 내려받지 않으며 실모델 smoke는 아래에 구분한다.
 - 실제 파일/SQLite, 프로세스 경쟁·강제 종료 복구, 실제 TCP API와 CLI 6명령을 검증했다. 512×512 결과 PNG를 저장·다운로드했다.
 - [B1](fivecircles/test/relay-b1.md), [B2](fivecircles/test/relay-b2.md), [릴레이 진행](fivecircles/work/relay.md).
@@ -22,6 +22,10 @@
 - 실행 후 MPS allocated7,135,957,248B, driver10,240,196,608B를 관찰했다. 사후 snapshot이며 최대 메모리·CUDA VRAM이 아니다. 런타임의 upstream VAE upcast FutureWarning은 기록됐고 결과 배열의 유한 값·범위 검사와 파일 검증을 통과했다.
 - 결과를 직접 열어 보니 꽃 표현이 부족하고 생성된 제품 잔상이 보였다. 기술 실행 PASS를 광고 품질 합격으로 확대하지 않는다. 합성 테스트 확인만 수행했으며 실사진 품질·안전성·사람 인수는 NOT_ASSESSED다.
 - B7 최종 wheel 생성·격리 import PASS, SHA256 `614b5570fc177d22dde87e4fb10c60018a6119ebe7fce99883f03dca1b2d673c`. 기본 import는 torch·diffusers를 로딩하지 않는다.
+- B8: 동일 ID 제출·조회 조정84개와 실제TCP 응답 유실4개를 추가했다. 실제 서버가 SQLite에 commit한 뒤 전송 경계에서 응답을 유실시켰고, PUT1회·fixture processor1회·동일ID조회·파일hash·프로젝트권한을 검증했다. 이는 실제GPU 장애나 운영프록시 인수 검증이 아니다.
+- B8 기한 종료: 작업 확인 전 SubmissionUncertain과 확인 후 JobStillPending을 구분했다. 기한이 지나도 원래 worker는 계속 실행하고, 같은ID로 후속 조회해 결과를 받았다. 새ID·자동PUT·취소는 수행하지 않았다.
+- B8 검토 수리: 자유문자열 error_code가 CLI로 출력될 수 있던 경계를 ASCII 안정 코드와 실패상태 검사로 제한했다. 잘못된 코드/상태는 IMAGE_PROTOCOL_ERROR, 정상코드는 유지한다. unit·실TCP·상호검토·전체회귀 PASS.
+- B8 wheel 생성·격리 lazy import PASS, SHA256 `8b11c376e19eecdd4eb1dac8ffd4e69f8c0775abc1687f191a55b299ac1f4d43`.
 
 ---
 
