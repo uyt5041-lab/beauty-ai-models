@@ -190,3 +190,31 @@ python -m examples.prepare_product product-rgba.png visual.json \
 업로드를 정규화하고 제품 후보·보호 마스크·흰 배경의 합성 검증 preview를 저장합니다. 반환 자산은 해당 프로젝트에서만 읽을 수 있습니다. `needs_approval=true`이며 실제 누끼/배경 AI나 사용자 승인을 수행하는 명령은 아닙니다. 입력 사진과 생성 파일은 Git에서 제외합니다.
 
 일별 계획은 마일스톤 안내이며 의존성이 준비된 작업은 먼저 완료할 수 있습니다. [현재 구현과 남은 흐름](fivecircles/architecture/spec/image-runtime-flow.html)을 참고하세요.
+
+## 승인 절차가 있는 로컬 이미지 서버 (B3)
+
+이 서버는 기존 투명 PNG를 제품 레이어로 받고 밝은 배경 템플릿을 만듭니다. 사진에서 제품을 분리하는 누끼 모델이나 생성형 배경 모델은 실행하지 않습니다. RGB·완전 불투명 입력에는 `MODEL_UNAVAILABLE`을 반환합니다.
+
+루트에서 `python -m pip install -e '.[inference]'`로 설치합니다. `BEAUTY_PROJECT_ID`에는 UUID, `INFERENCE_INTERNAL_TOKEN`에는 32자 이상의 무작위 비밀값을 설정합니다. `BEAUTY_STORAGE_ROOT`의 기본값은 Git 제외 경로 `outputs/inference`입니다. 재시작할 때 같은 저장 경로와 프로젝트 UUID를 사용합니다. `.env`를 자동으로 읽지 않습니다.
+
+```bash
+python -m beauty_ai.inference_runtime
+```
+
+기본 주소는 `127.0.0.1:8001`입니다. 호스트 로그인·TLS·운영 네트워크·GPU 준비는 별도입니다. `GET /internal/v1/health`는 인증이 필요하며, 로컬 worker 상태와 오류만 반환합니다. `model_readiness: not_assessed`는 모델 검증을 하지 않았다는 뜻입니다.
+
+클라이언트 터미널에도 같은 `INFERENCE_INTERNAL_TOKEN`과 `INFERENCE_BASE_URL=http://127.0.0.1:8001`을 설정합니다. 서버와 클라이언트가 같은 비밀값을 사용하되 코드·Git·로그에는 넣지 않습니다.
+
+```bash
+python -m examples.run_image prepare outputs/product-cutout.png examples/bright_visual.json
+python -m examples.run_image download <candidate_product_rgba_asset_id> outputs/candidate.png
+# candidate.png의 제품 경계·크기·위치를 사람이 확인한 다음에만 실행
+python -m examples.run_image approve <candidate_id> <candidate_hash>
+python -m examples.run_image render <candidate_id> --job-id <new_uuid> --seed 42
+python -m examples.run_image get-job <job_id>
+python -m examples.run_image download <composed_preview_asset_id> outputs/preview.png
+```
+
+`prepare` 결과는 `approved=false`입니다. 승인 hash가 다르면409, 미승인 배경 제출도409입니다. `approve`는 호스트가 사용자 확인을 전달했다는 기록이며, 최종 광고·문구·법률·이미지 품질 승인이 아닙니다. 파일 저장은 덮어쓰기 없이 수행합니다. 제출 응답이 유실되면 출력된 job ID를 조회하고 같은 ID를 유지합니다.
+
+고정 프로필은 `uploaded-alpha/1`과 `bright-template/1`입니다. 템플릿의 style은 `bright-ad/1`, layout은 `product-right/1`이며 작업 해상도는256~1024,8의 배수입니다. 설정·임의 모델경로는 사용자 요청으로 바꾸지 않습니다. `scene_underlay`, 승인 `product_rgba`, `composed_preview`를 각각 조회할 수 있습니다. `TEMPLATE_NOT_AI_GENERATION`·`MANUAL_QUALITY_REVIEW_REQUIRED` 경고를 숨기지 않습니다.

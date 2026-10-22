@@ -29,3 +29,11 @@
 - 검증: 전체 112 tests PASS(8.52s), health API 8 tests PASS(2.31s). 실제 loopback TCP/SQLite/파일 및 다중 프로세스 종료/복구 검증.
 - 범위: 단일 호스트 동기 테스트 processor. 실제 GPU·외부 배포·광고 품질·팀 인수는 미검증. [B2 기록](../test/relay-b2.md).
 - 문서: README의 5개 절 유지, 이미지 TODO 로컬 신뢰성 7개 추가 체크, 목표/현재 흐름 갱신. 다음 B3 profile·승인·adapter.
+
+## 2026-10-22 · B3 · 구현/검증
+
+- 구현: product_approval.py·local_processor.py·inference_runtime.py, 승인 API 및 단계별 CLI. 기존 wire/hash 유지.
+- 검증: root 전체 148 tests PASS(12.14s), 담당 관련 35 tests PASS(3.95s), 별도 서버 프로세스와 TCP CLI 6단계/실제PNG PASS.
+- 검토/수리: 명시적 확인/hash/project/파일/geometry·등록/실행 재검증 확인. 변조 자산 테스트의 기대코드를 승인 경계에 맞춤. [B3 검증](../test/relay-b3.md).
+- 범위: 기존 투명 RGBA·로컬 template이며 실제 AI 모델을 호출하지 않았다. 사람 신원/품질 인증·현재 편집 revision·GPU·렌더러·팀 인수는 남아 있다.
+- 문서: README5절 유지, 이미지 TODO4개 추가 체크, 목표/현재 흐름 및 다음 B4 점수표 갱신.

@@ -24,7 +24,7 @@
 ## 구현 릴레이 (날짜는 대기 조건 아님)
 
 - [x] B1 자산 파일/DB·캔버스·보존 검사 구현 및 72 tests/CLI 검증. [원본 완료 항목](../../docs/imageTodo.md), [검증](../test/relay-b1.md).
-- [ ] B2 영속 작업 API·원자적 멱등성·단일 호스트 worker 복구.
-- [ ] B3 profile·승인·실행 연결 및 결과 파일 검증.
+- [x] B2 영속 작업 API·원자적 멱등성·단일 호스트 worker 복구. 112 tests 및 원격8cb6402 확인.
+- [ ] B3 profile·승인·실행 연결 및 결과 파일 검증. 로컬148 tests·CLI PASS, publication 마무리 중.
 - [ ] B4 revision/캐시·평가/인계, 남은 LLM 공통 경계.
 - [ ] 실제 GPU·모델 품질·팀 인수: 실행 환경/공동 확인 근거 필요.

@@ -23,7 +23,21 @@
 4. Implementation: ledger/worker/API 파일 분리, COMPLETED.
 5. Validation: 전체 112 tests PASS. SQLite 동시 프로세스·복구·worker 경쟁·HTTP 인증/범위·실제 loopback smoke PASS.
 6. Repair: validation loc의 임의 사용자 필드명 노출 제거 및 회귀 PASS. worker health에 fatal 상태 노출.
-7. Push / Publication: PENDING. 로컬 서버/라이브러리 코드 publication은 Git. 운영 GPU 배포는 이 배치의 완료 기준에 포함하지 않음.
+7. Push / Publication: 8cb64029d79ea42a6b9c4aefeaee448656bea41a 일반 push 및 원격 SHA 일치. 운영 CD NOT_APPLICABLE (로컬 API 참조 구현).
 8. Closeout Report: relay-b2.md 및 B2 흐름 HTML/PNG/브라우저 검증 PASS. 전체 흐름은 실모델/승인/렌더러 GAP 유지.
-9. Relay: B2 검증/반영 뒤 B3 profile/승인/processor 평가.
+9. Relay: CONTINUE_WITH_NEXT_FORM. 아래 B3 profile/승인/processor, 점수9.
+10. Final Ledger: Doc/Implementation/Validation/Repair/Push/Report 완료. 실모델/네트워크/팀 인수 GAP.
+
+## B3 · 승인 제품과 서버 프로필 기반 로컬 실행
+
+0. Scope Intake: native, plan/models. approval/store와 profile/processor를 파일별 위임하고 root가 API/CLI 통합·검증·Git을 맡는다.
+1. Start Report: B2 flow score 기준 E 승인→F 실행 연결은 GAP. 실제 모델 선택·GPU 인증과 사람의 품질 판정은 별도.
+2. Relay Unit Selection: 3+3+2+2-1=9. 승인 candidate 저장/명시적 승인/서버 profile과 alpha입력+template processor 연결.
+3. Doc / Contract: image-runtime B3 절, COMPLETED. 기존 job wire/hash는 유지.
+4. Implementation: COMPLETED. 후보·승인 API/SQLite, 고정 profile, local processor, CLI.
+5. Validation: 전체148 tests PASS, 준비/승인/실행/재시작 E2E, 실제 TCP CLI 6명령과512x512PNG PASS.
+6. Repair: 변조 자산 test 기대코드를 승인 경계의 INVALID_IMAGE_REQUEST로 맞춤. 제품 거절 동작은 처음부터 정상.
+7. Push / Publication: PENDING. Git 코드 전달, 운영 CD NOT_APPLICABLE (로컬 template runner).
+8. Closeout Report: relay-b3.md, B3 flow HTML/PNG/screenshot PASS. 전체목표GAP/PARTIAL.
+9. Relay: B4 프롬프트 버전 수신·편집revision·프로젝트 캐시 재평가.
 10. Final Ledger: PENDING.

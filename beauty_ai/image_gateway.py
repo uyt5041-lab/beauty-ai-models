@@ -16,7 +16,7 @@ class HTTPImageGateway:
 
     Required server semantics: durable, idempotent PUT; same ID + changed payload => 409;
     acknowledge only AFTER commit; a single GPU executor; GET is safe to retry.
-    This package does not implement that GPU server or its durable ledger.
+    The local runtime supplies the durable ledger; real GPU adapters are separate.
     """
     def __init__(self, client: httpx.AsyncClient):
         # Configure base_url and the internal authentication header at application startup.
@@ -34,6 +34,14 @@ class HTTPImageGateway:
             # Submission may have committed even if a proxy failed to acknowledge it.
             raise SubmissionUncertain(job_id)
         if response.status_code == 409:
+            try:
+                body = response.json()
+                detail = body.get("detail") if isinstance(body, dict) else None
+                code = detail.get("code") if isinstance(detail, dict) else None
+            except ValueError:
+                code = None
+            if code in ("PRODUCT_APPROVAL_REQUIRED", "PRODUCT_APPROVAL_CONFLICT"):
+                raise GatewayError(code, "The exact product layer and layout need explicit approval.")
             raise GatewayError("IDEMPOTENCY_CONFLICT", "Job ID already belongs to different inputs.")
         if not response.is_success:
             raise GatewayError("IMAGE_SUBMISSION_REJECTED", f"Inference HTTP {response.status_code}")

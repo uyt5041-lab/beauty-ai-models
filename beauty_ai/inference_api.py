@@ -9,18 +9,31 @@ from uuid import UUID
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
-from pydantic import Field, TypeAdapter, ValidationError
+from pydantic import Field, StrictBool, TypeAdapter, ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from .assets import LocalAssetStore
-from .contracts import BackgroundRequest, CutoutRequest, ImageJob, ImageRequest, ImageResult
+from .contracts import (AssetRef, BackgroundRequest, Contract, CutoutRequest, ImageJob,
+                        ImageRequest, ImageResult, VisualBrief)
 from .errors import GatewayError
 from .image_worker import SingleHostWorker
 from .job_ledger import JobLedger
+from .product_approval import ProductApprovalStore
 
 
 _REQUEST = TypeAdapter(Annotated[CutoutRequest | BackgroundRequest, Field(discriminator="kind")])
 _MAX_JOB_BYTES = 64 * 1024
+
+
+class PrepareProduct(Contract):
+    source: AssetRef
+    cutout: AssetRef
+    visual: VisualBrief
+
+
+class ApproveProduct(Contract):
+    candidate_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    confirmed: StrictBool
 
 
 async def _read_limited(request: Request, limit: int) -> bytes:
@@ -34,7 +47,9 @@ async def _read_limited(request: Request, limit: int) -> bytes:
 
 def create_app(ledger: JobLedger, assets: LocalAssetStore,
                credentials: Mapping[str, UUID],
-               processor: Callable[[ImageRequest, UUID], ImageResult] | None = None) -> FastAPI:
+               processor: Callable[[ImageRequest, UUID], ImageResult] | None = None,
+               *, approvals: ProductApprovalStore | None = None,
+               request_validator: Callable[[ImageRequest], None] | None = None) -> FastAPI:
     """Bind a server-owned bearer credential to one project, never to user input.
 
     With no processor, requests stay durably queued. A compatible separate
@@ -82,6 +97,10 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
             "INVALID_IMAGE": 400, "IMAGE_TOO_LARGE": 413,
             "ASSET_INTEGRITY_ERROR": 400, "ASSET_STORAGE_ERROR": 503,
             "JOB_STORAGE_ERROR": 503,
+            "PRODUCT_NOT_FOUND": 404, "PRODUCT_APPROVAL_REQUIRED": 409,
+            "PRODUCT_APPROVAL_CONFLICT": 409, "PRODUCT_STORAGE_ERROR": 503,
+            "INVALID_IMAGE_REQUEST": 400, "IMAGE_PROFILE_NOT_FOUND": 400,
+            "MODEL_UNAVAILABLE": 422,
         }
         code = exc.code if exc.code in statuses else "INTERNAL_ERROR"
         return JSONResponse(status_code=statuses.get(code, 500), content={"detail": {"code": code}})
@@ -127,6 +146,10 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
         else:
             return await run_in_threadpool(ledger.submit, job_id, project_id, payload)
 
+        if request_validator is not None:
+            await run_in_threadpool(request_validator, payload)
+        if approvals is not None and isinstance(payload, BackgroundRequest):
+            await run_in_threadpool(approvals.require_approved, payload, project_id)
         refs = [payload.source]
         if isinstance(payload, BackgroundRequest):
             refs.extend([payload.product_rgba, payload.preserve_mask])
@@ -137,6 +160,36 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
     @app.get("/internal/v1/jobs/{job_id}", response_model=ImageJob)
     async def get(job_id: UUID, project_id: UUID = Depends(project)):
         return await run_in_threadpool(ledger.get, job_id, project_id)
+
+    def product_store() -> ProductApprovalStore:
+        if approvals is None:
+            raise HTTPException(503, detail={"code": "PRODUCT_SERVICE_UNAVAILABLE"})
+        return approvals
+
+    async def product_input(request: Request, model):
+        try:
+            return model.model_validate_json(await _read_limited(request, _MAX_JOB_BYTES))
+        except ValidationError as exc:
+            raise HTTPException(422, detail=[{"type": e["type"]} for e in exc.errors()]) from None
+
+    @app.post("/internal/v1/products/prepare", status_code=201)
+    async def prepare_product(request: Request, project_id: UUID = Depends(project)):
+        store = product_store()
+        payload = await product_input(request, PrepareProduct)
+        return await run_in_threadpool(store.prepare, project_id, payload.source,
+                                       payload.cutout, payload.visual)
+
+    @app.get("/internal/v1/products/{candidate_id}")
+    async def get_product(candidate_id: UUID, project_id: UUID = Depends(project)):
+        return await run_in_threadpool(product_store().get, candidate_id, project_id)
+
+    @app.put("/internal/v1/products/{candidate_id}/approval")
+    async def approve_product(candidate_id: UUID, request: Request,
+                              project_id: UUID = Depends(project)):
+        store = product_store()
+        payload = await product_input(request, ApproveProduct)
+        return await run_in_threadpool(store.approve, candidate_id, project_id,
+                                       payload.candidate_hash, confirmed=payload.confirmed)
 
     @app.get("/internal/v1/health")
     async def health(project_id: UUID = Depends(project)):

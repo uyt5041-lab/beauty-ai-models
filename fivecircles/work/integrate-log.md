@@ -14,3 +14,9 @@
 - 일반 push: `00e455e..1bc4fea`; `git ls-remote --heads origin plan/models`와 SHA 일치 확인.
 - 검증: 72 tests, CLI, 설정 검사, staged diff 검사, 보고서 브라우저 렌더.
 - 운영 CD: NOT_APPLICABLE (로컬 라이브러리/CLI). 실 GPU/모델 서비스 배포 완료를 뜻하지 않음.
+
+## 2026-10-22 · B2 publication
+
+- source SHA: `8cb64029d79ea42a6b9c4aefeaee448656bea41a`. 일반 push 후 원격 plan/models SHA 일치.
+- 검증: 전체112 tests PASS, health 추가 API8 PASS, 실제 TCP loopback/SQLite/프로세스 복구 PASS, staged diff/비밀패턴 검사 PASS.
+- publication: Git 코드 전달. 운영 CD NOT_APPLICABLE (로컬 내부 API 참조 구현, 배포 대상 미설정). GPU 서비스 배포·실모델 품질은 미수행.

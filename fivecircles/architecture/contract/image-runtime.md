@@ -57,3 +57,17 @@
 - POST `/internal/v1/assets`: 최대 업로드 바이트까지만 stream으로 읽고 store에 저장하여 201 AssetRef. GET `/internal/v1/assets/{asset_id}`는 인증된 project에서 검증된 PNG bytes 반환.
 - 응답 validation 오류는 유형만 공개한다. 위치에도 임의 사용자 키가 들어갈 수 있어 제외하며 입력값/토큰을 echo하지 않는다. default 앱은 외부 포트를 열지 않으며 테스트에서 명시적으로 loopback smoke를 수행한다.
 - tests: 실제 SQLite 동시 프로세스, 재개/claim/잘못된 owner, POSIX lock 경쟁·실행 중 stop timeout·crash 복구·result tamper, 인증·project scope·PUT idempotency·wait timeout. 테스트 processor는 모델 품질 증거가 아니다.
+
+## 배치 3 · 승인 저장과 제한된 실행 프로필
+
+- 기존 CutoutRequest/BackgroundRequest/ImageJob의 wire/hash는 바꾸지 않는다. 새 준비/승인 API는 독립 DTO다.
+- `ProductApprovalStore(path, assets)`: `prepare(project_id, source, cutout, visual) -> ProductCandidate`, `get(candidate_id, project_id)`, `approve(candidate_id, project_id, candidate_hash, *, confirmed: bool)`, `require_approved(request: BackgroundRequest, project_id) -> ProductCandidate`.
+- ProductCandidate: candidate_id UUID, candidate_hash, source AssetRef, product_rgba AssetRef, preserve_mask AssetRef, visual VisualBrief, approved bool. 준비 시 실제 source/cutout을 project에서 read하고 prepare_product_canvas로 생성/저장한다. candidate_hash는 source/product/mask/visual만 hash. UUID/승인시각은 제외.
+- SQLite 저장·조회 시 snapshot hash 확인. prepare는 항상 approved=False. approve는 confirmed=True와 현재 candidate_hash 일치·자산 실제검증을 요구한다. wrong project는 미존재, hash불일치는409, 미승인은409. 같은 승인 재전송은 같은결과. 승인 행은 token을 가진 호스트가 사용자 확인을 전달했다는 기록이며 실제 사람 신원을 인증했다는 뜻은 아니다. UI는 별도.
+- require_approved는 request의 source/product/mask/visual fingerprint와 승인된 row를 정확히 매칭하고 파일·alpha·binary mask 일치·Safe Zone/제품범위를 검증한다. 승인 뒤 새 visual/자산이면 재승인 필요. seed/profile 변경은 제품 승인 자체를 변경하지 않으며 별도 profile 검증한다.
+- `LocalTemplateProcessor(assets, approvals)`와 `validate_request(request)` 지원. profile `uploaded-alpha` revision `1`은 이미 투명 alpha가 있는 RGBA만 수신하고 binary keep mask를 만든다. RGB/완전불투명 입력은 MODEL_UNAVAILABLE. 누끼 모델인 척하지 않으며 항상 needs_manual_check=True.
+- 배경 profile `bright-template` revision `1`: 검증된 로컬 작업 크기256~1024,8의배수. server-owned style/layout allowlist와 version을 고정하고 외부 모델경로·실행코드를 받지 않는다. template은 텍스트를 굽지 않고 seed로 결정되는 밝은색 장면을 만든다. 실제 AI생성·그림자품질은 미검증.
+- processor는 승인→파일/geometry→고정프로필 확인 후 scene_underlay/product_rgba/composed_preview를 저장한다. approved foreground의 opaque pixels 검사. 부분투명·template 한계를 warnings로 남기고 자동 품질승인하지 않는다.
+- API: POST `/internal/v1/products/prepare` {source,cutout,visual}, GET `/internal/v1/products/{candidate_id}`, PUT `/internal/v1/products/{candidate_id}/approval` {candidate_hash,confirmed:true}. project는 기존 Bearer 매핑에서 결정. 기존 job endpoint는 등록 전 runtime validator, worker는 실행 직전 동일 조건을 재확인한다.
+- CLI `python -m beauty_ai.inference_runtime`: 환경변수의 UUID/token/storage root로 조립. 기본127.0.0.1, 명시적설정으로만 포트변경. API키/GCP정보는 코드·예제에 쓰지 않는다.
+- 예: candidate 준비→미승인 background409→호스트가 실제확인 후 approve→same background접수→template3layers조회. 다른visual이면409. 모델이 필요한 RGB입력은 지원불가코드.
