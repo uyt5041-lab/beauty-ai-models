@@ -2,6 +2,8 @@
 
 ## 현재 공개 저장소 운영
 
+**2026-10-22 최신 방향:** LLM은 김다혜, 이미지 모델은 pi의 외부 API 래퍼로 구현합니다. 제공자·모델은 미정이며 리서치 후 선정합니다. 현재 외부 이미지 API 연동은 미구현입니다. 아래 내부 서버·BiRefNetLite·SDXL 설치/호출 예제는 보존하는 로컬 실험 안내이며 MVP 필수 구축 순서가 아닙니다. 최신 작업은 [이미지 TODO](docs/imageTodo.md)와 [전환 계약](fivecircles/architecture/contract/image-runtime.md#외부-이미지-api-전환--2026-10-22-사용자-정정)을 따릅니다.
+
 2026-10-22 수신한 확정 MVP와의 대조는 [ssotAlignment.md](docs/ssotAlignment.md)를 따릅니다. 아래 제공받은 README 원문은 과거 설명입니다. 현재 MVP는 카피·이미지·최종 광고 각각1개, 최종4:5이며 부분 수정 UI·복수 시안·다른 비율/플랫폼은 고도화입니다. 기존 내부 revision/hash/cache 보호는 계속 사용합니다.
 
 - 저장소: [uyt5041-lab/beauty-ai-models](https://github.com/uyt5041-lab/beauty-ai-models)
