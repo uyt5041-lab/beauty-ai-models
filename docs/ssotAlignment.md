@@ -17,11 +17,11 @@
 | --- | --- | --- |
 | B1~B4 기반 | 자산 정규화·작업 캔버스·영속 작업 API/worker·제품 레이어 승인·프롬프트 버전·현재 편집/캐시 구현. [B1](../fivecircles/test/relay-b1.md), [B2](../fivecircles/test/relay-b2.md), [B3](../fivecircles/test/relay-b3.md), [B4](../fivecircles/test/relay-b4.md) | 서비스 사용자 인증·생성 후 이미지 승인·최종 광고 렌더러·부분 편집 UI |
 | B5~B7 평가/모델 | 로컬 평가 도구와 고정 BiRefNet/SDXL 어댑터 구현. 실제 MPS 합성 입력으로 누끼·배경 기술 실행 확인. [B5](../fivecircles/test/relay-b5.md), [B6](../fivecircles/test/relay-b6.md), [B7](../fivecircles/test/relay-b7.md) | 다양한 실사진의 광고 품질·권리 확보·CUDA/GCP 검증·팀 인수 |
-| 최신 확인된 원격 게시 B8 | `1e05f945a202ac9e53fccb4d6c7a2b721f5fcb10`(`1e05f94`). 같은 ID 제출 조정·응답 유실 복구를 521 tests와 실제 로컬 TCP 시험으로 확인. [B8 기록](../fivecircles/test/relay-b8.md), [게시 기록](../fivecircles/work/relay.md) | 운영 프록시·실제 사용자 UI·GCP 장애 인수 |
-| B9 로컬 구현·검증 | **624 tests PASS**, 실제 MPS **누끼 1 + 배경 5 jobs**. 동일 512 입력/seed 두 번의 요청·출력 hash 일치, 단계 관찰과 작업 후 메모리 snapshot 확인. [B9 기록](../fivecircles/test/relay-b9.md) | 원격 게시 미완료. 6 jobs는 여러 실제품 평가가 아니다. 메모리 snapshot은 peak가 아니며 광고 품질·다른 장치 재현·팀 인수는 미완료 |
-| B9 종료 게이트 | 최종 HTML 브라우저 검증 **BLOCKED**, 게시·릴레이 종료 미완료. 수정 전 화면을 최종 PASS로 사용하지 않는다. [B9 시각 검증](../fivecircles/test/relay-b9.md#시각-검증과-후속) | 후속 구현 게이트가 열린 것으로 취급하지 않는다. 이번 SSOT 문서 전달은 별도 사용자 요청 범위다 |
+| B8 제출 조정 | `1e05f945a202ac9e53fccb4d6c7a2b721f5fcb10`(`1e05f94`). 같은 ID 제출 조정·응답 유실 복구를 521 tests와 실제 로컬 TCP 시험으로 확인. [B8 기록](../fivecircles/test/relay-b8.md) | 운영 프록시·실제 사용자 UI·GCP 장애 인수 |
+| B9 구현·검증·게시 | 소스 `858c6f7709074b230bdb82192aa529583936fc5c` 일반 push·원격 SHA 일치·로컬 파일 동기화 확인. **624 tests PASS**, 실제 MPS **누끼 1 + 배경 5 jobs**. 동일 512 입력/seed 두 번의 요청·출력 hash 일치, 단계 관찰과 작업 후 메모리 snapshot 확인. [B9 기록](../fivecircles/test/relay-b9.md), [게시 기록](../fivecircles/work/integrate-log.md) | 6 jobs는 여러 실제품 평가가 아니다. 메모리 snapshot은 peak가 아니며 광고 품질·다른 장치 재현·팀 인수는 미완료 |
+| B9 종료 게이트 | 최종 HTML 브라우저 검증 **BLOCKED**, 전체 릴레이 종료 검증 미완료. 수정 전 화면을 최종 PASS로 사용하지 않는다. [B9 시각 검증](../fivecircles/test/relay-b9.md#시각-검증과-후속) | 소스 게시와 별개다. 후속 구현 게이트가 열린 것으로 취급하지 않는다. 이번 SSOT 문서 전달은 별도 사용자 요청 범위다 |
 
-위 표는 문서 작성 시점의 게시 전 관찰이다. HTML 브라우저 검증의 제한을 이미 승인된 소스·문서 게시 전체의 금지로 확대하지 않는다. 게시 여부는 최종 Git 증거를 별도로 갱신하며, 정적·모델 검증과 최종 HTML 검증 BLOCKED를 구분한다. 브라우저 우회 및 릴레이 다음 구현은 진행하지 않는다.
+위 표는 2026-10-22 소스 게시 후 관찰로 갱신했다. 소스·문서 게시, 정적·모델 검증, 최종 HTML 검증 BLOCKED를 구분한다. 브라우저 우회 및 릴레이 다음 구현은 진행하지 않는다.
 
 ## 서비스 목표 흐름 · 계획
 

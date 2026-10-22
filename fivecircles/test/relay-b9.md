@@ -12,6 +12,7 @@
 ## 코드와 실제 실행 검증
 
 - root 전체 회귀: **624 tests PASS(36.32s, -W error)**. 기존DB·프로젝트·관찰 손상·실패·기록 없는 직접 호출·모델 단계·메모리 관찰·API 경계를 포함한다.
+- 게시 소스 `858c6f7709074b230bdb82192aa529583936fc5c`를 로컬 beautyAi에 동기화한 뒤 독립 환경에서도 **624 tests PASS(33.73s, -W error)**와 FiveCircles 설정 검사를 확인했다. [게시·백업 기록](../work/integrate-log.md).
 - pip check·wheel·격리 lazy import PASS. wheel SHA-256 `fa2629ec7fd4e4c8a3e8002450424350ee12777aeb359ac364a14535eb015450`.
 - 테스트 fixture의 worker 시작 recovery 시각 조회가 누락돼 iterator가 고갈된 실패를 fixture 시각 추가로 수리했다. 제품 코드 결함과 구분하며 최종624 tests PASS를 사용한다.
 - 실제 benchmark receipt를 직접 읽었고 source_sha256 6개가 현재 코드와 일치했다. MPS·CPU fallback 없음·합성 drawn input 하나·한 프로세스, 누끼1+배경5 모두 성공했다. get-execution CLI·model reuse·phase·장치 동기화·환경 관찰을 확인했다.

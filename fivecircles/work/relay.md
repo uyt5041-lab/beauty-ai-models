@@ -121,14 +121,14 @@
 4. Implementation: COMPLETED. ContextVar관찰,원자적execution저장,프로젝트조회API/CLI,두실모델계측.
 5. Validation: 전체624tests36.32s PASS,실제MPS누끼1+배경5모두PASS.512동일요청/seed2회파일hash일치,768/1024/512x768레이어파일·불투명픽셀·SafeZone검사PASS. 단계/환경/메모리snapshot/API/CLI연결,최종wheel/격리lazyimport/pipcheckPASS.
 6. Repair: 신규test시각fixture가startup recovery호출을누락해고갈→fixture시각보완. 제품코드결함아님. 상호검토추가finding없음. 실제모델upstream알림과품질잔상은검증한계로기록.
-7. Push / Publication: PENDING. 소스·문서는코드/실모델/정적검증근거로승인된일반push대상. HTML미리보기file:접근거절을Git게시금지로확대하지않음. 원격조회시점은B8 1e05f945a202ac9e53fccb4d6c7a2b721f5fcb10. 최종receipt별도. GCP실행NOT_RUN.
+7. Push / Publication: COMPLETED. 소스858c6f7709074b230bdb82192aa529583936fc5c 일반push/원격SHA일치/로컬152파일동기화·624tests33.73s/설정검사확인. [게시receipt](integrate-log.md). HTML최종브라우저검증BLOCKED와구분. GCP실행NOT_RUN.
 8. Closeout Report: 코드624tests/실제MPS6jobs/package/정적문서·PNG검사PASS. 최종HTMLbrowser BLOCKED. 수정전TaskSpace145스크린샷은최종증거아님. 품질/사람인수GAP유지.
 9. Relay: STOP_WITH_REASON. 현재배치최종브라우저검증미완료로후속코드배치를시작하지않음. 새로직접전달된SSOT대조·TODO문서요청은별도로작성하며릴레이마감/구현재개와구분. OOM/저장실패후다음작업복구와부분자산정리는후속후보로보존.
-10. Final Ledger: Doc/Implementation/automated+actual-model Validation COMPLETED; final Browser BLOCKED; Push PENDING; Report GAP/PARTIAL; Relay STOP_WITH_REASON. 기존로컬실행·계약·자산·비밀값보호유지.
+10. Final Ledger: Doc/Implementation/automated+actual-model Validation COMPLETED; final Browser BLOCKED; Push COMPLETED; Report GAP/PARTIAL; Relay STOP_WITH_REASON. 기존로컬실행·계약·자산·비밀값보호유지.
 
 ## 2026-10-22 · 별도 직접 요청: SSOT 대조·실행 TODO
 
 - 사용자 전달 요청은 현재 구현과 확정 MVP의 차이·목표·담당·의존성·완료 기준을 문서화하는 것이다. 원문에 적힌 구현 항목을 별도 실행 승인으로 취급하지 않는다.
 - 근거: `확정된 기준점 (SSOT)` 문서ID `401b13f77dbd80f39bbccd2e3a489566`, 현재 코드/원격 B8 및 로컬 B9 관찰. 원문 파일·계정정보를 공개 저장소에 복사하지 않는다.
 - 범위: `docs/ssotAlignment.md`, `docs/imageTodo.md`, `docs/modelIntegrationReview.md`, 요구사항·결정·사용 안내의 연결. 기존 모델·작업 서버·승인·hash/cache 구조를 유지한다.
-- 상태: 문서 작성 COMPLETED. SSOT-01~12의 차이·변경·담당·의존·완료조건을 연결했고 기존 완료35개에 실제날짜·근거를 붙였다. 문서 정적 검증 후 승인된 소스 게시와 로컬 beautyAi 동기화를 수행한다. 브라우저 차단을 우회하거나 최종 HTML 검증 PASS/다음 코드 배치 시작으로 표시하지 않는다.
+- 상태: 문서 작성 COMPLETED. SSOT-01~12의 차이·변경·담당·의존·완료조건을 연결했고 기존 완료35개에 실제날짜·근거를 붙였다. 문서 정적 검증과 승인된 소스 게시·로컬 beautyAi 동기화를 완료했다. 브라우저 차단을 우회하거나 최종 HTML 검증 PASS/다음 코드 배치 시작으로 표시하지 않는다.
