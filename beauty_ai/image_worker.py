@@ -21,6 +21,7 @@ from pydantic import TypeAdapter, ValidationError
 from .assets import LocalAssetStore
 from .contracts import BackgroundResult, CutoutResult, ImageRequest, ImageResult
 from .errors import GatewayError
+from .execution_trace import phase, recording
 from .job_ledger import JobLedger
 
 
@@ -138,7 +139,8 @@ class SingleHostWorker:
                     self._stop.wait(self.poll_seconds)
                     continue
                 self._execute(claimed.job.job_id, claimed.project_id,
-                              claimed.request, owner_id)
+                              claimed.request, owner_id,
+                              created_at=claimed.created_at, claimed_at=claimed.claimed_at)
         except (sqlite3.Error, GatewayError):
             # The completion commit may be ambiguous. Stop and let the next
             # exclusive owner inspect durable state; do not double-execute here.
@@ -156,35 +158,39 @@ class SingleHostWorker:
                     self._lock_fd = None
 
     def _execute(self, job_id: UUID, project_id: UUID, request: ImageRequest,
-                 owner_id: str) -> None:
-        try:
-            result = self.processor(request, project_id)
-        except Exception as exc:
-            self.ledger.finish(job_id, owner_id, error_code=self._processor_code(exc))
-            return
-        try:
-            if not isinstance(result, (CutoutResult, BackgroundResult)):
-                raise ValueError("Processor did not return an image result")
-            result = _RESULT_ADAPTER.validate_python(result.model_dump())
-            if result.kind != request.kind:
-                raise ValueError("Result kind does not match request")
-            refs = ((result.product_rgba, result.preserve_mask)
-                    if isinstance(result, CutoutResult)
-                    else (result.scene_underlay, result.product_rgba, result.composed_preview))
-            for reference in refs:
-                image = self.assets.read(reference, project_id=project_id)
-                image.close()
-        except GatewayError as exc:
-            code = exc.code if exc.code in _SAFE_PROCESSOR_CODES else "IMAGE_RESULT_INVALID"
-            self.ledger.finish(job_id, owner_id, error_code=code)
-            return
-        except MemoryError:
-            self.ledger.finish(job_id, owner_id, error_code="IMAGE_OUT_OF_MEMORY")
-            return
-        except (ValidationError, ValueError, TypeError, OSError):
-            self.ledger.finish(job_id, owner_id, error_code="IMAGE_RESULT_INVALID")
-            return
-        self.ledger.finish(job_id, owner_id, result=result)
+                 owner_id: str, *, created_at: str | None = None,
+                 claimed_at: str | None = None) -> None:
+        with recording(job_id=job_id, project_id=project_id, request=request,
+                       created_at=created_at, claimed_at=claimed_at) as trace:
+            result, code = None, None
+            try:
+                with trace.processor():
+                    result = self.processor(request, project_id)
+            except Exception as exc:
+                code = self._processor_code(exc)
+            if code is None:
+                try:
+                    with phase("result_validation"):
+                        if not isinstance(result, (CutoutResult, BackgroundResult)):
+                            raise ValueError("Processor did not return an image result")
+                        result = _RESULT_ADAPTER.validate_python(result.model_dump())
+                        if result.kind != request.kind:
+                            raise ValueError("Result kind does not match request")
+                        refs = ((result.product_rgba, result.preserve_mask)
+                                if isinstance(result, CutoutResult)
+                                else (result.scene_underlay, result.product_rgba, result.composed_preview))
+                        for reference in refs:
+                            image = self.assets.read(reference, project_id=project_id)
+                            image.close()
+                except GatewayError as exc:
+                    code = exc.code if exc.code in _SAFE_PROCESSOR_CODES else "IMAGE_RESULT_INVALID"
+                except MemoryError:
+                    code = "IMAGE_OUT_OF_MEMORY"
+                except (ValidationError, ValueError, TypeError, OSError):
+                    code = "IMAGE_RESULT_INVALID"
+            execution = trace.finish(outcome="failed" if code is not None else "succeeded")
+            self.ledger.finish(job_id, owner_id, result=result if code is None else None,
+                               error_code=code, execution=execution)
 
     @staticmethod
     def _processor_code(error: Exception) -> str:

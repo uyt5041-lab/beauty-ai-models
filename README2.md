@@ -2,6 +2,8 @@
 
 ## 현재 공개 저장소 운영
 
+2026-10-22 수신한 확정 MVP와의 대조는 [ssotAlignment.md](docs/ssotAlignment.md)를 따릅니다. 아래 제공받은 README 원문은 과거 설명입니다. 현재 MVP는 카피·이미지·최종 광고 각각1개, 최종4:5이며 부분 수정 UI·복수 시안·다른 비율/플랫폼은 고도화입니다. 기존 내부 revision/hash/cache 보호는 계속 사용합니다.
+
 - 저장소: [uyt5041-lab/beauty-ai-models](https://github.com/uyt5041-lab/beauty-ai-models)
 - 기본 브랜치 `plan/models`: 모델 참고 코드·설명·테스트를 관리합니다.
 - 별도 브랜치 `박지수_협업일지`: 날짜별 Markdown·HTML 기록을 관리하며 PR·코드 브랜치 병합 없이 유지합니다.
@@ -308,6 +310,18 @@ python -m examples.run_image render <candidate_id> --job-id <new_uuid> --seed 42
 클라이언트의120초 대기 한도를 넘으면 `JOB_STILL_PENDING`입니다. 출력된 기존 job ID로 `get-job`을 실행하고 새 작업을 중복 제출하지 않습니다. 모델의 OpenRAIL++-M 사용 조건·원본 라이선스·가중치 고정 목록과 GCP 이전 절차는 [설치 문서](docs/localModelSetup.md)에 있습니다.
 
 M4 Max64GB에서 두 모델을 실제 MPS로 실행해512×512 결과 파일을 확인했습니다. 첫 배경 job은 약14.7초(로딩·대기·저장 포함), 실행 후 MPS driver 메모리는 약10.24GB였습니다. 최대 메모리 측정값은 아닙니다. 불투명 제품770픽셀과 텍스트 여백은 보존됐지만, 샘플의 꽃 표현 부족·제품 잔상은 품질 보완 대상으로 남았습니다. 전체 자동 회귀433개 통과와 실제 광고 품질 통과를 구분합니다.
+
+## 작업별 실행 기록 조회 (B9)
+
+```bash
+python -m examples.run_image get-execution <job_id>
+```
+
+`GET /internal/v1/jobs/{job_id}/execution`은 작업을 볼 수 있는 프로젝트의 내부 인증이 필요합니다. `RECORDED`이면 모델 revision·요청 hash·seed·선택 장치·모델 재사용 여부와 단계별 경과를 돌려줍니다. worker가 끝난 작업 상태와 관찰을 같은 DB transaction으로 저장합니다. 이전 버전의 작업이나 실행 도중 중단된 작업에 관찰이 없으면 `NOT_RECORDED`, `execution=null`입니다. 없는 관찰을 0초로 만들지 않습니다.
+
+모델 로딩·전처리·모델 실행·합성·자산 저장·결과 검사는 monotonic wall-clock 관찰입니다. 일부 단계가 중첩되므로 시간을 모두 더하지 않습니다. 큐 대기는 별도의 서버 wall-clock이며, 장치 동기화 성공 여부도 함께 확인합니다. 로딩된 Python 패키지 버전은 프로세스에서 관찰한 값이며 그 작업이 모든 패키지를 호출했다는 뜻은 아닙니다.
+
+MPS allocated/driver 및 CUDA allocated/reserved는 작업 후 프로세스 메모리 snapshot입니다. 최대 사용량, 작업 하나의 증가량, GPU 비용으로 해석하지 않습니다. 관찰이 불가능하면 `null`과 사유를 반환합니다. 프롬프트 원문·자산 경로/URL·토큰·원문 예외는 이 기록에 넣지 않습니다. 실제 측정 결과와 범위는 [로컬 모델 안내](docs/localModelSetup.md)를 따릅니다.
 
 ## 제출 응답이 끊긴 경우 (B8)
 

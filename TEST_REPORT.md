@@ -2,7 +2,9 @@
 
 ## 최신 릴레이 검증 · 2026-10-22
 
-- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **521 passed in 15.01s**.
+실행 코드·실제 모델·정적 문서는 아래 범위로 검증했다. 최종 HTML 보고서의 브라우저 재검증은 `file:` 접근에 대한 자동 승인 검토 거절로 BLOCKED다. 다른 브라우저/주소로 우회하지 않았으며 수정 전 스크린샷을 최종판 증거로 사용하지 않는다. 이 제한은 검증한 Python 소스의 Git 게시를 금지하는 제한과 구분한다. SSOT 대조는 문서 작업이며 새 MVP 기능을 구현·인수한 결과가 아니다.
+
+- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **624 passed in 36.32s**.
 - B1 자산·캔버스72 → B2 API·작업 저장/복구112 → B3 승인·제한 profile·로컬 template148 → B4 프롬프트·편집/cache201 → B5 평가·작업 시간280 → B6 모델준비·누끼어댑터339 → B7 SDXL 고정 파일·어댑터·CLI433로 확장했다. 자동 테스트는 실제 가중치를 내려받지 않으며 실모델 smoke는 아래에 구분한다.
 - 실제 파일/SQLite, 프로세스 경쟁·강제 종료 복구, 실제 TCP API와 CLI 6명령을 검증했다. 512×512 결과 PNG를 저장·다운로드했다.
 - [B1](fivecircles/test/relay-b1.md), [B2](fivecircles/test/relay-b2.md), [릴레이 진행](fivecircles/work/relay.md).
@@ -26,6 +28,11 @@
 - B8 기한 종료: 작업 확인 전 SubmissionUncertain과 확인 후 JobStillPending을 구분했다. 기한이 지나도 원래 worker는 계속 실행하고, 같은ID로 후속 조회해 결과를 받았다. 새ID·자동PUT·취소는 수행하지 않았다.
 - B8 검토 수리: 자유문자열 error_code가 CLI로 출력될 수 있던 경계를 ASCII 안정 코드와 실패상태 검사로 제한했다. 잘못된 코드/상태는 IMAGE_PROTOCOL_ERROR, 정상코드는 유지한다. unit·실TCP·상호검토·전체회귀 PASS.
 - B8 wheel 생성·격리 lazy import PASS, SHA256 `8b11c376e19eecdd4eb1dac8ffd4e69f8c0775abc1687f191a55b299ac1f4d43`.
+- B9: worker 실행 관찰·SQLite 원자 저장·기존/중단 작업 미기록·프로젝트/hash/상태 대조·안전한 오류·API/CLI를 검증했다. 모델 어댑터는 기존 생성 설정과 결과를 유지하면서 단계·재사용·동기화·작업 후 메모리 snapshot을 기록한다. 수집 실패를 모델 실패로 바꾸지 않는다.
+- B9 실제 MPS/TCP 측정: 합성 입력 1개, 누끼1건+배경5건 모두 성공. 배경512 첫 실행47.170초(모델 로딩15.982초), 같은 요청 반복28.488초, 768정사각57.418초, 1024정사각104.426초, 512×768세로50.855초. worker monotonic wall-clock이며 순수 GPU 시간·속도 보장이 아니다. 동일512 요청/seed 두 결과의 파일hash는 일치했지만 다른 환경까지 보장하지 않는다.
+- 모든 배경 결과의 다운로드hash/해상도/Safe Zone/불투명 제품 픽셀 검사와 실행 기록 CLI가 통과했다. 작업 후 MPS driver snapshot 중 가장 큰 관찰값은19,876,773,888B였으며 peak가 아니다. 배경5건 중 실패0은 이 작은 합성 시험의 결과이지 일반 실패율 추정이 아니다.
+- 실제 화면 확인: 512·1024는 뚜렷한 꽃 표현이 부족했고,768에는 큰꽃,512×768에는 가장자리 꽃·분홍 장식이 보였다. 생성된 뚜껑/제품 외곽/반사 잔상이 남아 광고 품질은 NOT_ASSESSED다. 실제 제품 사진·최대 메모리·CUDA/GCP·팀 인수는 별도다.
+- B9 wheel 생성·격리 lazy import·pip check PASS. SHA256 `fa2629ec7fd4e4c8a3e8002450424350ee12777aeb359ac364a14535eb015450`. upstream VAE deprecation/casting 알림은 실제 실행에 남았으며 고정 환경의 파일/픽셀 검증은 통과했다.
 
 ---
 

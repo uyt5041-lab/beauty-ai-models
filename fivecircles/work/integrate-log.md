@@ -53,3 +53,10 @@
 - 전체433 tests9.39s, 실제 MPS 누끼·SDXL/TCP CLI512×512, 결과 파일/hash·제품770픽셀·Safe Zone, 최종wheel/lazy import·flow/browser PASS.
 - 로컬 beautyAi141 tracked파일 동일 반영, 기존30파일 변경/추가 전 백업. 독립 로컬 환경433 tests19.17s·pip check·두 모델 파일 검증 PASS. 모델/결과/캐시는 Git 제외.
 - 코드 publication과 로컬 실행 증거다. GCP 배포 NOT_RUN. 광고 품질·실사진·팀 인수는 미검증이며 꽃 표현 부족·제품 잔상을 기록했다.
+
+## 2026-10-22 · B8 publication
+
+- source SHA: `1e05f945a202ac9e53fccb4d6c7a2b721f5fcb10`. FF 확인 후 일반 push, 원격 plan/models SHA 일치.
+- 전체521 tests15.01s·실제TCP 응답유실4건·단일PUT/processor·동일ID복구·기한상태구분·오류코드수리·wheel/lazy import·flow/browser PASS.
+- 로컬 beautyAi145 tracked파일 동일 반영,21파일변경/추가 전 백업. 로컬521 tests68.92s/설정검사PASS. 모델 코드는 바뀌지 않아 추가 GPU 실행은 하지 않았다.
+- 로컬 클라이언트 publication이며 운영배포 NOT_APPLICABLE. 운영프록시/GPU장애·광고품질·팀인수로 확대하지 않는다.

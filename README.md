@@ -1,6 +1,8 @@
 # 화장품 광고 AI 래퍼 참고 구현
 
-소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. 텍스트·VLM은 OpenAI API로, 이미지 작업은 별도의 private inference 서버로 분리합니다. 내부 이미지 FastAPI 앱·SQLite 작업 저장소·단일 호스트 worker·명시적 제품 승인·로컬 템플릿 실행·편집 revision·프로젝트 캐시·로컬 평가 도구와 고정 BiRefNetLite·SDXL adapter를 포함합니다. **실제 MPS 누끼·배경 생성은 합성 fixture로 검증했습니다. 꽃 표현·제품 잔상 등 광고 품질 개선과 실사진·UI·렌더러 연결은 남아 있습니다.**
+소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. 텍스트·VLM은 OpenAI API로, 이미지 작업은 별도의 private inference 서버로 분리합니다. 내부 이미지 FastAPI 앱·SQLite 작업 저장소·단일 호스트 worker·명시적 제품 승인·로컬 템플릿 실행·편집 revision·프로젝트 캐시·로컬 평가·작업 실행 관찰 도구와 고정 BiRefNetLite·SDXL adapter를 포함합니다. **실제 MPS 누끼·배경 생성은 합성 fixture로 검증했습니다. 꽃 표현·제품 잔상 등 광고 품질 개선과 실사진·UI·렌더러 연결은 남아 있습니다.**
+
+확정 MVP는 **동일 제품 사진2~5장·선택 배경 참고0~5장으로 인스타그램4:5 광고1개**를 만드는 흐름입니다. 사전 조사→카피1개와 사용자 검토→이미지1개와 사용자 검토→최종 한글 합성·캡션·해시태그·다운로드가 목표입니다. 이 서비스 흐름 전체가 구현된 것은 아닙니다. 현재 코드와 목표의 차이·담당·완료 기준은 [SSOT 대조](docs/ssotAlignment.md), 실행 항목은 [이미지 TODO](docs/imageTodo.md)에 있습니다.
 
 ## 1. 쓰는 법
 
@@ -44,7 +46,7 @@ python -m pytest -q -W error
 
 로컬 평가 도구는 `python -m beauty_ai.evaluation examples/evaluation_manifest.json --output outputs/evaluation-report.json`으로 실행합니다. 예제의 권리는 `unknown`이므로 이미지를 읽지 않고 미평가로 기록합니다. 실제 평가는 권리와 출처를 확인한 파일을 manifest 폴더 아래에 두고, 비공개 `data/`·`outputs/`에서 실행하세요. 기존 결과 파일은 덮어쓰지 않습니다.
 
-단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B8 기록](fivecircles/test/relay-b8.md)을 참고하세요. **전체 521 tests PASS + 실제 TCP 응답 유실 조정 PASS**. B6/B7의 실제 MPS 누끼·배경 fixture 검증도 기록에 보존했습니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
+단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B9 기록](fivecircles/test/relay-b9.md)을 참고하세요. **전체 624 tests PASS + 실제 MPS 6 jobs/실행 관찰 PASS**입니다. 같은512 입력·seed의 두 번 실행에서 출력 hash가 같았습니다. B8 실제 TCP 응답 유실 조정 근거도 보존했습니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
 
 ## 2. 기능
 
@@ -62,12 +64,13 @@ python -m pytest -q -W error
 | `image_integrity.py` | 보호 마스크를 인페인트 마스크로 반전하고 승인 RGBA를 장면 위에 재합성 |
 | `ProductApprovalStore` | 후보 snapshot·project·파일·형상 검증, 명시적 확인과 정확한 hash로 승인 저장 |
 | `model_store` / `BiRefNetCutoutProcessor` | 고정 4개 파일 준비·hash 검증, 명시 장치의 실제 누끼와 RGBA·마스크 저장. MPS 합성 fixture 검증 |
-| `sdxl_model_store` / `SDXLBackgroundProcessor` | 고정 fp16 파일·두 tokenizer 검사, 실제 MPS inpaint·여백 복원·승인 제품 재합성. 512 fixture 기술 검증 |
+| `sdxl_model_store` / `SDXLBackgroundProcessor` | 고정 fp16 파일·두 tokenizer 검사, 실제 MPS inpaint·여백 복원·승인 제품 재합성. 512/768/1024/512×768 fixture 기술 검증 |
 | `LocalTemplateProcessor` | 서버 고정 profile로 기존 alpha 처리·밝은 템플릿 합성, 3개 레이어 저장과 보존 검사 |
 | `inference_runtime` / CLI | 로컬 서버 조립, 준비→확인→승인→합성→조회·다운로드 및 이미지 선택·결과 연결 명령 |
 | `ImagePrompt` | 텍스트 담당이 만든 프롬프트·버전·revision 수신, 문자 수 검증, 기존 요청 hash 호환 |
 | `ImageEditStore` | 현재 selection의 revision CAS, 프로젝트별 검증된 성공 결과 캐시, 늦은 결과 연결 거절 |
 | `evaluation.py` / `evaluation_metrics.py` | 권리 선언·파일 범위를 검사한 로컬 manifest 평가, 불투명 픽셀 보존·mask IoU·경계 지표와 파일 hash 기록 |
+| `execution_trace` / `get-execution` | 작업 ID별 단계·모델 revision·seed·환경·장치 동기화·작업 후 메모리 관찰. 미기록은 NOT_RECORDED/null |
 | 공통 오류·메타데이터 | 거절·미완료·타임아웃·프로토콜 오류 분리, 요청 ID·사용량·소요 시간 기록 |
 
 검수 상태는 `no_flags`·`warnings`·`blocked`·`unavailable`입니다. `no_flags`는 설정된 자동 검사에서 표시된 이슈가 없다는 뜻이며 법적 승인이나 광고 효과의 보장이 아닙니다. 규칙집이 준비되지 않았거나 검수가 실패하면 `unavailable`로 남깁니다.
@@ -104,6 +107,8 @@ python -m pytest -q -W error
 
 `GET /internal/v1/jobs/{job_id}/timing`과 `examples.run_image get-timing`은 해당 프로젝트 작업의 접수→종료 경과 시간을 반환합니다. 대기·처리·저장을 포함한 서버 wall-clock이며 GPU 연산 시간이 아닙니다. 아직 실행 중이거나 시계가 역행한 경우 시간 값은 `None`입니다.
 
+`GET /internal/v1/jobs/{job_id}/execution`과 CLI `get-execution`은 기록된 worker 단계·모델 재사용·환경·메모리 관찰을 조회합니다. terminal과 관찰은 같은 DB transaction에 저장하며 프로젝트·요청 hash·상태를 대조합니다. 기존 작업에 관찰이 없으면 `NOT_RECORDED`와 `null`입니다. 단계는 monotonic wall-clock이며 일부 전처리가 inference에 중첩됩니다. 단순 합산하거나 순수 GPU 시간으로 부르지 않습니다. 메모리는 작업 후 process snapshot이며 peak·요청별 증가량이 아닙니다.
+
 평가 manifest는 dataset/version·dev/holdout·제품 유형·권리와 사람 판정의 선언을 기록합니다. 마스크 정답이 없으면 지표는 `None`, 권리가 미확인이면 파일 측정을 건너뜁니다. 출력의 `model_invoked`는 `false`, `quality_approval`은 `NOT_ASSESSED`이며 선언된 사람 판정은 검증된 신원이 아닙니다. 입력 경로는 manifest 폴더 내부로 제한하고 URL·외부 경로는 받지 않습니다.
 
 실행 잠금은 한 호스트·같은 ledger에 연결한 동기 processor를 직렬화합니다. 실행 중 stop timeout은 취소가 아니며 잠금을 유지합니다. 새 worker는 이전 프로세스 종료로 잠금을 획득한 뒤 running 작업을 interrupted로 수습합니다. 다중 VM 조정과 분리된 GPU subprocess 관리는 포함하지 않습니다.
@@ -115,11 +120,11 @@ python -m pytest -q -W error
 ## 4. 미완성으로서 보완해야 할 점
 
 - **서비스 통합:** 사용자 로그인·CampaignService·SSE·내보내기·렌더러와 실제 UI 연결이 필요합니다. 내부 API 인증·job 복구·이미지 selection revision·프로젝트 캐시는 로컬 구현했습니다.
-- **모델 검증 확대:** BiRefNetLite·SDXL의 실제 MPS 512 fixture 경로를 확인했습니다. 로컬 크기별 반복·cold/warm·단계별 trace·메모리 측정과 권리 확보 실사진 품질 검증이 필요합니다. 이후 GCP CUDA에서 별도로 재검증합니다. `uploaded-alpha/1`·`bright-template/1`은 보조 경로입니다.
+- **모델 검증 확대:** 한 프로세스의 MPS 합성 fixture 6건과 512/768/1024/512×768 경로를 관찰했습니다. 512 반복은 2회이며 성능·재현 보장이 아닙니다. 반복 표본 확대·peak 메모리·실제 OOM·권리 확보 실사진 품질 검증이 필요합니다. 이후 GCP CUDA에서 별도로 재검증합니다. `uploaded-alpha/1`·`bright-template/1`은 보조 경로입니다.
 - **제품 승인·편집:** 정확한 snapshot 승인과 늦은 result attach 차단을 구현했습니다. 실제 사용자 신원·승인 UI·편집 서비스와 최종 품질 승인은 별도로 연결해야 합니다.
 - **검수 데이터:** 출처·버전·검토 이력이 있는 규칙집, 제품 사실 확인, 카피 수정 후 재검수·DB revision 경쟁 검사가 필요합니다.
-- **품질·실환경:** 꽃 표현이 약하고 생성 제품 잔상이 관찰돼 광고 품질을 승인하지 않았습니다. 측정 도구는 구현했지만 실제 고정 평가셋·권리 근거·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실사진 모델 품질·반복 지연·VRAM·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
-- **운영:** 제출 조정 메서드를 실제 UI의 대기/재조회와 운영 proxy에 연결하고, 네트워크 접근 범위·비밀값 관리·배포·예산 상한·모델 모니터링을 구성해야 합니다. 로컬 HTTP/파일/DB 테스트와 운영 GPU 검증을 구분합니다.
+- **품질·실환경:** 크기별 꽃 표현 편차와 제품 잔상이 관찰돼 광고 품질을 승인하지 않았습니다. 측정 도구는 구현했지만 실제 고정 평가셋·권리 근거·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실사진 모델 품질·반복 지연·VRAM·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
+- **운영:** 실패 뒤 같은 worker의 다음 작업 복구와 부분 결과 자산의 게시/정리 경계를 보완해야 합니다. 제출 조정 메서드를 실제 UI의 대기/재조회와 운영 proxy에 연결하고, 네트워크 접근 범위·비밀값 관리·배포·예산 상한·모델 모니터링을 구성해야 합니다. 로컬 HTTP/파일/DB 테스트와 운영 GPU 검증을 구분합니다.
 
 ## 5. 하지 말 것
 

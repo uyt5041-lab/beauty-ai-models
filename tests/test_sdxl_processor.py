@@ -19,6 +19,7 @@ from beauty_ai import sdxl_processor as module
 from beauty_ai.assets import LocalAssetStore
 from beauty_ai.contracts import BackgroundRequest, ImagePrompt, Rect, VisualBrief
 from beauty_ai.errors import GatewayError
+from beauty_ai.execution_trace import recording
 from beauty_ai.image_preparation import inspect_composite
 from beauty_ai.product_approval import ProductApprovalStore
 
@@ -519,3 +520,151 @@ def test_installed_pipeline_accepts_dtype_before_any_weight_load(tmp_path, monke
             str(tmp_path), local_files_only=True, use_safetensors=True,
             variant="fp16", dtype=torch.float16, add_watermarker=False,
         )
+
+
+@pytest.mark.parametrize("device", ["mps", "cuda", "cpu"])
+def test_execution_trace_cold_and_hot_background_preserve_outputs_and_device_facts(tmp_path, monkeypatch, device):
+    backend, assets, _, project, request, processor = setup(tmp_path, monkeypatch, device=device)
+    baseline_files = len(list(assets.files_dir.rglob("*.png")))
+    memory_calls = []
+    def memory(value):
+        assert backend.events[-1] == ("sync", device)
+        assert len(list(assets.files_dir.rglob("*.png"))) >= baseline_files + 2
+        memory_calls.append(value)
+        return value
+    backend.torch.mps.current_allocated_memory = lambda: memory(1024)
+    backend.torch.mps.driver_allocated_memory = lambda: memory(2048)
+    backend.torch.cuda.memory_allocated = lambda: memory(1024)
+    backend.torch.cuda.memory_reserved = lambda: memory(2048)
+    observations, results = [], []
+    for _ in range(2):
+        with recording(job_id=uuid4(), project_id=project, request=request) as recorder:
+            results.append(processor(request, project))
+        observations.append(recorder.finish(outcome="succeeded"))
+    for index, observation in enumerate(observations):
+        assert observation.backend.model_dump() == {
+            "device": device, "model_revision": "462165984030d82259a11f4367a4eed129e94a7b", "reused": bool(index),
+        }
+        names = [item.name for item in observation.phases]
+        assert set(names) == {"preprocess", "model_inference", "composite", "asset_store"} | (
+            {"model_load"} if index == 0 else set())
+        assert all(item.outcome == "completed" and item.elapsed_ms >= 0 for item in observation.phases)
+        assert [item.model_dump() for item in observation.synchronizations] == (
+            [] if device == "cpu" else [{"device": device, "success": True}] * (2 - index))
+        snapshot, = observation.memory_snapshots
+        assert snapshot.basis == "post_operation_process_snapshot"
+        assert snapshot.allocated_bytes == (None if device == "cpu" else 1024)
+        assert snapshot.driver_allocated_bytes == (2048 if device == "mps" else None)
+        assert snapshot.reserved_bytes == (2048 if device == "cuda" else None)
+        assert snapshot.unavailable_reason == ("NOT_GPU_DEVICE" if device == "cpu" else None)
+        serialized = observation.model_dump_json()
+        assert request.image_prompt.positive not in serialized
+        assert request.image_prompt.negative not in serialized
+        assert request.visual.concept not in serialized
+        assert str(processor.model_directory) not in serialized
+        assert str(request.source.asset_id) not in serialized
+    assert memory_calls == ([] if device == "cpu" else [1024, 2048] * 2)
+    assert len(backend.calls) == 2 and all(call["generator"].seed == request.seed for call in backend.calls)
+    with assets.read(results[0].composed_preview, project_id=project) as cold:
+        with assets.read(results[1].composed_preview, project_id=project) as warm:
+            assert cold.tobytes() == warm.tobytes()
+
+
+@pytest.mark.parametrize("failure,failed_phases,code", [
+    ("approval", ["preprocess"], "PRODUCT_APPROVAL_REQUIRED"),
+    ("verification", ["model_load"], "MODEL_UNAVAILABLE"),
+    ("load_sync", ["model_load"], "IMAGE_PROCESSING_FAILED"),
+    ("tokens", ["preprocess", "model_inference"], "INVALID_IMAGE_REQUEST"),
+    ("inference", ["model_inference"], "IMAGE_PROCESSING_FAILED"),
+    ("synchronize", ["model_inference"], "IMAGE_PROCESSING_FAILED"),
+    ("pixels", ["model_inference"], "IMAGE_RESULT_INVALID"),
+    ("composite", ["composite"], "IMAGE_QUALITY_REJECTED"),
+    ("storage", ["asset_store"], "ASSET_STORAGE_FAILED"),
+])
+def test_execution_trace_failing_background_stages_do_not_expose_private_details(tmp_path, monkeypatch, failure, failed_phases, code):
+    backend, assets, _, project, request, processor = setup(tmp_path, monkeypatch, approved=failure != "approval")
+    if failure == "verification":
+        def fail_verify(path):
+            raise GatewayError("MODEL_UNAVAILABLE", "MODEL_UNAVAILABLE")
+        monkeypatch.setattr(module, "_verify_model_directory", fail_verify)
+    elif failure == "load_sync":
+        backend.sync_error = RuntimeError("PRIVATE_BACKEND_DETAIL")
+    elif failure == "tokens":
+        backend.token_error = RuntimeError("PRIVATE_BACKEND_DETAIL")
+    elif failure == "inference":
+        backend.infer_error = RuntimeError("PRIVATE_BACKEND_DETAIL")
+    elif failure == "synchronize":
+        processor._ensure_loaded()
+        backend.sync_error = RuntimeError("PRIVATE_BACKEND_DETAIL")
+    elif failure == "pixels":
+        backend.output_values = (float("nan"), .2, .3)
+    elif failure == "composite":
+        monkeypatch.setattr(module, "inspect_composite", lambda *args: SimpleNamespace(mismatched_pixels=1))
+    elif failure == "storage":
+        def fail_store(*args, **kwargs):
+            raise GatewayError("ASSET_STORAGE_FAILED", "ASSET_STORAGE_FAILED")
+        monkeypatch.setattr(assets, "put_image", fail_store)
+    before = set(assets.files_dir.rglob("*.png"))
+    with recording(job_id=uuid4(), project_id=project, request=request) as recorder:
+        with pytest.raises(GatewayError) as error:
+            processor(request, project)
+    assert error.value.code == code
+    observation = recorder.finish(outcome="failed")
+    assert [item.name for item in observation.phases if item.outcome == "failed"] == failed_phases
+    assert [item.success for item in observation.synchronizations] == {
+        "approval": [], "verification": [], "load_sync": [False],
+        "tokens": [True, True], "inference": [True, True], "synchronize": [False],
+        "pixels": [True, True], "composite": [True, True], "storage": [True, True],
+    }[failure]
+    assert set(assets.files_dir.rglob("*.png")) == before
+    if failure in {"approval", "verification", "load_sync"}:
+        assert observation.memory_snapshots[0].unavailable_reason == "BACKEND_NOT_LOADED"
+    serialized = observation.model_dump_json()
+    assert "PRIVATE_BACKEND_DETAIL" not in serialized
+    assert request.image_prompt.positive not in serialized
+    assert request.image_prompt.negative not in serialized
+    assert str(processor.model_directory) not in serialized
+
+
+@pytest.mark.parametrize("failure,reason", [
+    ("missing", "MEMORY_API_UNAVAILABLE"), ("error", "MEMORY_SNAPSHOT_FAILED"),
+    ("boolean", "INVALID_MEMORY_VALUE"), ("overflow", "INVALID_MEMORY_VALUE"),
+])
+def test_memory_observation_failure_does_not_fail_background_or_hide_available_value(tmp_path, monkeypatch, failure, reason):
+    backend, _, _, project, request, processor = setup(tmp_path, monkeypatch)
+    def failed_memory():
+        raise RuntimeError("PRIVATE_MEMORY_DETAIL")
+    if failure == "error":
+        backend.torch.mps.current_allocated_memory = failed_memory
+    elif failure == "boolean":
+        backend.torch.mps.current_allocated_memory = lambda: True
+    elif failure == "overflow":
+        backend.torch.mps.current_allocated_memory = lambda: 2**63
+    backend.torch.mps.driver_allocated_memory = lambda: 8192
+    with recording(job_id=uuid4(), project_id=project, request=request) as recorder:
+        result = processor(request, project)
+    assert result.product_rgba == request.product_rgba
+    observation = recorder.finish(outcome="succeeded")
+    snapshot, = observation.memory_snapshots
+    assert snapshot.allocated_bytes is None and snapshot.driver_allocated_bytes == 8192
+    assert snapshot.unavailable_reason == reason
+    assert "PRIVATE_MEMORY_DETAIL" not in observation.model_dump_json()
+
+
+def test_untraced_background_skips_memory_and_recorder_error_preserves_result(tmp_path, monkeypatch):
+    backend, _, _, project, request, processor = setup(tmp_path, monkeypatch)
+    calls = []
+    def memory():
+        calls.append("query")
+        return 123
+    backend.torch.mps.current_allocated_memory = memory
+    backend.torch.mps.driver_allocated_memory = memory
+    assert processor(request, project).product_rgba == request.product_rgba
+    assert calls == []
+    def failed_record(*args, **kwargs):
+        raise RuntimeError("PRIVATE_RECORDER_DETAIL")
+    monkeypatch.setattr(module, "record_memory", failed_record)
+    with recording(job_id=uuid4(), project_id=project, request=request) as recorder:
+        assert processor(request, project).product_rgba == request.product_rgba
+    assert calls == ["query", "query"]
+    assert recorder.finish(outcome="succeeded").memory_snapshots == []

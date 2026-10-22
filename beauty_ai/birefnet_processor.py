@@ -19,6 +19,7 @@ from pydantic import ValidationError
 from .assets import LocalAssetStore
 from .contracts import CutoutRequest, CutoutResult, ImageRequest
 from .errors import GatewayError
+from .execution_trace import device_synchronized, is_recording, phase, record_memory, set_backend
 
 
 PROFILE_ID = "birefnet-lite"
@@ -114,17 +115,26 @@ class BiRefNetCutoutProcessor:
             raise _safe_error("MODEL_UNAVAILABLE") from None
 
     def _synchronize(self, deps: _Dependencies) -> None:
+        if self.device == "cpu":
+            return
         try:
             if self.device == "mps":
                 deps.torch.mps.synchronize()
             elif self.device == "cuda":
                 deps.torch.cuda.synchronize()
         except Exception as exc:
+            device_synchronized(self.device, success=False)
             raise _operation_error(exc, "IMAGE_PROCESSING_FAILED") from None
+        device_synchronized(self.device, success=True)
 
     def _ensure_loaded(self) -> None:
+        set_backend(self.device, PIPELINE_REVISION, reused=self._model is not None)
         if self._model is not None:
             return
+        with phase("model_load"):
+            self._load_model()
+
+    def _load_model(self) -> None:
         # Verification precedes optional imports and, critically, remote-code
         # loading. This API never accepts a repository ID or fetches a model.
         verified = _verify_model_directory(self.model_directory)
@@ -154,13 +164,20 @@ class BiRefNetCutoutProcessor:
         self._dependencies, self._preprocess, self._model = deps, preprocess, model
 
     def _infer_alpha(self, rgb: Image.Image) -> Image.Image:
+        # This outer wall-clock span includes nested preprocessing and native
+        # completion. Nested observations must not be added as independent time.
+        with phase("model_inference"):
+            return self._run_inference(rgb)
+
+    def _run_inference(self, rgb: Image.Image) -> Image.Image:
         deps = self._dependencies
         try:
             try:
                 with deps.torch.inference_mode():
-                    inputs = self._preprocess(rgb).unsqueeze(0).to(
-                        device=self.device, dtype=deps.torch.float32,
-                    )
+                    with phase("preprocess"):
+                        inputs = self._preprocess(rgb).unsqueeze(0).to(
+                            device=self.device, dtype=deps.torch.float32,
+                        )
                     outputs = self._model(inputs)
                     if not isinstance(outputs, (list, tuple)) or not outputs:
                         raise _safe_error("IMAGE_RESULT_INVALID")
@@ -191,21 +208,30 @@ class BiRefNetCutoutProcessor:
             raise _operation_error(exc, "IMAGE_PROCESSING_FAILED") from None
 
     def __call__(self, request: ImageRequest, project_id: UUID) -> CutoutResult:
-        request = self._validated(request)
-        # Read first: an unauthorized/tampered asset never triggers a model load.
-        with self.assets.read(request.source, project_id=project_id) as source:
-            rgb = source.convert("RGB")
+        try:
+            return self._process(request, project_id)
+        finally:
+            self._record_memory_snapshot()
+
+    def _process(self, request: ImageRequest, project_id: UUID) -> CutoutResult:
+        with phase("preprocess"):
+            request = self._validated(request)
+            # Read first: an unauthorized/tampered asset never triggers a model load.
+            with self.assets.read(request.source, project_id=project_id) as source:
+                rgb = source.convert("RGB")
         try:
             with self._execution_lock:
                 self._ensure_loaded()
                 alpha = self._infer_alpha(rgb)
             try:
-                product = rgb.copy()
-                product.putalpha(alpha)
-                keep = alpha.point(lambda value: 255 if value > 0 else 0)
+                with phase("composite"):
+                    product = rgb.copy()
+                    product.putalpha(alpha)
+                    keep = alpha.point(lambda value: 255 if value > 0 else 0)
                 try:
-                    product_ref = self.assets.put_image(product, project_id=project_id)
-                    mask_ref = self.assets.put_image(keep, project_id=project_id)
+                    with phase("asset_store"):
+                        product_ref = self.assets.put_image(product, project_id=project_id)
+                        mask_ref = self.assets.put_image(keep, project_id=project_id)
                 finally:
                     product.close()
                     keep.close()
@@ -217,3 +243,37 @@ class BiRefNetCutoutProcessor:
             product_rgba=product_ref, preserve_mask=mask_ref, needs_manual_check=True,
             warnings=["MODEL_SEGMENTATION_REQUIRES_REVIEW", "MANUAL_QUALITY_REVIEW_REQUIRED"],
         )
+
+    def _record_memory_snapshot(self) -> None:
+        """Best-effort process snapshot; never a peak, job delta or failure cause."""
+        try:
+            if not is_recording():
+                return
+            values = {"allocated_bytes": None, "driver_allocated_bytes": None, "reserved_bytes": None}
+            reason = None
+            if self.device == "cpu":
+                reason = "NOT_GPU_DEVICE"
+            elif self._dependencies is None:
+                reason = "BACKEND_NOT_LOADED"
+            else:
+                names = (("allocated_bytes", "current_allocated_memory"),
+                         ("driver_allocated_bytes", "driver_allocated_memory")) if self.device == "mps" else (
+                             ("allocated_bytes", "memory_allocated"), ("reserved_bytes", "memory_reserved"))
+                for field, name in names:
+                    try:
+                        api = getattr(getattr(self._dependencies.torch, self.device), name, None)
+                        if not callable(api):
+                            reason = reason or "MEMORY_API_UNAVAILABLE"
+                            continue
+                        value = api()
+                        if type(value) is not int or not 0 <= value <= 2**63 - 1:
+                            reason = reason or "INVALID_MEMORY_VALUE"
+                        else:
+                            values[field] = value
+                    except Exception:
+                        reason = reason or "MEMORY_SNAPSHOT_FAILED"
+            record_memory(self.device, **values, unavailable_reason=reason)
+        except Exception:
+            # Instrumentation must not replace a successful result or its
+            # original failure; no native exception text is retained.
+            pass

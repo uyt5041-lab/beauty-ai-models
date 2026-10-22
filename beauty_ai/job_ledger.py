@@ -15,13 +15,14 @@ import sqlite3
 from typing import Iterator, Literal
 from uuid import UUID
 
-from pydantic import TypeAdapter, ValidationError
+from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
 from .contracts import (
     BackgroundRequest, CutoutRequest, ImageJob, ImageRequest, ImageResult,
     content_hash,
 )
 from .errors import GatewayError
+from .execution_trace import ExecutionRecord, request_metadata
 
 
 _REQUEST_ADAPTER = TypeAdapter(ImageRequest)
@@ -34,6 +35,8 @@ class ClaimedJob:
     job: ImageJob
     project_id: UUID
     request: ImageRequest
+    created_at: str | None = None
+    claimed_at: str | None = None
 
 
 @dataclass(frozen=True)
@@ -47,6 +50,16 @@ class JobTiming:
     ledger_elapsed_ms: float | None
     clock_basis: Literal["server_wall_clock"] = "server_wall_clock"
     unavailable_reason: Literal["JOB_NOT_TERMINAL", "CLOCK_MOVED_BACKWARD"] | None = None
+
+
+class JobExecution(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    job_id: UUID
+    status: Literal["queued", "running", "succeeded", "failed", "interrupted"]
+    request_hash: str
+    recording_status: Literal["RECORDED", "NOT_RECORDED"]
+    execution: ExecutionRecord | None
 
 
 class JobLedger:
@@ -73,6 +86,13 @@ class JobLedger:
                 )""")
                 db.execute("CREATE INDEX IF NOT EXISTS jobs_status ON jobs(status)")
                 db.execute("CREATE INDEX IF NOT EXISTS jobs_project ON jobs(project_id)")
+                db.execute("""CREATE TABLE IF NOT EXISTS job_executions (
+                    job_id TEXT PRIMARY KEY,
+                    project_id TEXT NOT NULL,
+                    request_hash TEXT NOT NULL,
+                    status TEXT NOT NULL CHECK(status IN ('succeeded', 'failed')),
+                    execution_json TEXT NOT NULL
+                )""")
         except (OSError, sqlite3.Error) as exc:
             raise self._storage_error() from exc
 
@@ -144,7 +164,9 @@ class JobLedger:
                 raise ValueError("Queued job cannot have an owner")
             if job.error_code is not None and not _ERROR_CODE.fullmatch(job.error_code):
                 raise ValueError("Stored error must be a stable code")
-            return ClaimedJob(job=job, project_id=UUID(row["project_id"]), request=request)
+            return ClaimedJob(job=job, project_id=UUID(row["project_id"]), request=request,
+                              created_at=row["created_at"],
+                              claimed_at=row["updated_at"] if job.status == "running" else None)
         except (ValueError, TypeError, ValidationError) as exc:
             raise cls._storage_error(retryable=False) from exc
 
@@ -249,8 +271,50 @@ class JobLedger:
         except sqlite3.Error as exc:
             raise self._storage_error() from exc
 
+    @staticmethod
+    def _execution_matches(packet: ExecutionRecord, claimed: ClaimedJob, status: str) -> bool:
+        expected = request_metadata(claimed.request)
+        return (packet.job_id == claimed.job.job_id and packet.project_id == claimed.project_id
+                and packet.request_hash == claimed.job.request_hash and packet.outcome == status
+                and all(getattr(packet, name) == value for name, value in expected.items()))
+
+    def execution(self, job_id: UUID, project_id: UUID) -> JobExecution:
+        """Read one atomic job/observation snapshot; absent data stays absent."""
+        self._uuid(job_id)
+        self._uuid(project_id)
+        try:
+            with self._connection() as db:
+                row = db.execute("""SELECT jobs.*, e.job_id AS execution_job_id,
+                    e.project_id AS execution_project_id, e.request_hash AS execution_request_hash,
+                    e.status AS execution_status, e.execution_json AS execution_json
+                    FROM jobs LEFT JOIN job_executions e ON e.job_id=jobs.job_id
+                    WHERE jobs.job_id=? AND jobs.project_id=?""", (str(job_id), str(project_id))).fetchone()
+            if row is None:
+                raise self._not_found()
+            claimed = self._decode(row)
+            packet = None
+            if row["execution_job_id"] is not None:
+                try:
+                    raw = row["execution_json"]
+                    if not isinstance(raw, str) or len(raw.encode("utf-8")) > 65536:
+                        raise ValueError("Invalid execution payload")
+                    packet = ExecutionRecord.model_validate_json(raw)
+                    if (row["execution_project_id"] != row["project_id"]
+                            or row["execution_request_hash"] != row["request_hash"]
+                            or row["execution_status"] != claimed.job.status
+                            or not self._execution_matches(packet, claimed, claimed.job.status)):
+                        raise ValueError("Execution does not match current job")
+                except (ValueError, TypeError, ValidationError):
+                    raise self._storage_error(retryable=False) from None
+            return JobExecution(job_id=job_id, status=claimed.job.status,
+                                request_hash=claimed.job.request_hash,
+                                recording_status="RECORDED" if packet is not None else "NOT_RECORDED",
+                                execution=packet)
+        except sqlite3.Error:
+            raise self._storage_error() from None
+
     def finish(self, job_id: UUID, owner_id: str, result: ImageResult | None = None,
-               error_code: str | None = None) -> ImageJob:
+               error_code: str | None = None, *, execution: ExecutionRecord | None = None) -> ImageJob:
         """Complete only an owned running job, after worker result-file checks.
 
         Exactly one of a typed success result and a stable error code is needed.
@@ -281,9 +345,25 @@ class JobLedger:
                     if validated.kind != claimed.request.kind:
                         raise self._state_error()
                     result_json, status = validated.model_dump_json(), "succeeded"
+                execution_json = None
+                if execution is not None:
+                    try:
+                        if not isinstance(execution, ExecutionRecord):
+                            raise ValueError("A validated execution record is required")
+                        execution_json = execution.model_dump_json()
+                        if len(execution_json.encode("utf-8")) > 65536:
+                            raise ValueError("Execution record too large")
+                        packet = ExecutionRecord.model_validate_json(execution_json)
+                        if not self._execution_matches(packet, claimed, status):
+                            raise ValueError("Execution does not match completion")
+                    except (ValueError, TypeError, ValidationError):
+                        raise self._state_error() from None
                 db.execute("""UPDATE jobs SET status=?, result_json=?, error_code=?, updated_at=?
                     WHERE job_id=? AND status='running' AND owner_id=?""", (
                     status, result_json, error_code, self._now(), str(job_id), owner_id))
+                if execution_json is not None:
+                    db.execute("INSERT INTO job_executions VALUES (?, ?, ?, ?, ?)", (
+                        str(job_id), str(claimed.project_id), claimed.job.request_hash, status, execution_json))
                 updated = db.execute("SELECT * FROM jobs WHERE job_id=?", (str(job_id),)).fetchone()
                 job = self._decode(updated).job
             return job

@@ -18,7 +18,7 @@ from .contracts import (AssetRef, BackgroundRequest, Contract, CutoutRequest, Im
 from .errors import GatewayError
 from .image_worker import SingleHostWorker
 from .image_edits import ImageEditStore
-from .job_ledger import JobLedger, JobTiming
+from .job_ledger import JobExecution, JobLedger, JobTiming
 from .product_approval import ProductApprovalStore
 
 
@@ -179,6 +179,10 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
     @app.get("/internal/v1/jobs/{job_id}/timing", response_model=JobTiming)
     async def get_job_timing(job_id: UUID, project_id: UUID = Depends(project)):
         return await run_in_threadpool(ledger.timing, job_id, project_id)
+
+    @app.get("/internal/v1/jobs/{job_id}/execution", response_model=JobExecution)
+    async def get_job_execution(job_id: UUID, project_id: UUID = Depends(project)):
+        return await run_in_threadpool(ledger.execution, job_id, project_id)
 
     def product_store() -> ProductApprovalStore:
         if approvals is None:

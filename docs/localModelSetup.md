@@ -185,6 +185,36 @@ B7 최종 회귀는 **433 tests PASS(9.39s)**이며 pip check·최종 wheel·격
 | MPS driver | 10240196608 bytes | 작업 후 관찰, CUDA VRAM 아님 |
 | 품질/안전 | NOT_ASSESSED | 꽃 표현 부족·제품 잔상 관찰, NSFW checker 없음 |
 
-root가 결과를 확인했을 때 꽃 표현이 부족하고 큰 cap/반사 형태의 제품 잔상이 보였다. 기술 실행 PASS를 광고 품질 합격으로 확대하지 않는다. 같은 모델의 로컬 cold/warm·크기별 반복 측정, 단계별 trace·메모리 측정, 응답 유실 후 job 조회·조정은 후속 구현 후보다. 실사진 품질·GCP CUDA·렌더러·팀 인수는 별도로 확인한다.
+root가 결과를 확인했을 때 꽃 표현이 부족하고 큰 cap/반사 형태의 제품 잔상이 보였다. 기술 실행 PASS를 광고 품질 합격으로 확대하지 않는다. 응답 유실 후 같은 job 조회·조정은 B8에서 검증했다. 같은 모델의 로컬 cold/warm·크기별 반복 측정과 단계별 실행 관찰은 아래 B9에서 제한된 합성 fixture로 검증했다. 실사진 품질·GCP CUDA·렌더러·팀 인수는 별도로 확인한다.
+
+## 7. B9 작업 실행 관찰과 반복 측정
+
+**B9 최종 회귀 624 tests PASS(36.32s), 실제 MPS 누끼1+배경5 jobs PASS.** 한 Mac·한 프로세스·하나의 합성 제품 입력 관찰이다. CPU fallback은 껐고 시험 후보 확인만 수행했다. 실제 광고 품질·안전·실사진·CUDA는 미평가/미검증이다.
+
+```bash
+python -m examples.run_image get-execution <job_id>
+python -m examples.run_image get-timing <job_id>
+```
+
+execution은 job·입력 hash·profile/revision·seed·관찰 가능한 환경·장치·모델 재사용·단계와 메모리 snapshot을 반환한다. 아래 실제6 jobs와 get-execution CLI를 검증했다. 입력/출력 wire와 기존 timing은 유지한다. 이전/강제중단 작업에 관찰이 없으면 NOT_RECORDED/null이다.
+
+| 실행 | worker 경과(s) | 모델 로딩(s) | inference 단계(s) | 작업 후 MPS driver(bytes) |
+| --- | --- | --- | --- | --- |
+| cutout-cold | 9.102 | 6.471 | 2.604 | 5,471,289,344 |
+| background-512x512-cold | 47.170 | 15.982 | 31.118 | 10,204,545,024 |
+| background-512x512-warm | 28.488 | — (재사용) | 28.438 | 10,212,933,632 |
+| background-768x768-warm | 57.418 | — (재사용) | 57.337 | 14,113,718,272 |
+| background-1024x1024-warm | 104.426 | — (재사용) | 104.289 | 19,876,773,888 |
+| background-512x768-warm | 50.855 | — (재사용) | 50.312 | 18,039,750,656 |
+
+cold는 이 프로세스에서 해당 모델을 처음 로딩한 호출, warm은 같은 프로세스가 로딩한 모델을 재사용한 호출이다. OS 캐시를 비우거나 장치를 재시작한 실험은 아니다. model_load가 없는 warm을 로딩0초로 추정하지 않는다. processor/worker와 단계는 monotonic wall-clock이고 일부 preprocess가 inference에 중첩되므로 단순 합산하지 않는다. queue는 서버 wall-clock이며 여섯 건에서26.315–107.139ms였다. 위 값은 GPU 순수 연산 시간이 아니다.
+
+같은512 입력·seed42의 서로 다른 두 job은 request hash와 3개 output hash가 같았다. 표본2의 동일 프로세스·장치·버전 관찰이며 다른 장치나 라이브러리의 픽셀 일치를 보장하지 않는다. 배경5건 모두 opaque mismatch0·Safe Zone exact neutral·결과 파일 hash를 확인했고, 전체6건 기술 실패는0건이다. 실패율0/6은 일반 안정성/품질 보장이 아니다.
+
+MPS allocated/driver는 작업 후 process snapshot이다. 최고 관찰 driver19,876,773,888 bytes는 실행 peak·요청별 증가량·CUDA VRAM·비용이 아니다. peak 메모리·OOM 한도는 아직 측정하지 않았다. 관찰에는 prompt·자산 경로/URL·토큰·원문 예외를 저장하지 않으며 실제 이미지/receipt는 Git 제외 outputs 경로에 보관한다.
+
+root 시각 확인: 512는 꽃 표현이 부족했다. 768은 오른쪽 큰 꽃이 보였지만 turquoise cap 연장과 제품 주변 잔상이 남았다. 1024는 꽃이 보이지 않았고 검은 cap 옆 잔상·바닥 반사가 있었다. 512×768은 오른쪽 가장자리 꽃·분홍 원형 장식이 있었지만 제품 외곽·뚜껑·반사 잔상이 남았다. 기술 실행 PASS이며 광고 품질·안전은 NOT_ASSESSED다.
+
+pip check·wheel·격리 lazy import PASS. benchmark receipt의 source SHA6개가 현재 코드와 일치한다. 다음 B10은 사용자 요청의 SSOT 대조·실행 TODO 정리다. OOM/저장 실패 뒤 같은 worker의 후속 정상 job과 부분 결과 자산의 게시/보존/정리는 이후 후보로 남긴다. 실제 GPU 고갈·운영 복구 검증과 구분한다. [B9 검증 기록](../fivecircles/test/relay-b9.md).
 
 [이미지 TODO](imageTodo.md) · [이미지 실행 계약](../fivecircles/architecture/contract/image-runtime.md) · [목표/현재 흐름](../fivecircles/architecture/spec/image-runtime-flow.html)

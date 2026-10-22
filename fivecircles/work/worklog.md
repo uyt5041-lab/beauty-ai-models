@@ -81,3 +81,23 @@
 - 수리: failed.error_code의 임의 원문 노출 공백을 제한한 ASCII 코드·길이·실패 상태 검사로 막고 legacy 경로도 회귀했다. 정상 서버 코드는 유지한다.
 - 문서: README 5절·원본 TODO 2개 체크(누적 31개)·흐름/브라우저 비교. 실제 GPU 재호출·운영 proxy·광고 품질을 이번 검사로 완료하지 않는다.
 - 다음: 로컬 cold/warm·크기·단계 trace와 메모리 관찰 계약. 실사진·CUDA·렌더러·팀 인수는 별도. [검증](../test/relay-b8.md).
+
+
+## 2026-10-22 · B9 · 구현/검증
+
+- 구현: execution_trace·ledger 별도 관찰/terminal 원자 저장·worker/모델 계측·인증 execution API/CLI. wire/hash/timing 유지, 미기록 NOT_RECORDED/null.
+- root 검증: 전체624 tests PASS(36.32s), pip check·wheel·격리 lazy import. 실제MPS6 jobs와 source hash6개 일치·get-execution CLI를 확인했다. 동일512 두 job의3개 출력 hash 일치.
+- 측정: worker 누끼9.102s, 배경512 cold47.170s/warm28.488s,768 57.418s,1024 104.426s,세로50.855s. 일부 단계 중첩·작업 후 메모리 snapshot을 구분하고 peak/순수GPU시간으로 표시하지 않는다.
+- 시험 fixture 수리: worker 시작 recovery의 시각 호출을 추가해 iterator 고갈을 해소했다. 제품 결함과 구분한다.
+- 문서: README5절·TODO 현재 출발점 갱신·기존4개 체크(누적35개)·설치/측정표·flow/브라우저 비교. 꽃 표현 편차·제품 잔상·최종 품질은 미해결.
+- 다음: 사용자 요청의 B10 SSOT 대조·실행 TODO 정리. OOM/저장 실패 뒤 같은 worker 후속 정상 job·부분 결과 자산 게시/보존/정리는 이후 후보. 실사진·CUDA·렌더러·팀 인수는 별도. [검증](../test/relay-b9.md).
+
+- B9 시각 검증 정정: 최초 브라우저 화면은 헤더 오기 수정 전 자료다. 헤더·PNG 수정 후 최종 HTML 재검증은 Chrome CUA의 `file:` 정책으로 BLOCKED. 현재 PNG 직접 검사·문서 구조 정적 검증은 완료했고 이전 screenshot을 최종 PASS로 쓰지 않는다.
+
+
+## 2026-10-22 · SSOT 대조 문서 전달
+
+- 확정 인스타그램4:5·각1개·동일제품2~5·참고배경0~5와 현재 단일source/카피기본3/참고계약·4:5·최종렌더 미연결 차이를 정리했다. [대조표](../../docs/ssotAlignment.md).
+- SSOT-01~12의 담당/미정·의존·완료기준은 imageTodo의 실행 항목에 연결했다. 기존 완료35개는 실제 완료일2026-10-22와 B1~B9 근거를 붙였고 신규 기능은 체크하지 않았다.
+- 입력 운영 상한은 유지했다. 사용자 검토·제품 레이어 승인·자동 검수를 분리하고 최종 한글 합성은 MVP 필수, 부분수정UI·다중시안·다른비율/플랫폼은 후속으로 구분했다. 기존 revision/hash/cache는 유지한다.
+- 이 작업은 문서 대조이며 SSOT 새기능 구현/팀합의/인수 완료가 아니다. B9 최종 HTML 미리보기는 자동승인검토의 file: 접근 거절로 BLOCKED이며 우회하지 않았다. 검증된 소스/문서 게시와 이 제한은 별개로 기록한다.

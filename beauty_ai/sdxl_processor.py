@@ -19,9 +19,11 @@ from pydantic import ValidationError
 from .assets import LocalAssetStore
 from .contracts import BackgroundRequest, BackgroundResult, ImageRequest, Rect
 from .errors import GatewayError
+from .execution_trace import device_synchronized, is_recording, phase, record_memory, set_backend
 from .image_integrity import composite_approved_foreground
 from .image_preparation import inspect_composite
 from .product_approval import ProductApprovalStore
+from .sdxl_model_store import MODEL_REVISION
 
 
 PROFILE_ID = "sdxl-inpaint"
@@ -126,17 +128,26 @@ class SDXLBackgroundProcessor:
             raise _safe_error("MODEL_UNAVAILABLE") from None
 
     def _synchronize(self, deps: _Dependencies) -> None:
+        if self.device == "cpu":
+            return
         try:
             if self.device == "mps":
                 deps.torch.mps.synchronize()
             elif self.device == "cuda":
                 deps.torch.cuda.synchronize()
         except Exception as exc:
+            device_synchronized(self.device, success=False)
             raise _operation_error(exc, "IMAGE_PROCESSING_FAILED") from None
+        device_synchronized(self.device, success=True)
 
     def _ensure_loaded(self) -> None:
+        set_backend(self.device, MODEL_REVISION, reused=self._pipeline is not None)
         if self._pipeline is not None:
             return
+        with phase("model_load"):
+            self._load_pipeline()
+
+    def _load_pipeline(self) -> None:
         verified = _verify_model_directory(self.model_directory)
         try:
             deps = _load_dependencies()
@@ -188,10 +199,18 @@ class SDXLBackgroundProcessor:
 
     def _generate(self, request: BackgroundRequest, initial: Image.Image,
                   inpaint_mask: Image.Image) -> Image.Image:
+        # Includes token validation and device completion; nested spans describe
+        # wall-clock work and are not independent/additive GPU measurements.
+        with phase("model_inference"):
+            return self._run_generation(request, initial, inpaint_mask)
+
+    def _run_generation(self, request: BackgroundRequest, initial: Image.Image,
+                        inpaint_mask: Image.Image) -> Image.Image:
         deps = self._dependencies
         try:
             try:
-                self._validate_prompt(request)
+                with phase("preprocess"):
+                    self._validate_prompt(request)
                 with deps.torch.inference_mode():
                     generator = deps.torch.Generator(device="cpu").manual_seed(request.seed)
                     output = self._pipeline(
@@ -222,22 +241,30 @@ class SDXLBackgroundProcessor:
             raise _operation_error(exc, "IMAGE_PROCESSING_FAILED") from None
 
     def __call__(self, request: ImageRequest, project_id: UUID) -> BackgroundResult:
-        request = self._validated(request)
-        self.approvals.require_approved(request, project_id)
+        try:
+            return self._process(request, project_id)
+        finally:
+            self._record_memory_snapshot()
+
+    def _process(self, request: ImageRequest, project_id: UUID) -> BackgroundResult:
+        with phase("preprocess"):
+            request = self._validated(request)
+            self.approvals.require_approved(request, project_id)
         with self.assets.read(request.product_rgba, project_id=project_id) as foreground:
-            with self.assets.read(request.preserve_mask, project_id=project_id) as keep:
-                # Recheck the images read for this call before inverting. A gray
-                # alpha matte must never be accepted as a binary protection mask.
-                try:
-                    ProductApprovalStore._validate_layers(foreground, keep, request.visual)
-                except ValueError:
-                    raise _safe_error("INVALID_IMAGE_REQUEST") from None
-                inpaint_mask = ImageChops.invert(keep.convert("L"))
-            safe = _safe_bounds(request.visual.text_safe_zone, foreground.size)
-            inpaint_mask.paste(0, safe)
-            neutral = Image.new("RGB", foreground.size, NEUTRAL_RGB)
-            initial = composite_approved_foreground(neutral, foreground).convert("RGB")
-            neutral.close()
+            with phase("preprocess"):
+                with self.assets.read(request.preserve_mask, project_id=project_id) as keep:
+                    # Recheck the images read for this call before inverting. A gray
+                    # alpha matte must never be accepted as a binary protection mask.
+                    try:
+                        ProductApprovalStore._validate_layers(foreground, keep, request.visual)
+                    except ValueError:
+                        raise _safe_error("INVALID_IMAGE_REQUEST") from None
+                    inpaint_mask = ImageChops.invert(keep.convert("L"))
+                safe = _safe_bounds(request.visual.text_safe_zone, foreground.size)
+                inpaint_mask.paste(0, safe)
+                neutral = Image.new("RGB", foreground.size, NEUTRAL_RGB)
+                initial = composite_approved_foreground(neutral, foreground).convert("RGB")
+                neutral.close()
             try:
                 with self._execution_lock:
                     self._ensure_loaded()
@@ -246,16 +273,19 @@ class SDXLBackgroundProcessor:
                 initial.close()
                 inpaint_mask.close()
             try:
-                # Masked latent reconstruction can still alter pixels. Keep the
-                # reserved rectangle exactly neutral after decoding as well.
-                scene.paste(NEUTRAL_RGB, safe)
-                preview = composite_approved_foreground(scene, foreground)
+                with phase("composite"):
+                    # Masked latent reconstruction can still alter pixels. Keep the
+                    # reserved rectangle exactly neutral after decoding as well.
+                    scene.paste(NEUTRAL_RGB, safe)
+                    preview = composite_approved_foreground(scene, foreground)
                 try:
-                    integrity = inspect_composite(preview, foreground)
-                    if integrity.mismatched_pixels:
-                        raise _safe_error("IMAGE_QUALITY_REJECTED")
-                    scene_ref = self.assets.put_image(scene, project_id=project_id)
-                    preview_ref = self.assets.put_image(preview, project_id=project_id)
+                    with phase("composite"):
+                        integrity = inspect_composite(preview, foreground)
+                        if integrity.mismatched_pixels:
+                            raise _safe_error("IMAGE_QUALITY_REJECTED")
+                    with phase("asset_store"):
+                        scene_ref = self.assets.put_image(scene, project_id=project_id)
+                        preview_ref = self.assets.put_image(preview, project_id=project_id)
                 finally:
                     preview.close()
             finally:
@@ -266,3 +296,36 @@ class SDXLBackgroundProcessor:
             warnings.append("NO_OPAQUE_PIXELS_TO_VERIFY")
         return BackgroundResult(scene_underlay=scene_ref, product_rgba=request.product_rgba,
                                 composed_preview=preview_ref, warnings=warnings)
+
+    def _record_memory_snapshot(self) -> None:
+        """Observe process memory after this operation without changing its result."""
+        try:
+            if not is_recording():
+                return
+            values = {"allocated_bytes": None, "driver_allocated_bytes": None, "reserved_bytes": None}
+            reason = None
+            if self.device == "cpu":
+                reason = "NOT_GPU_DEVICE"
+            elif self._dependencies is None:
+                reason = "BACKEND_NOT_LOADED"
+            else:
+                names = (("allocated_bytes", "current_allocated_memory"),
+                         ("driver_allocated_bytes", "driver_allocated_memory")) if self.device == "mps" else (
+                             ("allocated_bytes", "memory_allocated"), ("reserved_bytes", "memory_reserved"))
+                for field, name in names:
+                    try:
+                        api = getattr(getattr(self._dependencies.torch, self.device), name, None)
+                        if not callable(api):
+                            reason = reason or "MEMORY_API_UNAVAILABLE"
+                            continue
+                        value = api()
+                        if type(value) is not int or not 0 <= value <= 2**63 - 1:
+                            reason = reason or "INVALID_MEMORY_VALUE"
+                        else:
+                            values[field] = value
+                    except Exception:
+                        reason = reason or "MEMORY_SNAPSHOT_FAILED"
+            record_memory(self.device, **values, unavailable_reason=reason)
+        except Exception:
+            # No prompt, path, token or native exception body is collected.
+            pass

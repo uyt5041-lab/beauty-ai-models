@@ -31,5 +31,7 @@
 - [x] B6 고정 BiRefNetLite·명시적 준비/검증·adapter. 339 tests와 실제 MPS/TCP 합성 fixture PASS. [검증](../test/relay-b6.md).
 - [x] B7 고정 SDXL·실제 MPS 512 fixture 생성/제품·여백 보존. 433 tests·실제 TCP/CLI PASS, 광고 품질 미평가. [검증](../test/relay-b7.md).
 - [x] B8 동일 ID 제출 조회·조정. 521 tests·실제 TCP 응답 유실에서 PUT/처리 각 1회, 미관찰/관찰 후 기한 구분. [검증](../test/relay-b8.md).
-- [ ] 로컬 반복/크기 측정·단계 trace. 이후 GCP CUDA는 별도로 검증.
-- [ ] 실제 GPU·모델 품질·팀 인수: 실행 환경/공동 확인 근거 필요.
+- [x] B9 실행 관찰·로컬 반복/크기 측정. 624 tests·실제 MPS6 jobs·동일512 두 번 hash 일치. peak/품질 제외. [검증](../test/relay-b9.md).
+- [x] 별도 사용자 요청: SSOT 대조문서·현재 구현/검증/실행 TODO 정리 (2026-10-22). [대조표](../../docs/ssotAlignment.md)와 [원본 TODO](../../docs/imageTodo.md). 신규 SSOT-01~12 구현은 미완료이며 다음 코드 배치를 실행한 것은 아니다.
+- [ ] 후속 후보: OOM/저장 실패 뒤 같은 worker의 다음 정상 job 복구와 부분 결과 자산 게시/보존/정리 경계.
+- [ ] 실사진 품질·CUDA/GCP·서비스/렌더러·팀 인수: 실제 환경/공동 확인 근거 필요.

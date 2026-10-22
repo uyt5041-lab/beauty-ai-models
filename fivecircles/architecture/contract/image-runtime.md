@@ -129,3 +129,13 @@
 - 기한까지 올바른 job 레코드를 한 번도 확인하지 못하면 SubmissionUncertain을 유지한다. 접수된 job을 확인했으나 완료를 확인하지 못하면 JobStillPending이다. 타임아웃·클라이언트종료를GPU실패나취소로기록하지않는다.
 - CLI prepare/render는 출력한 ID를 유지하며 새 함수를 사용한다. 사용자가 계속 조회할 수 있도록 ID와 안전한오류코드를남기고prompt/토큰/서버원문은출력하지않는다.
 - 검증 예: 서버가 PUT을commit한뒤클라이언트가응답을잃어도같은ID조회→같은결과, PUT1회·processor1회. GET404/일시오류가계속되면재생성없이불확실상태로종료. 실제GPU/운영프록시장애검증은별도다.
+
+## 배치 9 · 작업 실행 관찰
+
+- `execution_trace.py`는 worker thread의 ContextVar recorder와 유한 단계명을 제공한다. 관찰이 없는 직접 processor 호출은 기존처럼 동작한다. 입력 prompt·자산경로/URL·토큰·원문예외를 수집하지 않는다.
+- 단계명은 model_load, preprocess, model_inference, composite, asset_store, result_validation. 각 elapsed_ms는 worker monotonic wall-clock이고 outcome은 completed/failed다. processor 전체 경과와 단계값을 구분하며 순수 GPU 시간·합산 가능한 독립 시간을 자동 주장하지 않는다.
+- 서버 지정 요청 장치, 모델 재사용 여부·고정 모델 revision, 관찰 가능한 Python/패키지 버전, adapter 장치 동기화 결과를 기록한다. 설정 장치와 실제 호출/검증 완료를 혼동하지 않는다. MPS allocated/driver 및 CUDA allocated/reserved는 작업 후 process snapshot이며 peak·요청별 증분·비용이 아니다. 없는 값은 null과 사유로 남긴다.
+- `JobLedger.finish(..., execution=...)`는 성공/실패 상태와 관찰을 같은 DB transaction에 저장한다. 기존 jobs 테이블/요청hash/이미지결과는 유지하고 별도 job_executions 테이블을 만든다. 기존/강제중단 작업에 없는 관찰을 소급 생성하지 않는다. 프로젝트·요청hash·현재 job상태와 함께 검증해 읽는다.
+- `GET /internal/v1/jobs/{job_id}/execution`과 CLI get-execution을 추가한다. 인증/프로젝트 범위는 기존job조회와 같다. 미기록은 NOT_RECORDED와execution=null이며0초나성공으로표시하지않는다. 손상된 관찰은 저장 오류이며 원문을 노출하지 않는다. 기존 timing endpoint는 그대로다.
+- 큐 경과는 실제 claim 시각과 created 시각을 얻을 수 있을 때만 server wall-clock으로 기록하고, 역행/기존자료부족이면 null로 둔다. 단계측정에 UTC시각차를 섞지 않는다.
+- 실제 검증은 권리 있는 합성 fixture로 동일512입력/seed 반복과768/1024·직사각 일부를 제한적으로 수행한다. 새job ID마다 실제실행과입력hash/결과hash/phase/경고를연결한다. 허용크기전체의광고품질·메모리상한·다른장치픽셀일치를주장하지않는다.

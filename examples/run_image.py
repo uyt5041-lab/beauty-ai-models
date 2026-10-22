@@ -88,6 +88,8 @@ async def run(args) -> dict:
             return await json_response("GET", f"/internal/v1/jobs/{args.job_id}")
         if args.command == "get-timing":
             return await json_response("GET", f"/internal/v1/jobs/{args.job_id}/timing")
+        if args.command == "get-execution":
+            return await json_response("GET", f"/internal/v1/jobs/{args.job_id}/execution")
         if args.command == "get-edit":
             return await json_response("GET", f"/internal/v1/edits/{args.campaign_id}")
         if args.command == "attach":
@@ -122,6 +124,8 @@ def main():
     get_job.add_argument("job_id", type=UUID)
     get_timing = commands.add_parser("get-timing", help="Server receipt-to-terminal wall time; not GPU time")
     get_timing.add_argument("job_id", type=UUID)
+    get_execution = commands.add_parser("get-execution", help="Recorded worker stages; not pure GPU time or peak memory")
+    get_execution.add_argument("job_id", type=UUID)
     select = commands.add_parser("select", help="Compare-and-set the current image input; reuse a valid cached result")
     select.add_argument("candidate_id", type=UUID)
     select.add_argument("campaign_id", type=UUID)
