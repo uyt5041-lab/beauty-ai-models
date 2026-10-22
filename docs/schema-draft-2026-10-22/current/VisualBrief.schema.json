@@ -1,0 +1,99 @@
+{
+  "$defs": {
+    "Rect": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Height",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "Rect",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Frozen visual intent; deliberately excludes mutable ad-copy text.",
+  "properties": {
+    "concept": {
+      "title": "Concept",
+      "type": "string"
+    },
+    "style_preset_id": {
+      "title": "Style Preset Id",
+      "type": "string"
+    },
+    "style_preset_version": {
+      "title": "Style Preset Version",
+      "type": "string"
+    },
+    "layout_template_id": {
+      "title": "Layout Template Id",
+      "type": "string"
+    },
+    "layout_template_version": {
+      "title": "Layout Template Version",
+      "type": "string"
+    },
+    "generation_width": {
+      "maximum": 2048,
+      "minimum": 256,
+      "title": "Generation Width",
+      "type": "integer"
+    },
+    "generation_height": {
+      "maximum": 2048,
+      "minimum": 256,
+      "title": "Generation Height",
+      "type": "integer"
+    },
+    "product_box": {
+      "$ref": "#/$defs/Rect"
+    },
+    "text_safe_zone": {
+      "$ref": "#/$defs/Rect"
+    }
+  },
+  "required": [
+    "concept",
+    "style_preset_id",
+    "style_preset_version",
+    "layout_template_id",
+    "layout_template_version",
+    "generation_width",
+    "generation_height",
+    "product_box",
+    "text_safe_zone"
+  ],
+  "title": "VisualBrief",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-status": "DRAFT_TEAM_UNAGREED",
+  "x-origin": "current-code-snapshot"
+}

@@ -1,0 +1,48 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "headline": {
+      "title": "Headline",
+      "type": "string"
+    },
+    "subheadline": {
+      "title": "Subheadline",
+      "type": "string"
+    },
+    "cta": {
+      "title": "Cta",
+      "type": "string"
+    },
+    "caption": {
+      "title": "Caption",
+      "type": "string"
+    },
+    "hashtags": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Hashtags",
+      "type": "array"
+    },
+    "badges": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Badges",
+      "type": "array"
+    }
+  },
+  "required": [
+    "headline",
+    "subheadline",
+    "cta",
+    "caption",
+    "hashtags",
+    "badges"
+  ],
+  "title": "CopyBundle",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-status": "DRAFT_TEAM_UNAGREED",
+  "x-origin": "current-code-snapshot"
+}

@@ -1,0 +1,245 @@
+{
+  "$defs": {
+    "AssetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_id": {
+          "format": "uuid",
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "width": {
+          "maximum": 16384,
+          "minimum": 1,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "maximum": 16384,
+          "minimum": 1,
+          "title": "Height",
+          "type": "integer"
+        },
+        "mime_type": {
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp"
+          ],
+          "title": "Mime Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "asset_id",
+        "sha256",
+        "width",
+        "height",
+        "mime_type"
+      ],
+      "title": "AssetRef",
+      "type": "object"
+    },
+    "ImagePrompt": {
+      "additionalProperties": false,
+      "description": "Versioned input supplied by the text service, not generated or translated here.\n\nCharacter limits bound the wire payload. A real model adapter must also check\nits tokenizer limits; ``language`` is the sender's declaration, not detection.",
+      "properties": {
+        "positive": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Positive",
+          "type": "string"
+        },
+        "negative": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Negative",
+          "type": "string"
+        },
+        "prompt_version": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Prompt Version",
+          "type": "string"
+        },
+        "source_revision": {
+          "minimum": 1,
+          "title": "Source Revision",
+          "type": "integer"
+        },
+        "language": {
+          "const": "en",
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        }
+      },
+      "required": [
+        "positive",
+        "prompt_version",
+        "source_revision"
+      ],
+      "title": "ImagePrompt",
+      "type": "object"
+    },
+    "Rect": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Height",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "Rect",
+      "type": "object"
+    },
+    "VisualBrief": {
+      "additionalProperties": false,
+      "description": "Frozen visual intent; deliberately excludes mutable ad-copy text.",
+      "properties": {
+        "concept": {
+          "title": "Concept",
+          "type": "string"
+        },
+        "style_preset_id": {
+          "title": "Style Preset Id",
+          "type": "string"
+        },
+        "style_preset_version": {
+          "title": "Style Preset Version",
+          "type": "string"
+        },
+        "layout_template_id": {
+          "title": "Layout Template Id",
+          "type": "string"
+        },
+        "layout_template_version": {
+          "title": "Layout Template Version",
+          "type": "string"
+        },
+        "generation_width": {
+          "maximum": 2048,
+          "minimum": 256,
+          "title": "Generation Width",
+          "type": "integer"
+        },
+        "generation_height": {
+          "maximum": 2048,
+          "minimum": 256,
+          "title": "Generation Height",
+          "type": "integer"
+        },
+        "product_box": {
+          "$ref": "#/$defs/Rect"
+        },
+        "text_safe_zone": {
+          "$ref": "#/$defs/Rect"
+        }
+      },
+      "required": [
+        "concept",
+        "style_preset_id",
+        "style_preset_version",
+        "layout_template_id",
+        "layout_template_version",
+        "generation_width",
+        "generation_height",
+        "product_box",
+        "text_safe_zone"
+      ],
+      "title": "VisualBrief",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "render_background",
+      "default": "render_background",
+      "title": "Kind",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/AssetRef"
+    },
+    "product_rgba": {
+      "$ref": "#/$defs/AssetRef"
+    },
+    "preserve_mask": {
+      "$ref": "#/$defs/AssetRef"
+    },
+    "visual": {
+      "$ref": "#/$defs/VisualBrief"
+    },
+    "seed": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "pipeline_profile_id": {
+      "title": "Pipeline Profile Id",
+      "type": "string"
+    },
+    "pipeline_revision": {
+      "title": "Pipeline Revision",
+      "type": "string"
+    },
+    "image_prompt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ImagePrompt"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "source",
+    "product_rgba",
+    "preserve_mask",
+    "visual",
+    "seed",
+    "pipeline_profile_id",
+    "pipeline_revision"
+  ],
+  "title": "BackgroundRequest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-status": "DRAFT_TEAM_UNAGREED",
+  "x-origin": "current-code-snapshot"
+}

@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "ClaimFact": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "evidence_ref": {
+          "title": "Evidence Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "text",
+        "evidence_ref"
+      ],
+      "title": "ClaimFact",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "product_id": {
+      "format": "uuid",
+      "title": "Product Id",
+      "type": "string"
+    },
+    "revision": {
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "product_name": {
+      "title": "Product Name",
+      "type": "string"
+    },
+    "functional_status": {
+      "enum": [
+        "general",
+        "functional",
+        "unconfirmed"
+      ],
+      "title": "Functional Status",
+      "type": "string"
+    },
+    "functional_categories": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Functional Categories",
+      "type": "array"
+    },
+    "confirmed_claims": {
+      "items": {
+        "$ref": "#/$defs/ClaimFact"
+      },
+      "title": "Confirmed Claims",
+      "type": "array"
+    }
+  },
+  "required": [
+    "product_id",
+    "revision",
+    "product_name",
+    "functional_status",
+    "functional_categories",
+    "confirmed_claims"
+  ],
+  "title": "ProductFacts",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-status": "DRAFT_TEAM_UNAGREED",
+  "x-origin": "current-code-snapshot"
+}

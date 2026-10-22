@@ -1,0 +1,32 @@
+{
+  "schema_version": "draft-2026-10-22",
+  "product": {
+    "product_name": "가상 샘플 크림",
+    "features": [
+      "제품 담당자가 입력한 가상 특징"
+    ],
+    "functional_status": "unconfirmed",
+    "functional_categories": []
+  },
+  "product_photos": [
+    {
+      "asset_id": "00000000-0000-4000-8000-000000000001",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 1600,
+      "mime_type": "image/png"
+    },
+    {
+      "asset_id": "00000000-0000-4000-8000-000000000002",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "width": 1200,
+      "height": 1600,
+      "mime_type": "image/png"
+    }
+  ],
+  "reference_photos": [],
+  "ad_purpose": "제품 소개",
+  "channel": "instagram_feed",
+  "final_aspect_ratio": "4:5",
+  "candidate_count": 1
+}

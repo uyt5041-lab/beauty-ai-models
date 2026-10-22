@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "description": "VLM observations are suggestions, not functional classification or evidence.",
+  "properties": {
+    "container_shape": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Container Shape"
+    },
+    "visible_colors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Visible Colors",
+      "type": "array"
+    },
+    "label_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Label Text"
+    },
+    "uncertainties": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Uncertainties",
+      "type": "array"
+    }
+  },
+  "required": [
+    "container_shape",
+    "visible_colors",
+    "label_text",
+    "uncertainties"
+  ],
+  "title": "ProductObservation",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-status": "DRAFT_TEAM_UNAGREED",
+  "x-origin": "current-code-snapshot"
+}

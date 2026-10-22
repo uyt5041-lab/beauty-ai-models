@@ -1,0 +1,20 @@
+{
+  "status": "DRAFT_TEAM_UNAGREED",
+  "checked_at": "2026-10-22T18:52:31+09:00",
+  "source_commit": "bdddddea453c0eab23c99cfa37b9ee15f9b386ca",
+  "current_schemas_match_code": 13,
+  "proposed_schemas": 2,
+  "json_files_parsed": 20,
+  "local_refs_resolved": true,
+  "current_examples_revalidated": 2,
+  "original_draft_checks": [
+    "product_photos=1: rejected",
+    "product_photos=6: rejected",
+    "stale copy/prompt revision: rejected"
+  ],
+  "original_checks_note": "Draft creation used temporary Pydantic models for both proposed examples and negative boundaries; those temporary classes are not a shipped implementation. Publication did not rerun the proposed runtime validators.",
+  "local_absolute_paths_removed": true,
+  "fivecircles_check": "PASS",
+  "model_or_external_api_invoked": false,
+  "quality_or_team_acceptance": "NOT_VERIFIED"
+}

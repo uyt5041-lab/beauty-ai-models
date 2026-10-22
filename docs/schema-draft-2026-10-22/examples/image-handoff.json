@@ -1,0 +1,47 @@
+{
+  "schema_version": "draft-2026-10-22",
+  "campaign_id": "00000000-0000-4000-8000-000000000003",
+  "product_revision": 1,
+  "copy_revision": 1,
+  "copy_bundle": {
+    "headline": "가벼운 일상 케어",
+    "subheadline": "사용감은 제품 설명을 확인하세요",
+    "cta": "제품 자세히 보기",
+    "caption": "가상 제품을 사용한 연동 예시입니다. 실제 광고 문구가 아닙니다.",
+    "hashtags": [
+      "#샘플"
+    ],
+    "badges": []
+  },
+  "image_prompt": {
+    "positive": "Bright cosmetic product scene, vivid flowers placed around the product, clear space for a separate text layer, no lettering.",
+    "negative": "letters, altered product label",
+    "prompt_version": "draft-floral-v1",
+    "source_revision": 1,
+    "language": "en"
+  },
+  "copy_review": {
+    "copy_revision": 1,
+    "copy_hash": "0dd6d8737877ddcd4310ef7ef2c89c5448cdc832ca788367ce139e89fa35cf02",
+    "status": "pending"
+  },
+  "product_photos": [
+    {
+      "asset_id": "00000000-0000-4000-8000-000000000001",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 1600,
+      "mime_type": "image/png"
+    },
+    {
+      "asset_id": "00000000-0000-4000-8000-000000000002",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "width": 1200,
+      "height": 1600,
+      "mime_type": "image/png"
+    }
+  ],
+  "reference_photos": [],
+  "final_aspect_ratio": "4:5",
+  "candidate_count": 1
+}

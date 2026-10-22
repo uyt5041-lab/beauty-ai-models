@@ -1,0 +1,47 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "target": {
+      "title": "Target",
+      "type": "string"
+    },
+    "tone": {
+      "title": "Tone",
+      "type": "string"
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string"
+    },
+    "market": {
+      "title": "Market",
+      "type": "string"
+    },
+    "style_preset_id": {
+      "title": "Style Preset Id",
+      "type": "string"
+    },
+    "layout_template_id": {
+      "title": "Layout Template Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "purpose",
+    "target",
+    "tone",
+    "channel",
+    "market",
+    "style_preset_id",
+    "layout_template_id"
+  ],
+  "title": "AdOptions",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-status": "DRAFT_TEAM_UNAGREED",
+  "x-origin": "current-code-snapshot"
+}

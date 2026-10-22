@@ -1,0 +1,35 @@
+{
+  "status": "DRAFT_TEAM_UNAGREED",
+  "generated_at": "2026-10-22T09:16:52.015394+00:00",
+  "head": "bdddddea453c0eab23c99cfa37b9ee15f9b386ca",
+  "branch": "plan/models",
+  "source_sha256": {
+    "beauty_ai/contracts.py": "a8bb1c62e25388ebd87b59cd064b030eb6ec149a9acb91eb411a463897f8968b",
+    "docs/ssotAlignment.md": "a132bdd1db243435fb36170ef0ccfdb642d6216676ee50b44b7ce733a8aabe87",
+    "docs/modelIntegrationReview.md": "c9024d05431047b054c26608b9b15c344a2e4d7238b6fbc33b06e02328171b1b",
+    "fivecircles/architecture/contract/image-runtime.md": "8774b7e96951fc0da2fdb40632cb0d8b794c5ef5e34d4f229681295f52d7305a"
+  },
+  "note": "Read-only source extraction at the recorded commit and file hashes. Publication adds documentation; production contracts and endpoints are unchanged.",
+  "current_exports": [
+    "AssetRef",
+    "ProductFacts",
+    "ProductObservation",
+    "AdOptions",
+    "CopyBundle",
+    "CampaignDraft",
+    "LLMReview",
+    "ReviewReport",
+    "ImagePrompt",
+    "VisualBrief",
+    "CutoutRequest",
+    "BackgroundRequest",
+    "ImageJob"
+  ],
+  "checks": [
+    "product_photos=1: rejected",
+    "product_photos=6: rejected",
+    "stale copy/prompt revision: rejected"
+  ],
+  "api_calls_performed": false,
+  "repository": "https://github.com/uyt5041-lab/beauty-ai-models"
+}

@@ -1,0 +1,7 @@
+{
+  "positive": "Bright cosmetic product scene, vivid flowers placed around the product, clear space for a separate text layer, no lettering.",
+  "negative": "letters, altered product label",
+  "prompt_version": "draft-floral-v1",
+  "source_revision": 1,
+  "language": "en"
+}

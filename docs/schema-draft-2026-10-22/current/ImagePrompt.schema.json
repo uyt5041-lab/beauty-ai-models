@@ -1,0 +1,45 @@
+{
+  "additionalProperties": false,
+  "description": "Versioned input supplied by the text service, not generated or translated here.\n\nCharacter limits bound the wire payload. A real model adapter must also check\nits tokenizer limits; ``language`` is the sender's declaration, not detection.",
+  "properties": {
+    "positive": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Positive",
+      "type": "string"
+    },
+    "negative": {
+      "default": "",
+      "maxLength": 2000,
+      "title": "Negative",
+      "type": "string"
+    },
+    "prompt_version": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Prompt Version",
+      "type": "string"
+    },
+    "source_revision": {
+      "minimum": 1,
+      "title": "Source Revision",
+      "type": "integer"
+    },
+    "language": {
+      "const": "en",
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    }
+  },
+  "required": [
+    "positive",
+    "prompt_version",
+    "source_revision"
+  ],
+  "title": "ImagePrompt",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-status": "DRAFT_TEAM_UNAGREED",
+  "x-origin": "current-code-snapshot"
+}
