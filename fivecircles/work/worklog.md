@@ -44,3 +44,12 @@
 - root 검증: 전체201 tests PASS(20.04s), 실제 TCP CLI prepare/approve/select/render/attach/copy-only select/get-edit에서 동일 job 재사용 PASS.
 - 검토 반영: strict integer·64bit 범위·공백 prompt를 거절. 문구 내용·검수DB는 수정하지 않는 이미지 상태 저장 범위.
 - 문서: README5절, 원본 TODO 로컬 항목3개 추가(누적22개), B4 흐름/다음 B5 후보 갱신. [검증](../test/relay-b4.md).
+
+
+## 2026-10-22 · B5 · 구현/검증
+
+- 구현: evaluation.py·evaluation_metrics.py, JobTiming/API/CLI. 실제 파일 지표와 권리·사람 선언·모델 미호출 상태를 구분한다.
+- root 검증: 전체 280 tests PASS(4.06s, -W error), 예제 manifest CLI와 실제 TCP timing PASS. wheel build SHA-256은 B5 검증 기록에 남겼다.
+- 독립 검토 수리: FIFO manifest가 대기하지 않도록 nonblocking open·fstat·실제 FIFO 회귀를 추가했다.
+- 문서: README 5절, 원본 TODO 하위 3개 추가(누적 25개), 흐름/브라우저 비교 갱신. 실제 품질·GPU·팀 인수는 GAP.
+- 다음: 사용자 로컬 우선 지시에 따라 모델 revision·CPU/MPS 호환성·adapter·샘플을 검증하고 이후 GCP로 이전한다. [검증](../test/relay-b5.md).

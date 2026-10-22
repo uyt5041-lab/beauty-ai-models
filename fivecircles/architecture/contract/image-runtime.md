@@ -85,3 +85,14 @@
 - 오류 EDIT_NOT_FOUND404, EDIT_CONFLICT409, IMAGE_JOB_NOT_READY409, EDIT_STORAGE_ERROR503; 입력형상오류 INVALID_IMAGE_REQUEST400. 같은revision을놓고2개편집이면1개만승인. 자동 retry/새GPU작업은 수행하지 않는다.
 - API PUT `/internal/v1/edits/{campaign_id}` {expected_revision,copy_revision,request}; GET samepath; PUT `/internal/v1/edits/{campaign_id}/result` {expected_revision,job_id}. tokenproject에서만 접근. select 등록 전에 profile/제품승인/파일검증, attach는 ledger권위/실파일을 사용한다.
 - 예: revision1/jobA→문구수정revision2같은imagehash는cachedjobA. 제품변경revision3다른hash→늦은jobA attach(revision1)409. 이미지실패가문구내용/검수DB를지우지않는다. 실제CampaignService/UI연동은별도이며팀수락으로표시하지않는다.
+
+## 배치 5 · 평가 도구와 시각 기준
+
+- 로컬 파일을 측정하는 도구이며 모델을 호출하거나 품질 합격을 자동 승인하지 않는다. 사용 가능한 실제 평가셋/모델/사람 기준은 별도다.
+- `mask_metrics(predicted, reference, *, threshold=128, tolerance=2) -> MaskMetrics` in evaluation_metrics.py. 같은크기 grayscale마스크를 white=foreground로 비교. threshold1..255, tolerance0..8픽셀. IoU=교집합/합집합; 빈합집합은None. 경계는 바깥0패딩 후3x3erosion 차이, tolerance의 정사각 팽창으로 경계precision/recall/F1. 둘다빈경계는None, 한쪽만빈경계는F1=0. 값·정의·조건을 함께기록하며학술벤치마크동일성주장없음.
+- `MaskMetrics` 필드: iou, boundary_precision, boundary_recall, boundary_f1(float|None), threshold, tolerance. 불투명 픽셀은 기존 inspect_composite로 비교하되0개면검증불가다.
+- `evaluate_manifest(path) -> dict` in evaluation.py, CLI `python -m beauty_ai.evaluation <manifest.json> --output outputs/evaluation-report.json`. manifest최대2MiB, cases1..200. 입력이미지당20MiB/16Mpixel한도. 파일path는manifest폴더아래상대경로만, escape/symlink외부/URL거절, 네트워크호출없음.
+- manifest: dataset_id, version, cases[{case_id, split(dev|holdout), product_type, rights_status(unknown|declared_authorized|synthetic_fixture), rights_source, product_rgba, composed_preview, predicted_mask(optional), reference_mask(optional), human_review(not_assessed|pass|fail, default not_assessed)}]. ID중복거절, 미확인권리는파일을측정하지않고NOT_ASSESSED. rights/human은제공자의선언이고법적권리·실제사람신원확인아님.
+- output: dataset/version, evaluation_environment, model_invoked=false, quality_approval=NOT_ASSESSED, cases의 MEASURED/NOT_ASSESSED/ERROR, 입력파일sha256·크기, opaque/pixel/partialalpha계수, maskmetrics또는None/사유, 선언된human_review. 정답mask가없으면GTmetric은None. 실제모델품질·VRAM·가격은None/NOT_MEASURED. 민감경로/원본텍스트를예외로그에출력하지않음. 예제manifest는가상경로/권리unknown, 실제이미지와보고서는Git제외outputs/data에둔다.
+- `JobLedger.timing(job_id, project_id) -> JobTiming`: 저장된created_at/updated_at와terminalstatus로ledger_elapsed_ms를제공. queued/running 또는음수clock차이는None. 이는서버wallclock의접수기록→terminal기록간경과이며대기/처리/저장을포함, GPU연산시간·VRAM·비용과같지않다. 과거상태에서시작phase를추정하지않는다.
+- API GET `/internal/v1/jobs/{job_id}/timing`, CLI `examples.run_image get-timing <job_id>`. project인증유지. 품질case와job의결합을자동추정하지않고명시적동일이미지증거가없는경우별도기록으로취급한다.

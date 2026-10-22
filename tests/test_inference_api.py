@@ -73,6 +73,27 @@ def test_asset_limits_and_invalid_file(service):
     assert client.post("/internal/v1/assets", content=b"x" * 1025, headers=auth()).status_code == 413
 
 
+def test_timing_endpoint_has_project_auth_and_preserves_failed_status(service):
+    client, assets, ledger, project, _ = service
+    job_id = uuid4()
+    ledger.submit(job_id, project, submit_request(assets, project))
+    url = f"/internal/v1/jobs/{job_id}/timing"
+    assert client.get(url).status_code == 401
+    assert client.get(url, headers=auth(TOKEN_B)).status_code == 404
+    pending = client.get(url, headers=auth()).json()
+    assert pending["ledger_elapsed_ms"] is None
+    assert pending["unavailable_reason"] == "JOB_NOT_TERMINAL"
+    ledger.claim_next("fixture")
+    ledger.finish(job_id, "fixture", error_code="PROCESSOR_ERROR")
+    measured = client.get(url, headers=auth())
+    assert measured.status_code == 200
+    body = measured.json()
+    assert body["status"] == "failed"
+    assert body["ledger_elapsed_ms"] >= 0
+    assert body["clock_basis"] == "server_wall_clock"
+    assert "gpu_time" not in body
+
+
 def test_durable_idempotency_conflict_scope_and_concurrency(service):
     client, assets, ledger, a, _ = service
     request = submit_request(assets, a)

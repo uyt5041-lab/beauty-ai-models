@@ -1,8 +1,8 @@
-# 이미지 런타임 흐름 비교 · B4
+# 이미지 런타임 흐름 비교 · B5
 
-2026-10-22 · 대상: plan/models · 배치 B4 프롬프트 수신 / 편집 revision / 프로젝트 캐시
+2026-10-22 · 대상: plan/models · 배치 B5 로컬 평가 도구 / 실행 시간 기록
 
-**Flow diagram verification: GAP/PARTIAL.** 프롬프트 수신·기존 요청 hash 호환, 현재 이미지 선택의 revision CAS, 프로젝트별 성공 결과 재사용과 늦은 결과 차단을 추가했다. 전체 201 tests와 실제 TCP CLI 편집·재사용을 검증했다. 실제 누끼·배경 AI 모델·최종 사용자 로그인/UI·렌더러·사람 품질 인수는 남아 있다. 날짜는 마일스톤이다.
+**Flow diagram verification: GAP/PARTIAL.** 로컬 파일 평가 manifest, 마스크 IoU·경계 지표와 작업 접수→종료 경과 시간 기록을 추가했다. 전체 280 tests와 실제 CLI·패키지 빌드를 검증했다. 실제 모델 호출·GPU 측정·평가 데이터·사람 품질 판정·렌더러·팀 인수는 미완료다. 날짜는 마일스톤이다.
 
 ## Target Flow
 
@@ -55,6 +55,11 @@ flowchart TB
     J["J · GAP: 사람 평가 / 팀 인수<br/>실제 광고 품질 증거 필요"]:::red
     Q["영어 프롬프트 수신 DTO / hash<br/>버전·revision 포함 / 기존 None 호환"]:::green
     X["local template은 prompt 미지원<br/>무시하지 않고 명시적 거절"]:::gray
+    V["별도 로컬 평가 입력<br/>버전 / 권리 선언 / 정답 mask"]:::gray
+    K["평가 manifest CLI / mask·픽셀 지표<br/>권리 미확인 건너뜀 / 품질 NOT_ASSESSED"]:::green
+    L["JobTiming API / CLI<br/>접수→terminal wall-clock / GPU 시간 아님"]:::green
+    V --> K -.-> J
+    R --> L
     Q --> X
     Q -.-> F
     A --> B --> W --> U --> D --> E --> P --> T --> G --> R
@@ -88,24 +93,27 @@ classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px
 | F → G / G | PARTIAL / MATCHED (로컬 경로) | 로컬 template부터 승인 RGBA 재합성·불투명 픽셀·파일 검증까지 연결. 실모델 결과와 광고 품질은 미검증. | 3개 AssetRef / processor·runtime 테스트 |
 | G → H / H | MATCHED (로컬 API/DB/CLI) | SQLite CAS로 현재 selection을 갱신. 성공 job의 입력 hash/project/실파일을 확인한 뒤 attach. 문구 revision만 바뀌면 같은 image key의 결과 재사용. 늦은 revision은 거절하며 자동 생성하지 않음. | image_edits.py / API·CLI·201 tests PASS |
 | H → I / I | GAP | 렌더러·내보내기 정책과 현재 문구 검수/이미지 품질/레이아웃 대조가 미연결. | 서비스·렌더러 공동 검증 |
-| I → J / J | GAP | 사람 품질 평가·팀원 재현·최종 인수 미실행. | 권리 확보 평가셋과 팀 인수 증거 |
+| 별도 파일 → 평가 도구 | MATCHED (로컬 도구) | 권리 선언·dataset/version·dev/holdout을 수신하고 실제 파일 hash·불투명 픽셀·mask IoU·경계를 측정. 권리 미확인은 건너뛰고 정답이 없으면 None. 실제 평가셋·품질 승인은 별도. | evaluation.py / evaluation_metrics.py / CLI |
+| ledger → timing | MATCHED (로컬 API/CLI) | terminal 작업의 접수→종료 wall-clock 경과를 기록. 대기·처리·저장을 포함하며 GPU 연산 시간·VRAM·비용은 아님. queued/running·시계 역행은 None. | JobLedger.timing / 인증 API / get-timing |
+| I → J / J | GAP | 사람 품질 평가·팀원 재현·최종 인수 미실행. 측정 도구의 quality_approval은 NOT_ASSESSED이며 점수만으로 합격하지 않음. | 권리 확보 평가셋·합의 기준·사람 판정·팀 인수 |
 
 ## Done / Not Done Priority
 
 | 순서 | 작업 | 상태 | 연결 점수 | 선정 이유 | 다음 동작 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | B5 후보 · 고정 평가 manifest / 증거 수집 | 미구현 | 2 + 2 + 1 + 2 − 1 = 6 | 평가셋 조건과 실제 결과를 재현 가능한 기록으로 연결 | B4 게시 후 착수 |
-| 2 | 실제 누끼·배경 모델 검증 | GAP / 접근 필요 | 3 + 3 + 1 + 1 − 3 = 5 | GPU 인증·모델·사용 조건·평가셋이 필요 | 실행 조건 확보 후 |
-| 3 | 렌더러·사람 품질 인수 | GAP | 1 + 1 + 1 + 1 − 2 = 2 | 다른 파트와 실제 출력·승인 확인 필요 | 서비스·평가셋 준비 후 |
-| 완료 | B4 · 프롬프트 수신 / revision / 캐시 | MATCHED (범위 한정) | 현재 배치 | 입력 버전·오래된 결과·프로젝트 교차 재사용 차단 | 201 tests + TCP CLI PASS |
-| 완료 | B3 · 승인 / profile / 로컬 실행 | MATCHED (범위 한정) | 선정 대상 제외 | 명시적 승인과 template 결과 파일 연결 | 148 tests + TCP CLI smoke PASS |
-| 완료 | B1 / B2 · 자산 / 영속 job / worker | MATCHED (범위 한정) | 선정 대상 제외 | 파일/DB/HTTP/프로세스 복구 검증 | 기존 증거 유지 |
+| 1 | B6 · 로컬 실제 모델 실행 / 이후 GCP 이전 | GAP / 다음 구현 | 3 + 3 + 2 + 2 − 2 = 8 | M4 Max·64GB 로컬에서 먼저 고정 모델·실행 호환성을 확인 | 모델 사용 조건·revision·로컬 backend 확인 후 adapter 검증 |
+| 2 | 실제 평가셋 / 품질 기준 / 사람 판정 | GAP / 데이터·합의 필요 | 2 + 2 + 1 + 1 − 2 = 4 | 측정 도구에 실제 제품과 수용 기준을 연결 | 권리 확보 제품·정답/판정자·기준 준비 |
+| 3 | 렌더러 / 팀 인수 | GAP / 공동 작업 필요 | 1 + 1 + 1 + 1 − 2 = 2 | 실제 서비스의 현재 상태와 최종 광고를 확인 | 담당·인터페이스·실서비스 준비 후 |
+| 완료 | B5 · 평가 manifest / 지표 / timing | MATCHED (로컬 도구) | 선정 대상 제외 | UNKNOWN·측정값·사람 판정을 구분하는 기록 기반 | 280 tests + 실제 CLI + wheel PASS |
+| 완료 | B4 · 프롬프트 / revision / 캐시 | MATCHED (로컬 범위) | 선정 대상 제외 | 입력 버전·늦은 결과·프로젝트 교차 재사용 차단 | 201 tests + 실제 TCP CLI PASS |
+| 완료 | B3 · 승인 / profile / template | MATCHED (로컬 범위) | 선정 대상 제외 | 명시적 승인과 합성 파일 연결 | 148 tests + 실제 TCP CLI PASS |
+| 완료 | B1 / B2 · 자산 / 영속 job / worker | MATCHED (로컬 범위) | 선정 대상 제외 | 파일·DB·HTTP·복구 검증 | 기존 근거 유지 |
 
 ## Scoring Criteria
 
 연결 점수 = upstream_weight(0–4) + connection_value(0–3) + safety_value(0–2) + validation_value(0–2) + risk_penalty(0∼−3). 같은 점수면 상위 노드, 더 작은 검증 가능한 변경을 먼저 선택한다. 모델/환경/합의가 필요한 항목은 점수만으로 완료하지 않는다.
 
-다음 안전 후보: **B5 평가 manifest / 증거 수집 도구, 6점**. 원본 TODO 3-A/3-B의 고정 입력·권리 기록·기대 마스크·제품 유형·검사 결과를 묶어 실제 GPU 평가 준비를 돕는다. 기준이나 사람 판정이 없으면 NOT_ASSESSED로 남기며 모델 합격으로 표시하지 않는다. root가 B4 게시 후 다음 배치 범위로 선택했다. GPU/모델/평가 데이터/렌더러·팀 인수는 외부 조건이 필요하다.
+다음 단위: **B6 로컬 실제 모델 실행 가능성·고정 revision·adapter 검증, 8점**. 사용자 지시에 따라 로컬 Mac에서 먼저 실제 모델을 검증한 뒤 GCP로 이전한다. root가 확인한 로컬 환경은 M4 Max(40 GPU cores)·64GB 메모리·여유 공간 약 352GiB다. 이 사양은 모델 실행 증거가 아니다. 모델 사용 조건·revision과 CPU/MPS 호환성, 필요한 의존성·다운로드 크기를 확인하고 작은 권리 확보 샘플부터 실행한다. 성공하면 같은 모델·프로필·입출력과 측정 조건을 보존해 GCP us-east1로 이전 검증한다. 실제 품질 기준·평가셋·렌더러·팀 인수는 계속 미완료다.
 
 ## Color Semantics
 
@@ -119,10 +127,10 @@ classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px
 
 ## Validation
 
-- 이전 배치: [B1](../../test/relay-b1.md), [B2](../../test/relay-b2.md), [B3 148 tests + 실제 TCP CLI](../../test/relay-b3.md) 근거 유지.
-- B4 제품 검증(root): **201 tests PASS(20.04s)**. 실제 TCP CLI prepare→approve→select revision1→render→attach→문구 수정 select revision2→get-edit에서 같은 job 재사용 PASS. [검증 기록](../../test/relay-b4.md).
-- 코드 범위: ImagePrompt 수신·해시·기존 None 직렬화 호환, ImageEditStore selection CAS·project cache·현재 revision attach, API/CLI 연결. 최종 사용자 로그인·CampaignService·UI 인수는 별도.
-- 실제 영어 프롬프트 생성·누끼/배경 AI 모델·GPU·tokenizer 한도·광고 품질: NOT_RUN. local template은 image_prompt를 명시적으로 거절한다.
-- Mermaid: 기존 목표 PNG 재사용, B4 현재 PNG 갱신. HTML 브라우저 검증: **PASS** (Task Space 139). PNG 2개가 각각 552×2540, 1568×3316으로 decode됐고 제목 7개·범례 5개·GAP 13행·우선순위 6행을 확인했다. 문서/화면 폭은 모두 1492px이며 가로 넘침이 없다. 스크린샷을 직접 확인했다. 스크린샷은 최종 201 tests 결과를 문서에 반영하기 전에 촬영했다.
-- 스크린샷: [B4 보고서](../../test/playwright-screenshots/image-runtime-flow-b4.png) · [보존한 B3 보고서](../../test/playwright-screenshots/image-runtime-flow-b3.png).
-- 전체 제품 흐름 판정: GAP/PARTIAL. 문서·코드·로컬 회귀와 실제 모델 품질/팀 인수를 구분한다.
+- 이전 배치: [B1](../../test/relay-b1.md), [B2](../../test/relay-b2.md), [B3](../../test/relay-b3.md), [B4 201 tests + 실제 TCP CLI](../../test/relay-b4.md) 근거 유지.
+- B5 전체 회귀(root): **280 tests PASS(4.06s, -W error)**. 예제 manifest 실제 CLI는 1건을 권리 미확인으로 건너뛰고 model_invoked=false를 기록했다. timing API/실제 TCP CLI와 wheel build도 PASS. [B5 상세](../../test/relay-b5.md).
+- 코드 범위: mask IoU·경계 측정, private file manifest 검증·평가, 입력 hash·권리/사람 선언 구분, terminal ledger 경과 시간. 실제 모델 호출·GPU·품질 자동 승인은 하지 않는다.
+- 실제 누끼/배경 모델·GPU 연산 시간·VRAM·비용·광고 품질·사람 인수: NOT_RUN/NOT_ASSESSED. 실제 평가 이미지·산출 보고서는 공개 Git에 넣지 않는다.
+- Mermaid: 기존 목표 PNG 재사용, B5 현재 PNG 갱신. HTML 브라우저 검증 **PASS** (Task Space 141): PNG 2개 decode(552×2540, 1568×2534), 제목 7개·범례 5개·GAP 15행·우선순위 7행, 가로 넘침 없음. 1492×4168 스크린샷을 직접 확인했다. 최종 280 tests 결과와 로컬 우선 지시를 반영한 화면을 재검증하고 스크린샷을 확인했다.
+- 스크린샷: [B5 보고서](../../test/playwright-screenshots/image-runtime-flow-b5.png) · [보존한 B4 보고서](../../test/playwright-screenshots/image-runtime-flow-b4.png).
+- 전체 제품 흐름 판정: GAP/PARTIAL. 측정 도구의 구현과 실제 모델 품질·팀 인수를 구분한다.

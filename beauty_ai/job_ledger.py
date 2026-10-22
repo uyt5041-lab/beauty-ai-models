@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import re
 import sqlite3
-from typing import Iterator
+from typing import Iterator, Literal
 from uuid import UUID
 
 from pydantic import TypeAdapter, ValidationError
@@ -34,6 +34,19 @@ class ClaimedJob:
     job: ImageJob
     project_id: UUID
     request: ImageRequest
+
+
+@dataclass(frozen=True)
+class JobTiming:
+    """Server wall-clock receipt-to-terminal interval, not GPU compute time."""
+
+    job_id: UUID
+    status: str
+    created_at: str
+    updated_at: str
+    ledger_elapsed_ms: float | None
+    clock_basis: Literal["server_wall_clock"] = "server_wall_clock"
+    unavailable_reason: Literal["JOB_NOT_TERMINAL", "CLOCK_MOVED_BACKWARD"] | None = None
 
 
 class JobLedger:
@@ -180,6 +193,37 @@ class JobLedger:
             if row is None:
                 raise self._not_found()
             return self._decode(row).job
+        except sqlite3.Error as exc:
+            raise self._storage_error() from exc
+
+    def timing(self, job_id: UUID, project_id: UUID) -> JobTiming:
+        """Read one project-scoped snapshot without inferring missing phases.
+
+        The interval includes queueing, processing and storage. A terminal job
+        may also be failed or interrupted; this is not a quality/success metric.
+        Wall-clock corrections can affect this value even when non-negative.
+        """
+        self._uuid(job_id)
+        self._uuid(project_id)
+        try:
+            with self._connection() as db:
+                row = db.execute("SELECT * FROM jobs WHERE job_id=? AND project_id=?",
+                                 (str(job_id), str(project_id))).fetchone()
+            if row is None:
+                raise self._not_found()
+            job = self._decode(row).job
+            try:
+                created = datetime.fromisoformat(row["created_at"])
+                updated = datetime.fromisoformat(row["updated_at"])
+                if created.utcoffset() is None or updated.utcoffset() is None:
+                    raise ValueError("Timestamps require a timezone")
+                elapsed = (updated - created).total_seconds() * 1000
+            except (ValueError, TypeError, OverflowError) as exc:
+                raise self._storage_error(retryable=False) from exc
+            reason = ("JOB_NOT_TERMINAL" if job.status in ("queued", "running") else
+                      "CLOCK_MOVED_BACKWARD" if elapsed < 0 else None)
+            return JobTiming(job.job_id, job.status, row["created_at"], row["updated_at"],
+                             elapsed if reason is None else None, unavailable_reason=reason)
         except sqlite3.Error as exc:
             raise self._storage_error() from exc
 

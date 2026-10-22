@@ -1,0 +1,18 @@
+{
+  "dataset_id": "beauty-image-evaluation-example",
+  "version": "1",
+  "cases": [
+    {
+      "case_id": "example-opaque-bottle",
+      "split": "dev",
+      "product_type": "opaque cosmetic bottle",
+      "rights_status": "unknown",
+      "rights_source": "Example only. Replace with authorized local files and record their source.",
+      "product_rgba": "data/example-product.png",
+      "composed_preview": "data/example-preview.png",
+      "predicted_mask": "data/example-predicted-mask.png",
+      "reference_mask": "data/example-reference-mask.png",
+      "human_review": "not_assessed"
+    }
+  ]
+}

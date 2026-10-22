@@ -25,6 +25,8 @@
 
 - [x] B1 자산 파일/DB·캔버스·보존 검사 구현 및 72 tests/CLI 검증. [원본 완료 항목](../../docs/imageTodo.md), [검증](../test/relay-b1.md).
 - [x] B2 영속 작업 API·원자적 멱등성·단일 호스트 worker 복구. 112 tests 및 원격8cb6402 확인.
-- [ ] B3 profile·승인·실행 연결 및 결과 파일 검증. 로컬148 tests·CLI PASS, publication 마무리 중.
-- [ ] B4 revision/캐시·평가/인계, 남은 LLM 공통 경계.
+- [x] B3 profile·승인·실행 연결 및 결과 파일 검증. 로컬 148 tests·CLI PASS, dbba5da 게시 확인. [검증](../test/relay-b3.md).
+- [x] B4 프롬프트 수신·revision/캐시·늦은 결과 연결 차단. 201 tests·실제 TCP CLI PASS, a1b1602 게시 확인. [검증](../test/relay-b4.md).
+- [x] B5 평가 manifest·마스크/픽셀 지표·job timing 도구. 280 tests·실제 CLI·wheel build PASS. [검증](../test/relay-b5.md).
+- [ ] B6 로컬 실제 모델의 사용 조건·revision·CPU/MPS 호환성·adapter·샘플 검증 후 GCP 이전.
 - [ ] 실제 GPU·모델 품질·팀 인수: 실행 환경/공동 확인 근거 필요.

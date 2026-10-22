@@ -16,6 +16,11 @@ flowchart TB
     J["J · GAP: 사람 평가 / 팀 인수<br/>실제 광고 품질 증거 필요"]:::red
     Q["영어 프롬프트 수신 DTO / hash<br/>버전·revision 포함 / 기존 None 호환"]:::green
     X["local template은 prompt 미지원<br/>무시하지 않고 명시적 거절"]:::gray
+    V["별도 로컬 평가 입력<br/>버전 / 권리 선언 / 정답 mask"]:::gray
+    K["평가 manifest CLI / mask·픽셀 지표<br/>권리 미확인 건너뜀 / 품질 NOT_ASSESSED"]:::green
+    L["JobTiming API / CLI<br/>접수→terminal wall-clock / GPU 시간 아님"]:::green
+    V --> K -.-> J
+    R --> L
     Q --> X
     Q -.-> F
     A --> B --> W --> U --> D --> E --> P --> T --> G --> R

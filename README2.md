@@ -239,3 +239,24 @@ python -m examples.run_image get-edit <campaign_id>
 선택 API는 `PUT/GET /internal/v1/edits/{campaign_id}`, 결과 반영은 `PUT /internal/v1/edits/{campaign_id}/result`입니다. 기존 job 조회는 작업의 역사적 결과이고, 현재 화면에 반영할 결과는 edit의 `active_job_id`를 확인해야 합니다. 최종 파일 열람 시에도 자산 권한·파일 무결성 검사를 거칩니다. 실제 CampaignService/UI 연결과 팀 계약 수락은 별도입니다.
 
 `BackgroundRequest.image_prompt`는 텍스트 담당자가 만든 영어 프롬프트를 받는 선택 필드입니다. `positive`, `negative`, `prompt_version`, `source_revision`, `language`를 함께 전달하며 내용·버전이 바뀌면 이미지 hash도 바뀝니다. 필드가 없으면 기존 요청 body/hash를 유지합니다. 길이를 넘으면 거절하고 자동 절단하지 않습니다. 현재 `bright-template`은 이 프롬프트를 실행하지 못하므로 값이 있으면 명시적으로 거절합니다. 실제 모델의 tokenizer 길이·배경 생성 지원은 해당 모델 adapter에서 검증해야 합니다.
+
+## 평가 파일과 작업 시간 기록 (B5)
+
+평가 도구는 로컬 이미지 파일을 비교합니다. 모델을 실행하거나 이미지 품질을 자동으로 합격 처리하지 않습니다. 평가셋과 결과는 Git에서 제외하는 `data/`, `outputs/` 아래에 보관합니다.
+
+```bash
+# 예제는 권리 미확인 상태라 이미지 파일을 열지 않고 NOT_ASSESSED를 기록합니다.
+python -m beauty_ai.evaluation examples/evaluation_manifest.json --output outputs/evaluation-example.json
+# 준비한 실제 평가셋 manifest로 실행합니다. 기존 결과 파일은 덮어쓰지 않습니다.
+python -m beauty_ai.evaluation data/evaluation/manifest.json --output outputs/evaluation-run-001.json
+# 별도 작업 기록 조회: GPU 연산시간이 아니라 접수부터 종료 기록까지의 서버 경과시간입니다.
+python -m examples.run_image get-timing <job_id>
+```
+
+manifest에는 평가셋 ID·버전과 case별 ID·dev/holdout 구분·제품 종류·권리 출처·파일 상대경로를 적습니다. 이미지 경로는 manifest 폴더 아래에 있어야 합니다. `rights_status`가 `unknown`이면 해당 파일을 측정하지 않습니다. `declared_authorized`와 `synthetic_fixture`는 작성자의 선언이며, 도구가 권리를 확인한 것은 아닙니다.
+
+필수 입력은 승인 제품 레이어 `product_rgba`와 합성 결과 `composed_preview`입니다. 마스크 비교에는 `predicted_mask`, `reference_mask`를 함께 넣습니다. 정답 마스크가 없으면 IoU·경계 점수는 비워 둡니다. 흰색을 전경으로 해석하며 IoU는 교집합/합집합, 경계는 3×3 침식과 기본 2픽셀 정사각 허용 범위로 계산합니다. 빈 분모는 0점 대신 `null`입니다. 입력 크기·파일 hash·측정 조건도 결과에 남깁니다. 실제 벤치마크와 같은 평가 규약이라는 뜻은 아닙니다.
+
+불투명 제품 픽셀 보존과 부분 투명 픽셀 수를 별도로 기록합니다. 유리·반사·경계의 자연스러움은 사람이 판단해야 합니다. `human_review`도 작성자의 선언이며 `quality_approval`은 항상 `NOT_ASSESSED`입니다. 합성 fixture 통과를 실모델 품질 근거로 쓰지 않습니다.
+
+`GET /internal/v1/jobs/{job_id}/timing`은 프로젝트 인증이 필요합니다. `ledger_elapsed_ms`에는 큐 대기·처리·저장이 포함됩니다. 실행 중이면 `null`, 시계가 뒤로 움직였으면 `null`과 사유를 반환합니다. `server_wall_clock` 값은 시스템 시각 보정의 영향을 받을 수 있습니다. 실패·중단 작업에도 시간이 있을 수 있으므로 `status`를 함께 확인합니다. GPU 시간·최대 VRAM·가격은 측정하지 않으며, 작업 ID와 평가 파일이 같은 결과라는 연결도 자동 추정하지 않습니다.

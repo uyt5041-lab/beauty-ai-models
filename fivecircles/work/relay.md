@@ -51,7 +51,21 @@
 4. Implementation: COMPLETED. prompt 수신/해시호환, SQLite편집/cache, API/CLI.
 5. Validation: 전체201 tests PASS20.04s, legacyhash/DB, 프로세스CAS, cache실파일, API 및 실제 TCPCLI copy-only reuse PASS.
 6. Repair: 검토에서 SQLite 정수상한, prompt 공백/엄격revision 검증 추가. 전체 회귀 PASS.
-7. Push / Publication: PENDING. Git reference runtime 전달, 운영CD NOT_APPLICABLE.
+7. Push / Publication: a1b1602f52834191dca6730600c6ac475c106b00 일반push/원격SHA일치. 운영CD NOT_APPLICABLE.
 8. Closeout Report: B4 HTML/MD/PNG/browser PASS. 실모델·팀renderer·실제품질 GAP 유지.
-9. Relay: B4후 실제 모델/GPU/평가셋/팀인수 경계 재확인.
-10. Final Ledger: PENDING.
+9. Relay: CONTINUE_WITH_NEXT_FORM. B5 고정 평가 입력·측정 도구, 점수6.
+10. Final Ledger: Doc/Implementation/Validation/Repair/Push/Report 완료. 실제GPU/품질/인수 GAP.
+
+## B5 · 평가 manifest와 측정 증거 도구
+
+0. Scope Intake: native, plan/models. metrics와 manifest/CLI를 파일별 위임, root는 job timing/API·통합검증·Git.
+1. Start Report: B4 flow 기준 I 평가·인수 연결 PARTIAL.
+2. Relay Unit Selection: 2+2+1+2-1=6. 실모델/권리있는평가셋 없이도 준비할 수 있는 측정 도구.
+3. Doc / Contract: image-runtime B5 COMPLETED. 자동 품질승인 금지, UNKNOWN과0구분.
+4. Implementation: COMPLETED. 로컬 평가manifest/CLI·마스크metric·job timing/API/CLI.
+5. Validation: 전체280 tests PASS4.06s, 실제예제manifest CLI1건 NOT_ASSESSED, 실제TCP timingCLI PASS70.61ms(server wallclock), wheel/isolatedimport PASS.
+6. Repair: 동료 검토에서 발견한 FIFO manifest 입력 대기를 nonblocking open/fstat로 수정. 실제 FIFO 회귀와 전체 검사 PASS.
+7. Push / Publication: READY. 일반 Git push/readback 예정. 운영CD NOT_APPLICABLE(오프라인평가도구와로컬참조API).
+8. Closeout Report: B5 HTML/PNG/browser PASS. 실제GPU·품질평가·팀인수 GAP.
+9. Relay: 사용자 로컬 선구현·후속 GCP 이식 방향에 따라 B6 로컬 모델·고정 revision·이식 가능한 adapter를 검토. B5 publication 확인 뒤 다음 폼 작성.
+10. Final Ledger: Doc/Implementation/Validation/Repair/Report 완료, Push 대기. 실제모델준비는 다음배치.

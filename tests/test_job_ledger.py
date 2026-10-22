@@ -96,6 +96,60 @@ def test_project_scope_and_different_input_conflict(tmp_path):
     assert ledger.get(job_id, project).status == "queued"
 
 
+@pytest.mark.parametrize("terminal", ["succeeded", "failed", "interrupted"])
+def test_timing_is_durable_wall_clock_elapsed_only_after_terminal(tmp_path, monkeypatch, terminal):
+    ledger = JobLedger(tmp_path / "jobs.sqlite3")
+    project, job_id = uuid4(), uuid4()
+    ticks = iter(["2026-10-22T00:00:00+00:00", "2026-10-22T00:00:01+00:00",
+                  "2026-10-22T00:00:02.500000+00:00"])
+    monkeypatch.setattr(ledger, "_now", lambda: next(ticks))
+    ledger.submit(job_id, project, request())
+    assert ledger.timing(job_id, project).ledger_elapsed_ms is None
+    assert ledger.timing(job_id, project).unavailable_reason == "JOB_NOT_TERMINAL"
+    ledger.claim_next("worker")
+    assert ledger.timing(job_id, project).ledger_elapsed_ms is None
+    if terminal == "interrupted":
+        ledger.recover_interrupted()
+    elif terminal == "failed":
+        ledger.finish(job_id, "worker", error_code="PROCESSOR_ERROR")
+    else:
+        ledger.finish(job_id, "worker", result=result())
+    measured = JobLedger(ledger.path).timing(job_id, project)
+    assert measured.status == terminal
+    assert measured.ledger_elapsed_ms == 2500
+    assert measured.clock_basis == "server_wall_clock"
+    assert measured.unavailable_reason is None
+    for other_job, other_project in [(job_id, uuid4()), (uuid4(), project)]:
+        with pytest.raises(GatewayError) as raised:
+            ledger.timing(other_job, other_project)
+        assert raised.value.code == "IMAGE_JOB_NOT_FOUND"
+
+
+@pytest.mark.parametrize("timestamp, code", [
+    ("2026-10-21T23:59:59+00:00", None),
+    ("private-invalid-time", "JOB_STORAGE_ERROR"),
+    ("2026-10-22T00:00:02", "JOB_STORAGE_ERROR"),
+])
+def test_timing_does_not_invent_positive_time_for_clock_errors(tmp_path, monkeypatch, timestamp, code):
+    ledger = JobLedger(tmp_path / "jobs.sqlite3")
+    project, job_id = uuid4(), uuid4()
+    monkeypatch.setattr(ledger, "_now", lambda: "2026-10-22T00:00:00+00:00")
+    ledger.submit(job_id, project, request())
+    ledger.claim_next("worker")
+    ledger.finish(job_id, "worker", error_code="PROCESSOR_ERROR")
+    with sqlite3.connect(ledger.path) as db:
+        db.execute("UPDATE jobs SET updated_at=? WHERE job_id=?", (timestamp, str(job_id)))
+    if code:
+        with pytest.raises(GatewayError) as raised:
+            ledger.timing(job_id, project)
+        assert raised.value.code == code
+        assert timestamp not in str(raised.value)
+    else:
+        measured = ledger.timing(job_id, project)
+        assert measured.ledger_elapsed_ms is None
+        assert measured.unavailable_reason == "CLOCK_MOVED_BACKWARD"
+
+
 def test_queued_work_is_claimed_fifo_once(tmp_path):
     ledger = JobLedger(tmp_path / "jobs.sqlite3")
     project, first, second = uuid4(), uuid4(), uuid4()
