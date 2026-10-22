@@ -2,11 +2,11 @@
 
 ## 최신 릴레이 검증 · 2026-10-22
 
-- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **339 passed in 4.30s**.
-- B1 자산·캔버스72 → B2 API·작업 저장/복구112 → B3 승인·제한 profile·로컬 template148 → B4 프롬프트·편집/cache201 → B5 평가·작업 시간280 → B6 모델준비·누끼어댑터339로 확장했다. 자동 테스트는 실제 가중치를 내려받지 않으며 실모델 smoke는 아래에 구분한다.
+- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **433 passed in 9.39s**.
+- B1 자산·캔버스72 → B2 API·작업 저장/복구112 → B3 승인·제한 profile·로컬 template148 → B4 프롬프트·편집/cache201 → B5 평가·작업 시간280 → B6 모델준비·누끼어댑터339 → B7 SDXL 고정 파일·어댑터·CLI433로 확장했다. 자동 테스트는 실제 가중치를 내려받지 않으며 실모델 smoke는 아래에 구분한다.
 - 실제 파일/SQLite, 프로세스 경쟁·강제 종료 복구, 실제 TCP API와 CLI 6명령을 검증했다. 512×512 결과 PNG를 저장·다운로드했다.
 - [B1](fivecircles/test/relay-b1.md), [B2](fivecircles/test/relay-b2.md), [릴레이 진행](fivecircles/work/relay.md).
-- B6에서 실제 BiRefNet Lite의 Mac MPS 누끼를 검증했다. GCP CUDA·배경 생성 AI·OpenAI 유료 호출·실제 광고 품질·팀 인수는 검증하지 않았다. 기존 배경 템플릿은 모델 추론 결과가 아니다.
+- B6에서 실제 BiRefNet Lite의 Mac MPS 누끼를, B7에서 SDXL의 Mac MPS 배경 생성을 검증했다. GCP CUDA·OpenAI 유료 호출·실제 광고 품질·팀 인수는 검증하지 않았다. 기존 배경 템플릿은 모델 추론 결과가 아니다.
 - B5: 실제 파일·정답 마스크·빈 마스크·권리 미확인·누락 정답·경로 제한·FIFO 거절·보고서 덮어쓰기 차단, 실패/중단 작업의 시간과 clock 역행을 검사했다. manifest 예제 CLI는 1건 NOT_ASSESSED, 실제 TCP 시간 조회 CLI는 PASS(70.61ms 서버 wall-clock, GPU 시간 아님).
 - 동료 검토에서 manifest가 FIFO이면 멈출 수 있는 문제를 발견해 nonblocking open과 regular-file 검사로 수정했다. 실제 FIFO 회귀 테스트와 전체 테스트를 통과했다.
 - B5 wheel 생성 PASS, SHA256 `79bff5bc59cc8bf1319edd0e5d0dd352b3b6180dca67424cf6e85c0679990b2c`.
@@ -15,6 +15,13 @@
 - 같은 합성 fixture의 파일hash를 실제job출력과 연결해 평가 도구를 실행했다. IoU0.9692321320, boundaryF1 0.7558205565(2px 정사각 허용), opaque보존true. 1개 dev fixture 결과이며 품질승인 NOT_ASSESSED다.
 - 검증 환경: torch2.14.1/torchvision0.29.1/transformers5.20.2/timm1.0.30/kornia0.8.3/einops0.8.2/numpy2.4.6. pip check·MPS tensor smoke PASS. 실제 import 중 upstream torch.jit deprecation 경고는 있었고 실행 오류는 없었다. CUDA와 다른버전은 미검증.
 - B6 동료 검토: 모델 다운로드의 HTTPException을 안전코드로 변환하고 임시파일 정리 회귀를 추가했다. B6 wheel 생성 PASS, SHA256 `1932d8a7a0bc2b792caf49e839b0596dcf27fea83b48e2eef9fa6c9276b373f8`.
+- B7 자동 검증: 20개 고정 파일·중첩 경로·병렬 다운로드 실패 정리·누락/변조 거절, 명시적 모델/장치·두 tokenizer 길이 검사·제품 보존·텍스트 여백 복원·안전한 오류를 확인했다. 라이브러리 import와 `pip check` PASS.
+- B7 동료 검토에서 정확히 전체 검정인 원출력을 성공으로 넘기는 공백을 재현했다. 저장 전에 `IMAGE_RESULT_INVALID`로 거절하고, 실패 시 새 자산이 없음을 검증했다. 임의 밝기 기준은 추가하지 않았다.
+- B7 실제 첫 두 시도는 모델 로딩 뒤 `MODEL_UNAVAILABLE`로 종료했다. 원인은 Diffusers0.41에서 제거된 pipeline.enable_vae_tiling 호출이었다. 실패 기록을 보존하고 지원 API인 pipeline.vae.enable_tiling과 dtype 인자로 수정했다. 모델 파일 없이 실제 VAE/loader API를 검사하는 회귀2개도 통과했다.
+- 수리 후 세번째 실제 MPS/TCP CLI 실행 PASS. 두 모델 모두 호출했고 CPU fallback은 껐다. 합성 fixture512×512, 불투명770픽셀 중 불일치0, Safe Zone 정확한 중립색, 세 결과 파일의 다운로드 SHA와 AssetRef 일치. 배경 job14700.575ms, 누끼2690.63ms, render CLI15.343s는 서버/클라이언트 경과이며 GPU 순수 연산 시간은 아니다.
+- 실행 후 MPS allocated7,135,957,248B, driver10,240,196,608B를 관찰했다. 사후 snapshot이며 최대 메모리·CUDA VRAM이 아니다. 런타임의 upstream VAE upcast FutureWarning은 기록됐고 결과 배열의 유한 값·범위 검사와 파일 검증을 통과했다.
+- 결과를 직접 열어 보니 꽃 표현이 부족하고 생성된 제품 잔상이 보였다. 기술 실행 PASS를 광고 품질 합격으로 확대하지 않는다. 합성 테스트 확인만 수행했으며 실사진 품질·안전성·사람 인수는 NOT_ASSESSED다.
+- B7 최종 wheel 생성·격리 import PASS, SHA256 `614b5570fc177d22dde87e4fb10c60018a6119ebe7fce99883f03dca1b2d673c`. 기본 import는 torch·diffusers를 로딩하지 않는다.
 
 ---
 

@@ -1,4 +1,4 @@
-"""Local image server with explicit template or optional BiRefNet cutout backend."""
+"""Local image server with explicit template, BiRefNet and SDXL backends."""
 from __future__ import annotations
 
 import argparse
@@ -15,12 +15,12 @@ from .product_approval import ProductApprovalStore
 from .errors import GatewayError
 
 
-class _CutoutRouter:
-    def __init__(self, local, cutout):
-        self.local, self.cutout = local, cutout
+class _ProfileRouter:
+    def __init__(self, local, overrides):
+        self.local, self.overrides = local, overrides
 
     def _processor(self, request):
-        return self.cutout if request.pipeline_profile_id == "birefnet-lite" else self.local
+        return self.overrides.get(request.pipeline_profile_id, self.local)
 
     def validate_request(self, request):
         self._processor(request).validate_request(request)
@@ -31,18 +31,27 @@ class _CutoutRouter:
 
 def build_app(root: str | Path, project_id: UUID, token: str, *,
               cutout_backend: str = "uploaded-alpha", model_root: str | Path = "models",
-              model_device: str = "mps"):
+              model_device: str = "mps", background_backend: str = "bright-template"):
     root = Path(root)
     assets = LocalAssetStore(root / "assets")
     approvals = ProductApprovalStore(root / "products.sqlite3", assets)
     processor = LocalTemplateProcessor(assets, approvals)
+    overrides = {}
     if cutout_backend == "birefnet-lite":
         from .birefnet_processor import BiRefNetCutoutProcessor
         from .model_store import model_directory, verify_model_directory
         directory = verify_model_directory(model_directory(model_root))
-        processor = _CutoutRouter(processor, BiRefNetCutoutProcessor(assets, directory, device=model_device))
+        overrides["birefnet-lite"] = BiRefNetCutoutProcessor(assets, directory, device=model_device)
     elif cutout_backend != "uploaded-alpha":
         raise ValueError("Unsupported cutout backend")
+    if background_backend == "sdxl-inpaint":
+        from .sdxl_processor import SDXLBackgroundProcessor
+        from .sdxl_model_store import model_directory, verify_model_directory
+        directory = verify_model_directory(model_directory(model_root))
+        overrides["sdxl-inpaint"] = SDXLBackgroundProcessor(assets, approvals, directory, device=model_device)
+    elif background_backend != "bright-template":
+        raise ValueError("Unsupported background backend")
+    processor = _ProfileRouter(processor, overrides)
     ledger = JobLedger(root / "jobs.sqlite3")
     edits = ImageEditStore(root / "edits.sqlite3", assets, ledger)
     return create_app(ledger, assets, {token: project_id}, processor, approvals=approvals,
@@ -67,6 +76,7 @@ def main() -> None:
     try:
         app = build_app(os.environ.get("BEAUTY_STORAGE_ROOT", "outputs/inference"), project_id, token,
                         cutout_backend=os.environ.get("BEAUTY_CUTOUT_BACKEND", "uploaded-alpha"),
+                        background_backend=os.environ.get("BEAUTY_BACKGROUND_BACKEND", "bright-template"),
                         model_root=os.environ.get("BEAUTY_MODEL_ROOT", "models"),
                         model_device=os.environ.get("BEAUTY_MODEL_DEVICE", "mps"))
     except (GatewayError, ValueError):

@@ -29,5 +29,6 @@
 - [x] B4 프롬프트 수신·revision/캐시·늦은 결과 연결 차단. 201 tests·실제 TCP CLI PASS, a1b1602 게시 확인. [검증](../test/relay-b4.md).
 - [x] B5 평가 manifest·마스크/픽셀 지표·job timing 도구. 280 tests·실제 CLI·wheel build PASS. [검증](../test/relay-b5.md).
 - [x] B6 고정 BiRefNetLite·명시적 준비/검증·adapter. 339 tests와 실제 MPS/TCP 합성 fixture PASS. [검증](../test/relay-b6.md).
-- [ ] B7 로컬 실제 배경 모델 후보·고정 revision·adapter·생성/재합성 검증. 이후 GCP CUDA는 별도로 검증.
+- [x] B7 고정 SDXL·실제 MPS 512 fixture 생성/제품·여백 보존. 433 tests·실제 TCP/CLI PASS, 광고 품질 미평가. [검증](../test/relay-b7.md).
+- [ ] 로컬 반복/크기 측정·단계 trace, 불확실 제출의 job ID/hash 조회·조정. 이후 GCP CUDA는 별도로 검증.
 - [ ] 실제 GPU·모델 품질·팀 인수: 실행 환경/공동 확인 근거 필요.

@@ -62,3 +62,13 @@
 - 검토/수리: 모델 저장의 HTTPException을 안전한 오류로 정제하고 회귀. 실제 실행의 timm FutureWarning은 기록했으며 실패는 없었다.
 - 문서: README 5절·설치/이전 안내·원본 TODO 2개 체크(누적 27개)·흐름/브라우저 비교. 실제 출력 파일은 공개 Git 제외.
 - 다음: B6 게시 후 B7 실제 로컬 배경 모델 계약·검증. 실사진 품질·CUDA·팀 인수는 별도. [검증](../test/relay-b6.md).
+
+
+## 2026-10-22 · B7 · 구현/검증
+
+- 구현: sdxl_model_store.py·sdxl_processor.py, background 의존성·runtime/CLI·꽃 예제 prompt. 고정 20개 파일 hash·77 token 한도·여백 복원·제품 재합성을 적용했다.
+- root 검증: 전체 433 tests PASS(9.39s), pip check·최종 wheel·격리 lazy import. 세 번째 실제 MPS 512 fixture 실행에서 제품 770 opaque/mismatch 0·Safe Zone exact.
+- 수리: 전부0 원출력 거절. 실제 실패 2회의 원인인 제거된 VAE tiling API와 대체 backend 테스트를 수리하고 관련 44 tests PASS.
+- 기록: background ledger 14700.575ms/CLI 15.343s는 로딩·대기·파일 포함. MPS 메모리는 작업 후 snapshot이며 peak 아님.
+- 문서: README 5절·설치 안내·원본 TODO 2개 체크(누적 29개)·흐름/브라우저 비교. 꽃 표현 부족·제품 잔상으로 광고 품질 미평가.
+- 다음: 로컬 반복·크기·단계 trace·응답 유실 조회/조정 후보가 남아 있다. 실사진·CUDA·팀 인수는 별도. [검증](../test/relay-b7.md).

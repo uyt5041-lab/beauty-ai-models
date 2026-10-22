@@ -8,13 +8,13 @@ flowchart TB
     E["E · 명시적 승인 저장<br/>정확한 source / layer / visual hash"]:::green
     P["서버 소유 profile / revision<br/>승인 / 자산을 실행 직전 재검증"]:::green
     T["bright-template / 1<br/>밝은 로컬 템플릿 · AI 모델 아님"]:::gray
-    F["F · GAP: 실제 배경 모델<br/>tokenizer / GPU 실행 검증 필요"]:::red
+    F["F · SDXL 실제 배경 / 고정 profile<br/>512 MPS fixture / 품질 미평가"]:::green
     G["G · 제품 재합성 / 3개 레이어 저장<br/>불투명 픽셀 / 실제 파일 검사"]:::green
     R["결과 파일 / project 확인<br/>성공 commit · 안전한 실패 코드"]:::green
     H["H · 편집 revision CAS / 프로젝트 캐시<br/>실파일 hit 검증 / 늦은 attach 거절"]:::green
     I["I · GAP: 렌더러 / 내보내기<br/>실서비스 연결 없음"]:::red
     J["J · GAP: 사람 평가 / 팀 인수<br/>실제 광고 품질 증거 필요"]:::red
-    Q["영어 프롬프트 수신 DTO / hash<br/>버전·revision 포함 / 기존 None 호환"]:::green
+    Q["영어 프롬프트 수신 / hash<br/>SDXL 두 tokenizer · 각 77 token 검사"]:::green
     X["local template은 prompt 미지원<br/>무시하지 않고 명시적 거절"]:::gray
     V["별도 로컬 평가 입력<br/>버전 / 권리 선언 / 정답 mask"]:::gray
     K["평가 manifest CLI / mask·픽셀 지표<br/>권리 미확인 건너뜀 / 품질 NOT_ASSESSED"]:::green
@@ -22,14 +22,16 @@ flowchart TB
     V --> K -.-> J
     R --> L
     Q --> X
-    Q -.-> F
+    Q --> F
     A --> B --> W --> U --> D --> E --> P --> T --> G --> R
     S["명시적 모델 준비 / 검증<br/>고정 4개 파일 hash / 로컬 로딩"]:::green
     N["GAP: 실사진 품질 / CUDA<br/>합성 fixture 성공과 별도 검증"]:::red
     S --> C
     W --> C --> D
     C -.-> N
-    P -.-> F -.-> G
+    S2["SDXL 고정 fp16 파일 준비<br/>18 runtime + card / license · SHA 검증"]:::green
+    S2 --> F
+    P --> F --> G
     R --> H -.-> I -.-> J
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
 classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px

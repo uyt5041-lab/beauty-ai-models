@@ -2,7 +2,7 @@
 
 2026-10-22 · 대상: `plan/models` · 이미지 담당: pi
 
-**로컬 Mac에서 실제 누끼 모델을 먼저 검증하고, 같은 모델·입출력 계약을 GCP로 옮긴다.** B6의 대상은 BiRefNetLite 누끼다. 배경은 기존 `bright-template/1`이며 실제 배경 생성 모델은 다음 배치다. B6는 실제 MPS 누끼와 TCP CLI 연결을 합성 fixture로 검증했다. 전체 회귀는 339 tests PASS이며 실사진 품질·CUDA 검증은 남아 있다. 설치, 파일 검증, 모델 추론, 제품 사진 품질 통과를 각각 기록한다.
+**로컬 Mac에서 실제 누끼 모델을 먼저 검증하고, 같은 모델·입출력 계약을 GCP로 옮긴다.** B6의 대상은 BiRefNetLite 누끼다. 기본 배경은 `bright-template/1`이며 B7의 SDXL 실제 MPS 512×512 경로도 검증했다. 기술 실행과 광고 품질 판정은 구분한다. B6는 실제 MPS 누끼와 TCP CLI 연결을 합성 fixture로 검증했다. 전체 회귀는 339 tests PASS이며 실사진 품질·CUDA 검증은 남아 있다. 설치, 파일 검증, 모델 추론, 제품 사진 품질 통과를 각각 기록한다.
 
 ## 1. 모델과 파일 고정
 
@@ -91,7 +91,7 @@ alpha는 원본 RGB와 합쳐 RGBA로 저장한다. preserve mask는 alpha가 0�
 | 실제 추론 | 모델 로딩·실제 MPS forward·출력 자산·시간 기록 | PASS · 합성 병 512×512, RGB 유지·alpha 0..255·RGBA/마스크 |
 | 서버 연결 | TCP runtime·별도 prepare CLI·job·후보 파일 | PASS · approved=false, 수동 경고 유지. 사람 승인·품질은 별도 |
 | 제품 품질 | 권리 확보 실사진·정답/사람 기준·반복 결과 | 미완료 |
-| 실제 배경 모델 | 별도 모델·prompt/tokenizer·생성/재합성 검증 | 미완료 |
+| 실제 배경 모델 | 별도 모델·prompt/tokenizer·생성/재합성 검증 | B7 실제 MPS 512 fixture 기술 검증 PASS. 품질·안전 미평가 |
 
 전체 회귀는 **339 tests PASS(4.30s, -W error)**다. optional backend 단위 테스트는 실제 모델 호출을 대체하지 않으며 실제 MPS smoke를 별도로 수행했다. 실행 중 timm의 torch.jit FutureWarning이 기록됐고 실패는 없었다. [B6 검증 기록](../fivecircles/test/relay-b6.md).
 
@@ -108,10 +108,83 @@ alpha는 원본 RGB와 합쳐 RGBA로 저장한다. preserve mask는 alpha가 0�
 5. cold/warm 지연·반복 실패·VRAM·동시성·OOM·재시작·비용을 별도로 측정한다. Mac 통합 메모리와 CUDA VRAM 수치를 동일 지표로 비교하지 않는다.
 6. 인증·프로젝트 경계·영속 저장·worker 잠금·현재 revision을 실제 배포 환경에서 확인한 뒤 API/렌더러 담당과 인수한다.
 
-## 6. 이후 배경 모델 범위
+## 6. B7 SDXL 로컬 배경 준비
 
-SDXL Base는 다음 배치의 검토 대상이며 B6에서 설치·추론했다고 표시하지 않는다. 공식 목록의 `sd_xl_base_1.0.safetensors` **단일 가중치는 약 6.94GB**다. 전체 저장소·파이프라인의 파일 크기와 실행 메모리는 이 값보다 크거나 다를 수 있다. [공식 SDXL 파일 목록](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/tree/main).
+**상태: B7 실제 MPS 512×512 fixture 기술 실행 PASS, 최종 회귀 433 tests PASS.** 실제 광고 품질·생성 안전·실사진·CUDA는 미평가/미검증이다.
 
-배경 모델을 연결할 때는 모델 사용 조건·고정 revision·필요 파일·CPU/MPS/CUDA 지원, prompt/tokenizer·해상도·seed·생성 설정을 별도 계약으로 고정한다. 실제 생성 배경에 승인 제품을 재합성하고 기존 3개 레이어·불투명 픽셀·현재 revision 검사를 유지한다. 밝은 로컬 template 결과를 SDXL 실행으로 기록하지 않는다.
+| 항목 | B7 고정 설정 |
+| --- | --- |
+| 모델 | `stabilityai/stable-diffusion-xl-base-1.0` |
+| revision | `462165984030d82259a11f4367a4eed129e94a7b` |
+| 내부 profile / pipeline revision | `sdxl-inpaint` / `sdxl-base-fp16-v1` |
+| 실행 클래스 | Diffusers `StableDiffusionXLInpaintPipeline` |
+| 모델 파일 | fp16 런타임 18개, 6,941,187,536 bytes(약 6.94GB) |
+| 출처 파일 | 같은 revision의 모델 카드·LICENSE도 보존. 전체 allowlist는 20개 |
+| 패키지 | 기존 models 선택 의존성 + background: diffusers 0.41.0, accelerate 1.15.0 |
+| 고정 생성 | 각 축 512/768/1024, batch 1, steps 20, guidance 7.5, strength 0.99 |
+| 정밀도 | MPS/CUDA fp16, CPU float32, VAE force_upcast 유지·tiling 사용 |
+| scheduler / 스타일 / 배치 | 고정 EulerDiscreteScheduler / bright-ad v1 / product-right v1 |
+
+개별 파일의 크기·SHA-256과 총량은 [SDXL manifest](modelManifests/sdxl-base-fp16.json)에 고정한다. [고정 공식 모델 목록](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/tree/462165984030d82259a11f4367a4eed129e94a7b)에서 필요한 fp16 파일만 선택한다. refiner나 전체 저장소를 다운로드하지 않는다. 다운로드 크기와 모델 실행 메모리는 다른 수치다.
+
+### 선택 설치·파일 준비
+
+```bash
+python -m pip install -e '.[inference,models,background]'
+python -m beauty_ai.sdxl_model_store prepare --root models
+python -m beauty_ai.sdxl_model_store verify --root models
+```
+
+준비 위치는 `models/sdxl-base/462165984030d82259a11f4367a4eed129e94a7b/`다. 원자적으로 준비한 고정 중첩 경로·파일만 허용한다. 누락·변조·외부 symlink·다른 파일을 정상 모델로 취급하지 않는다. 요청 처리 중 네트워크 다운로드·임의 원격 코드 실행을 하지 않는다. 재실행은 검증된 기존 파일을 사용한다.
+
+### 런타임과 요청
+
+위 BiRefNet 설정에 다음 변수를 추가한 뒤 서버를 시작한다. `BEAUTY_MODEL_ROOT`·`BEAUTY_MODEL_DEVICE`는 두 모델이 공유한다. 모델 준비 뒤에는 `HF_HUB_OFFLINE=1`·telemetry off·MPS fallback 0을 유지한다.
+
+```bash
+export BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint
+python -m beauty_ai.inference_runtime
+```
+
+설정하지 않으면 기존 `bright-template`이 기본이다. 실제 배경 요청을 template으로 자동 대체하지 않는다. 기존 BiRefNet 또는 uploaded-alpha 경로로 제품 후보를 준비하고, 사람이 후보를 확인·승인한 뒤 배경을 생성한다.
+
+`CANDIDATE_ID`는 준비 API가 반환한 값, `JOB_ID`는 한 번 생성해 보관한 UUID로 설정한다. 불확실한 응답 뒤에는 같은 job ID를 조회한다.
+
+```bash
+python -m examples.run_image render "$CANDIDATE_ID" --job-id "$JOB_ID" \
+  --background-profile sdxl-inpaint --prompt examples/bright_flower_prompt.json
+```
+
+`select`도 같은 `--background-profile`·`--prompt`를 받는다. 현재 campaign·expected revision·copy revision은 기존 편집 계약을 따른다. 예제 [bright_flower_prompt.json](../examples/bright_flower_prompt.json)은 밝은 분홍·청록 광고 장면과 꽃 소품을 요청하는 호스트 작성 입력이다. LLM이 생성한 문구나 실제 이미지 생성 결과로 표시하지 않는다.
+
+### 프롬프트·제품·여백 경계
+
+- ImagePrompt는 필수다. positive와 negative 각각을 두 CLIP tokenizer로 검사한다. 특수 토큰을 포함해 각 검사에서 77개 이하여야 하며 넘으면 `INVALID_IMAGE_REQUEST`다. 본문을 로그에 노출하거나 몰래 자르지 않는다. 이미지 모듈은 프롬프트를 번역하거나 카피를 생성하지 않는다.
+- 제품 승인·실제 파일·geometry를 재검증하고 승인 RGBA를 밝은 중립 캔버스에 올려 초기 이미지를 만든다. 제품 보호 마스크를 반전해 흰색을 재생성 영역으로 전달한다.
+- 텍스트 Safe Zone은 mask에서 보호하고, VAE 복원 뒤에도 같은 중립색 사각형을 다시 채운다. 사각형이 비어 있다는 사실은 최종 문구 가독성·디자인·광고 품질을 보장하지 않는다.
+- 생성씬 위에 승인 RGBA를 다시 합성하고 alpha=255 제품 픽셀 보존을 검사한 뒤 3개 레이어를 저장한다. 생성씬에 제품 잔상·중복 제품이 전혀 없다고 보장하지 않는다. 부분 투명 경계는 사람이 확인한다.
+- 생성 출력의 배열 형상·유한 값·범위를 검사하고 원출력 전체가 정확히0이면 거절한다. 임의 밝기 임계값이나 품질 합격 기준은 만들지 않는다. 요청 seed로 CPU generator를 새로 만들지만 MPS/CUDA·라이브러리 변경 후 픽셀 완전 일치를 보장하지 않는다. 실제 선택 장치 완료를 동기화한 뒤 반환한다.
+- 기본 SDXL pipeline에는 NSFW checker가 연결되지 않는다. `GENERATION_SAFETY_NOT_ASSESSED`·`MANUAL_QUALITY_REVIEW_REQUIRED` 경고를 유지하며 생성 성공을 안전성·품질 승인으로 표시하지 않는다.
+
+### 모델 출처와 사용 조건
+
+고정 모델은 **CreativeML Open RAIL++-M** 라이선스다. 준비된 모델 카드·라이선스와 출처를 보존한다. 배포 담당자는 사용 제한, 하위 사용자 고지·라이선스 제공과 필요한 수정 표시를 원문 기준으로 검토해야 한다. 모델 카드의 연구 목적·출력 한계도 함께 확인한다. 이 문서나 코드 실행은 광고 사용·재배포의 법적 승인을 뜻하지 않는다. [고정 라이선스](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md), [고정 모델 카드](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/README.md).
+
+B7 최종 회귀는 **433 tests PASS(9.39s)**이며 pip check·최종 wheel·격리 lazy import를 통과했다. 고정 SDXL 20개 파일 준비·SHA 검증 완료 후 실제 MPS 배경 생성을 별도로 검증했다. 처음 2회는 제거된 `pipeline.enable_vae_tiling()` 호출 때문에 실패했고, 지원되는 `pipeline.vae.enable_tiling()`로 수리하며 구 API를 허용했던 테스트도 보완했다. [B7 검증 기록](../fivecircles/test/relay-b7.md).
+
+### 실제 실행 결과와 남은 측정
+
+세 번째 실행은 CPU fallback 없는 MPS에서 합성 fixture 512×512를 처리했다. 시험용 확인만 수행한 후보로 실제 배경을 생성했고, 제품 opaque 770개 중 불일치 0·Safe Zone exact neutral·3개 레이어 저장을 확인했다. 이 확인은 실제 사람/상품 승인이나 광고 품질 인수가 아니다.
+
+| 항목 | 실제 기록 | 해석 범위 |
+| --- | --- | --- |
+| cutout ledger | 2690.63ms | 접수→종료, 로딩/대기/파일 포함 |
+| background ledger | 14700.575ms | 접수→종료, GPU 순수 연산 시간 아님 |
+| render CLI | 15.343s | 별도 CLI wall-clock |
+| MPS allocated | 7135957248 bytes | 작업 후 관찰, peak 아님 |
+| MPS driver | 10240196608 bytes | 작업 후 관찰, CUDA VRAM 아님 |
+| 품질/안전 | NOT_ASSESSED | 꽃 표현 부족·제품 잔상 관찰, NSFW checker 없음 |
+
+root가 결과를 확인했을 때 꽃 표현이 부족하고 큰 cap/반사 형태의 제품 잔상이 보였다. 기술 실행 PASS를 광고 품질 합격으로 확대하지 않는다. 같은 모델의 로컬 cold/warm·크기별 반복 측정, 단계별 trace·메모리 측정, 응답 유실 후 job 조회·조정은 후속 구현 후보다. 실사진 품질·GCP CUDA·렌더러·팀 인수는 별도로 확인한다.
 
 [이미지 TODO](imageTodo.md) · [이미지 실행 계약](../fivecircles/architecture/contract/image-runtime.md) · [목표/현재 흐름](../fivecircles/architecture/spec/image-runtime-flow.html)

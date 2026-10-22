@@ -193,7 +193,7 @@ python -m examples.prepare_product product-rgba.png visual.json \
 
 ## 승인 절차가 있는 로컬 이미지 서버 (B3)
 
-이 서버는 기존 투명 PNG를 제품 레이어로 받고 밝은 배경 템플릿을 만듭니다. 사진에서 제품을 분리하는 누끼 모델이나 생성형 배경 모델은 실행하지 않습니다. RGB·완전 불투명 입력에는 `MODEL_UNAVAILABLE`을 반환합니다.
+이 절의 기본 설정은 기존 투명 PNG를 제품 레이어로 받고 밝은 배경 템플릿을 만듭니다. 기본 `uploaded-alpha`는 RGB·완전 불투명 입력에 `MODEL_UNAVAILABLE`을 반환합니다. 실제 누끼·배경 모델을 선택하는 방법은 아래 B6·B7 절에 있습니다.
 
 루트에서 `python -m pip install -e '.[inference]'`로 설치합니다. `BEAUTY_PROJECT_ID`에는 UUID, `INFERENCE_INTERNAL_TOKEN`에는 32자 이상의 무작위 비밀값을 설정합니다. `BEAUTY_STORAGE_ROOT`의 기본값은 Git 제외 경로 `outputs/inference`입니다. 재시작할 때 같은 저장 경로와 프로젝트 UUID를 사용합니다. `.env`를 자동으로 읽지 않습니다.
 
@@ -279,4 +279,32 @@ python -m examples.run_image prepare outputs/product-photo.png examples/bright_v
 
 이 경로는 일반 사진에서 제품 alpha를 예측하고 실제 RGBA와 보호 마스크를 저장합니다. 이후 후보 확인·승인 절차는 같습니다. API 요청에서 모델을 내려받지 않으며, 선택한 장치를 사용할 수 없으면 오류를 반환합니다. 검증하지 않은 모델 파일·코드는 실행하지 않습니다. GCP에서는 동일한 API를 유지하면서 CUDA 환경과 모델 파일을 준비하고 장치 설정을 바꿔 검증합니다. Mac과 CUDA의 속도·픽셀 일치는 별도 측정 대상입니다.
 
-M4 Max 64GB에서 합성 제품 fixture로 실제 MPS 추론·TCP API·prepare CLI를 확인했습니다. 첫 작업의 접수→종료 기록은 약6.9초이며 로딩·대기·저장을 포함합니다. 실제 화장품 사진·유리·라벨 경계 품질은 확인하지 않았고, 반환값은 항상 수동 확인 필요 상태입니다. 배경은 아직 로컬 템플릿이며 SDXL 실행과 구분합니다.
+M4 Max 64GB에서 합성 제품 fixture로 실제 MPS 추론·TCP API·prepare CLI를 확인했습니다. 첫 작업의 접수→종료 기록은 약6.9초이며 로딩·대기·저장을 포함합니다. 실제 화장품 사진·유리·라벨 경계 품질은 확인하지 않았고, 반환값은 항상 수동 확인 필요 상태입니다. 이 B6 기록은 누끼 모델의 검증입니다.
+
+## 실제 로컬 SDXL 배경 모델 (B7)
+
+SDXL base fp16 실행 파일은 약6.94GB입니다. 고정 모델을 준비하는 명령만 다운로드를 수행하며, 서버는 로컬 파일의 크기·SHA256을 검증한 뒤 사용합니다. 기본 템플릿으로 자동 대체하거나 CPU로 자동 전환하지 않습니다.
+
+```bash
+python -m pip install -e '.[inference,models,background]'
+python -m beauty_ai.sdxl_model_store prepare --root models
+python -m beauty_ai.sdxl_model_store verify --root models
+export BEAUTY_CUTOUT_BACKEND=birefnet-lite
+export BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint
+export BEAUTY_MODEL_ROOT=models
+export BEAUTY_MODEL_DEVICE=mps
+python -m beauty_ai.inference_runtime
+# 별도 클라이언트: 후보 확인·승인을 마친 뒤 실행
+python -m examples.run_image render <candidate_id> --job-id <new_uuid> --seed 42 \
+  --background-profile sdxl-inpaint --prompt examples/bright_flower_prompt.json
+```
+
+`sdxl-inpaint/sdxl-base-fp16-v1`은 `bright-ad/1`, `product-right/1`에 연결됩니다. 각 작업 축의 허용 크기는512·768·1024이며 실제로 검증한 크기는 [설치 문서](docs/localModelSetup.md)의 실행 기록을 따릅니다. Euler scheduler·20steps·guidance7.5·strength0.99는 서버 설정입니다. `select`에도 같은 `--background-profile`, `--prompt`, seed를 전달해야 현재 편집의 입력 hash와 생성 작업이 일치합니다.
+
+예제 프롬프트는 직접 작성한 꽃 배경 입력이며 팀 LLM 산출물은 아닙니다. 영어 프롬프트의 positive·negative 각각을 두 tokenizer로 검사합니다. 시작·끝 토큰 포함77개를 넘으면 내용을 로그에 출력하거나 잘라 쓰지 않고 거절합니다.
+
+제품 영역을 보호하도록 인페인트 마스크를 만들고, 생성 후 텍스트 여백을 중립색으로 복원하며 승인된 제품 레이어를 다시 합성합니다. `scene_underlay`에는 생성 제품 잔상이 남을 수 있습니다. 중복 제품·가짜 문자·부분 투명 경계·조명은 사람이 확인해야 합니다. base SDXL에는 이 경로에서 사용하는 NSFW 검사기가 없으며 `GENERATION_SAFETY_NOT_ASSESSED`를 반환합니다. 유효한 PNG 저장과 광고 품질 승인은 별개입니다.
+
+클라이언트의120초 대기 한도를 넘으면 `JOB_STILL_PENDING`입니다. 출력된 기존 job ID로 `get-job`을 실행하고 새 작업을 중복 제출하지 않습니다. 모델의 OpenRAIL++-M 사용 조건·원본 라이선스·가중치 고정 목록과 GCP 이전 절차는 [설치 문서](docs/localModelSetup.md)에 있습니다.
+
+M4 Max64GB에서 두 모델을 실제 MPS로 실행해512×512 결과 파일을 확인했습니다. 첫 배경 job은 약14.7초(로딩·대기·저장 포함), 실행 후 MPS driver 메모리는 약10.24GB였습니다. 최대 메모리 측정값은 아닙니다. 불투명 제품770픽셀과 텍스트 여백은 보존됐지만, 샘플의 꽃 표현 부족·제품 잔상은 품질 보완 대상으로 남았습니다. 전체 자동 회귀433개 통과와 실제 광고 품질 통과를 구분합니다.

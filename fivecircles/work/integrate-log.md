@@ -39,3 +39,10 @@
 - 전체280 tests4.06s, 평가예제CLI, 실제TCP timingCLI, wheel/isolatedimport, HTML/PNG/browser, 설정/비밀패턴/diff 검사 PASS.
 - 로컬 `/Users/pio/IdeaProjects/beautyAi`에 공개tracked125파일을동일하게반영했다. 기존파일백업후72파일갱신, Git생성/비밀값/생성이미지복사없음. 로컬설정검사PASS.
 - 오프라인평가/로컬참조API 코드publication. 운영CD NOT_APPLICABLE. 모델호출·품질승인은미수행.
+
+## 2026-10-22 · B6 publication
+
+- source SHA: `a7f3957664eeb98ef76d2352c566c47f2a733ced`. 일반push와원격plan/models일치.
+- 코드339tests4.30s, 실제MPS/TCPCLI BiRefNetLite합성fixture, 해시검증/평가연결, wheel/isolatedlazyimport, flow/browserPASS.
+- 로컬beautyAi132tracked파일일치, 별도Python3.11가상환경설치. 로컬339tests8.86s/설정/가중치검증PASS. 가중치는models/,실행결과는outputs/로Git제외.
+- 로컬실누끼실행증거이며GCP배포NOT_RUN. 실제제품사진품질/배경AI/팀인수는미검증.

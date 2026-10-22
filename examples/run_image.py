@@ -5,16 +5,34 @@ import argparse
 import asyncio
 import json
 import os
+import sys
 from pathlib import Path
 from uuid import UUID, uuid4
 
 import httpx
 
-from beauty_ai.contracts import BackgroundRequest, CutoutRequest, VisualBrief
+from beauty_ai.contracts import BackgroundRequest, CutoutRequest, VisualBrief, ImagePrompt
+from beauty_ai.errors import GatewayError
 from beauty_ai.image_gateway import HTTPImageGateway
 
 
 async def run(args) -> dict:
+    # Reject invalid local JSON before uploading or invoking a model.
+    def read_json_input(path):
+        with path.open("rb") as source:
+            raw = source.read(32769)
+        if len(raw) > 32768:
+            raise ValueError("JSON input exceeds limit")
+        return raw
+
+    if args.command == "prepare":
+        visual = VisualBrief.model_validate_json(read_json_input(args.visual))
+    prompt = None
+    if args.command in ("render", "select"):
+        if args.prompt is not None:
+            prompt = ImagePrompt.model_validate_json(read_json_input(args.prompt))
+        if args.background_profile == "sdxl-inpaint" and prompt is None:
+            raise ValueError("SDXL requires an explicit image prompt")
     token = os.environ.get("INFERENCE_INTERNAL_TOKEN", "")
     if not token:
         raise ValueError("Set INFERENCE_INTERNAL_TOKEN")
@@ -44,7 +62,6 @@ async def run(args) -> dict:
             job = await gateway.wait(job_id, expected_request=request)
             if job.status != "succeeded":
                 return job.model_dump(mode="json")
-            visual = VisualBrief.model_validate_json(args.visual.read_text())
             return await json_response("POST", "/internal/v1/products/prepare", json={
                 "source": source, "cutout": job.result.product_rgba.model_dump(mode="json"),
                 "visual": visual.model_dump(mode="json"),
@@ -56,7 +73,9 @@ async def run(args) -> dict:
             candidate = await json_response("GET", f"/internal/v1/products/{args.candidate_id}")
             request = BackgroundRequest(source=candidate["source"], product_rgba=candidate["product_rgba"],
                 preserve_mask=candidate["preserve_mask"], visual=candidate["visual"], seed=args.seed,
-                pipeline_profile_id="bright-template", pipeline_revision="1")
+                pipeline_profile_id=args.background_profile,
+                pipeline_revision="sdxl-base-fp16-v1" if args.background_profile == "sdxl-inpaint" else "1",
+                image_prompt=prompt)
             if args.command == "select":
                 return await json_response("PUT", f"/internal/v1/edits/{args.campaign_id}", json={
                     "expected_revision": args.expected_revision, "copy_revision": args.copy_revision,
@@ -111,6 +130,9 @@ def main():
     select.add_argument("--expected-revision", type=int, required=True)
     select.add_argument("--copy-revision", type=int, required=True)
     select.add_argument("--seed", type=int, default=42)
+    for command in (render, select):
+        command.add_argument("--background-profile", choices=("bright-template", "sdxl-inpaint"), default="bright-template")
+        command.add_argument("--prompt", type=Path, help="Explicit ImagePrompt JSON; required for SDXL")
     get_edit = commands.add_parser("get-edit")
     get_edit.add_argument("campaign_id", type=UUID)
     attach = commands.add_parser("attach", help="Attach a finished job only if the edit is still current")
@@ -121,8 +143,17 @@ def main():
     download.add_argument("asset_id", type=UUID)
     download.add_argument("output", type=Path)
     args = parser.parse_args()
-    print(json.dumps(asyncio.run(run(args)), ensure_ascii=False, indent=2))
+    try:
+        result = asyncio.run(run(args))
+    except GatewayError as exc:
+        print(json.dumps({"error_code": exc.code}), file=sys.stderr)
+        return 2
+    except (OSError, ValueError, httpx.HTTPError):
+        print(json.dumps({"error_code": "IMAGE_CLI_INPUT_OR_REQUEST_FAILED"}), file=sys.stderr)
+        return 2
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

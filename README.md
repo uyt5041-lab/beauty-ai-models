@@ -1,6 +1,6 @@
 # 화장품 광고 AI 래퍼 참고 구현
 
-소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. 텍스트·VLM은 OpenAI API로, 이미지 작업은 별도의 private inference 서버로 분리합니다. 내부 이미지 FastAPI 앱·SQLite 작업 저장소·단일 호스트 worker·명시적 제품 승인·로컬 템플릿 실행·편집 revision·프로젝트 캐시·로컬 평가 도구와 고정 BiRefNetLite 누끼 adapter를 포함합니다. **실제 MPS 누끼는 합성 fixture로 검증했고, 실제 배경 모델·실사진 품질·광고 UI·렌더러 연결은 남아 있습니다.**
+소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. 텍스트·VLM은 OpenAI API로, 이미지 작업은 별도의 private inference 서버로 분리합니다. 내부 이미지 FastAPI 앱·SQLite 작업 저장소·단일 호스트 worker·명시적 제품 승인·로컬 템플릿 실행·편집 revision·프로젝트 캐시·로컬 평가 도구와 고정 BiRefNetLite·SDXL adapter를 포함합니다. **실제 MPS 누끼·배경 생성은 합성 fixture로 검증했습니다. 꽃 표현·제품 잔상 등 광고 품질 개선과 실사진·UI·렌더러 연결은 남아 있습니다.**
 
 ## 1. 쓰는 법
 
@@ -25,7 +25,8 @@ python -m pytest -q -W error
 | `INFERENCE_INTERNAL_TOKEN` | 내부 서버 인증 토큰 |
 | `BEAUTY_PROJECT_ID` | 로컬 이미지 서버의 프로젝트 UUID |
 | `BEAUTY_STORAGE_ROOT` | 로컬 자산·작업·승인·편집 DB 저장 경로 |
-| `BEAUTY_CUTOUT_BACKEND` / `BEAUTY_MODEL_ROOT` / `BEAUTY_MODEL_DEVICE` | 선택한 실제 누끼 backend·검증 모델 루트·명시 장치 |
+| `BEAUTY_CUTOUT_BACKEND` / `BEAUTY_BACKGROUND_BACKEND` | 실제 누끼·배경 backend 선택. 기본 alpha/template과 구분 |
+| `BEAUTY_MODEL_ROOT` / `BEAUTY_MODEL_DEVICE` | 검증 모델 루트·명시 장치 |
 
 모델은 계정에서 사용할 수 있고 해당 입력·구조화 출력을 지원하는지 확인한 뒤 설정합니다. 동시성·시간 제한의 초기값은 `.env.example`과 [클라이언트 조립 예제](examples/wiring.py)를 참고하세요.
 
@@ -39,9 +40,11 @@ python -m pytest -q -W error
 
 실제 누끼는 `.[inference,models]` 선택 의존성과 고정 모델 준비가 필요합니다. `BEAUTY_CUTOUT_BACKEND=birefnet-lite`·명시적 MPS 장치를 설정하고 `prepare --cutout-profile birefnet-lite`를 사용합니다. API에서 모델을 자동 다운로드하거나 CPU/template으로 자동 대체하지 않습니다. [로컬 모델 설치·GCP 이전](docs/localModelSetup.md)을 따르세요.
 
+실제 배경은 `.[inference,models,background]`와 명시적 SDXL 파일 준비 후 `BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint`로 선택합니다. 승인된 후보에 `render/select --background-profile sdxl-inpaint --prompt examples/bright_flower_prompt.json`을 사용합니다. 두 tokenizer의 77 token 한도를 넘으면 거절하며 잘라서 실행하지 않습니다.
+
 로컬 평가 도구는 `python -m beauty_ai.evaluation examples/evaluation_manifest.json --output outputs/evaluation-report.json`으로 실행합니다. 예제의 권리는 `unknown`이므로 이미지를 읽지 않고 미평가로 기록합니다. 실제 평가는 권리와 출처를 확인한 파일을 manifest 폴더 아래에 두고, 비공개 `data/`·`outputs/`에서 실행하세요. 기존 결과 파일은 덮어쓰지 않습니다.
 
-단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B6 기록](fivecircles/test/relay-b6.md)을 참고하세요. **전체 339 tests PASS + 실제 TCP/MPS 누끼 CLI PASS**입니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
+단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B7 기록](fivecircles/test/relay-b7.md)을 참고하세요. **전체 433 tests PASS + 실제 TCP/MPS 누끼·배경 CLI PASS**입니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
 
 ## 2. 기능
 
@@ -59,6 +62,7 @@ python -m pytest -q -W error
 | `image_integrity.py` | 보호 마스크를 인페인트 마스크로 반전하고 승인 RGBA를 장면 위에 재합성 |
 | `ProductApprovalStore` | 후보 snapshot·project·파일·형상 검증, 명시적 확인과 정확한 hash로 승인 저장 |
 | `model_store` / `BiRefNetCutoutProcessor` | 고정 4개 파일 준비·hash 검증, 명시 장치의 실제 누끼와 RGBA·마스크 저장. MPS 합성 fixture 검증 |
+| `sdxl_model_store` / `SDXLBackgroundProcessor` | 고정 fp16 파일·두 tokenizer 검사, 실제 MPS inpaint·여백 복원·승인 제품 재합성. 512 fixture 기술 검증 |
 | `LocalTemplateProcessor` | 서버 고정 profile로 기존 alpha 처리·밝은 템플릿 합성, 3개 레이어 저장과 보존 검사 |
 | `inference_runtime` / CLI | 로컬 서버 조립, 준비→확인→승인→합성→조회·다운로드 및 이미지 선택·결과 연결 명령 |
 | `ImagePrompt` | 텍스트 담당이 만든 프롬프트·버전·revision 수신, 문자 수 검증, 기존 요청 hash 호환 |
@@ -81,7 +85,7 @@ python -m pytest -q -W error
                                      └─ 주입한 processor
                                           ├─ LocalTemplateProcessor (기존 alpha / 밝은 템플릿)
                                           ├─ BiRefNetCutoutProcessor (고정 local files / 실제 MPS 누끼)
-                                          └─ [연결 필요: 실제 배경 AI 모델]
+                                          └─ SDXLBackgroundProcessor (고정 local fp16 / 실제 MPS 배경)
                            ├─ ProductApprovalStore (정확한 후보 snapshot 승인)
                            └─ ImageEditStore (현재 revision / project cache / result attach)
 
@@ -104,16 +108,16 @@ python -m pytest -q -W error
 
 `PUT/GET /internal/v1/edits/{campaign_id}`로 현재 이미지 선택을 저장·조회하고, `PUT /internal/v1/edits/{campaign_id}/result`로 완료 job을 연결합니다. 현재 revision과 요청 hash가 맞아야 연결되며, 실제 파일을 확인한 성공 결과만 프로젝트 캐시에서 재사용합니다. 문구 revision만 바뀌면 같은 이미지 결과를 재사용하고 visual·seed·profile·자산·프롬프트가 바뀌면 다른 key입니다. 캐시 miss가 자동으로 새 작업을 실행하지는 않습니다.
 
-검수 snapshot은 제품·카피·옵션·규칙·검수 모델·프롬프트에 묶입니다. `BackgroundRequest.image_prompt`가 있으면 텍스트·버전·revision을 이미지 hash에 포함하며, 없으면 기존 body/hash를 유지합니다. 영어 프롬프트 생성·언어 판별·실모델 tokenizer 검증은 하지 않습니다. 로컬 bright-template은 프롬프트를 해석하지 않으므로 제공된 image_prompt를 거절합니다. [현재 흐름](fivecircles/architecture/spec/image-runtime-flow.html)과 [설계](DESIGN.md)를 참고하세요.
+검수 snapshot은 제품·카피·옵션·규칙·검수 모델·프롬프트에 묶입니다. `BackgroundRequest.image_prompt`가 있으면 텍스트·버전·revision을 이미지 hash에 포함하며, 없으면 기존 body/hash를 유지합니다. 영어 프롬프트 생성·언어 판별은 하지 않습니다. SDXL 경로는 positive/negative를 두 tokenizer에서 특수 토큰 포함 각각 77개 이하로 검사합니다. 로컬 bright-template은 프롬프트를 해석하지 않으므로 제공된 image_prompt를 거절합니다. [현재 흐름](fivecircles/architecture/spec/image-runtime-flow.html)과 [설계](DESIGN.md)를 참고하세요.
 
 ## 4. 미완성으로서 보완해야 할 점
 
 - **서비스 통합:** 사용자 로그인·CampaignService·SSE·내보내기·렌더러와 실제 UI 연결이 필요합니다. 내부 API 인증·job 복구·이미지 selection revision·프로젝트 캐시는 로컬 구현했습니다.
-- **실제 모델:** 고정 BiRefNetLite를 실제 MPS에서 합성 fixture로 실행했습니다. 권리 확보 실사진·반복 품질·실제 배경 모델은 추가 검증이 필요합니다. 다음은 로컬 SDXL 후보 검토이며, 이후 GCP CUDA에서 별도로 재검증합니다. `uploaded-alpha/1`·`bright-template/1`은 계속 로컬 보조 경로입니다.
+- **모델 검증 확대:** BiRefNetLite·SDXL의 실제 MPS 512 fixture 경로를 확인했습니다. 로컬 크기별 반복·cold/warm·단계별 trace·메모리 측정과 권리 확보 실사진 품질 검증이 필요합니다. 이후 GCP CUDA에서 별도로 재검증합니다. `uploaded-alpha/1`·`bright-template/1`은 보조 경로입니다.
 - **제품 승인·편집:** 정확한 snapshot 승인과 늦은 result attach 차단을 구현했습니다. 실제 사용자 신원·승인 UI·편집 서비스와 최종 품질 승인은 별도로 연결해야 합니다.
 - **검수 데이터:** 출처·버전·검토 이력이 있는 규칙집, 제품 사실 확인, 카피 수정 후 재검수·DB revision 경쟁 검사가 필요합니다.
-- **품질·실환경:** 측정 도구는 구현했지만 실제 고정 평가셋·권리 근거·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실사진 모델 품질·반복 지연·VRAM·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
-- **운영:** 실제 네트워크 접근 범위·비밀값 관리·배포·예산 상한·모델 모니터링을 구성해야 합니다. 로컬 HTTP/파일/DB 테스트와 운영 GPU 검증을 구분합니다.
+- **품질·실환경:** 꽃 표현이 약하고 생성 제품 잔상이 관찰돼 광고 품질을 승인하지 않았습니다. 측정 도구는 구현했지만 실제 고정 평가셋·권리 근거·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실사진 모델 품질·반복 지연·VRAM·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
+- **운영:** 응답이 불확실한 제출의 job ID/hash 조회·조정 흐름, 실제 네트워크 접근 범위·비밀값 관리·배포·예산 상한·모델 모니터링을 구성해야 합니다. 로컬 HTTP/파일/DB 테스트와 운영 GPU 검증을 구분합니다.
 
 ## 5. 하지 말 것
 
@@ -123,6 +127,7 @@ python -m pytest -q -W error
 - 사용자 제공 URL을 검증 없이 서버에서 가져오지 않습니다. 이미지 디코딩·용량·픽셀 수·메타데이터와 자산 접근 권한을 별도로 검증합니다.
 - 제출 응답 유실이나 폴링 시간 초과 뒤 새 작업 ID로 무조건 재생성하지 않습니다. 기존 ID를 조회·복구합니다. 클라이언트 semaphore를 서버 전체 GPU 동시성이나 영속 멱등성으로 간주하지 않습니다.
 - 평가 지표·불투명 픽셀 일치를 품질 합격으로 바꾸거나 wall-clock 경과를 GPU 연산 시간·VRAM·비용으로 설명하지 않습니다. 실제 평가 이미지·권리 자료·산출 보고서는 공개 Git에 넣지 않습니다.
+- SDXL 실행 성공을 안전 검사 완료로 표시하지 않습니다. 기본 경로에는 NSFW checker가 없고 `GENERATION_SAFETY_NOT_ASSESSED`·수동 품질 경고를 유지합니다.
 - 로컬 템플릿을 AI 모델 결과로 표시하거나 `TEMPLATE_NOT_AI_GENERATION`·`MANUAL_QUALITY_REVIEW_REQUIRED` 경고를 숨기지 않습니다.
 - SDK 재시도 위에 무제한 재시도를 덧씌우지 않습니다. 카피 수정 때문에 배경을 재생성하거나, 참고 문서의 속도·메모리·보존율 수치를 실측 결과처럼 쓰지 않습니다.
 - 공개 저장소는 `plan/models`에서 모델 코드를, `박지수_협업일지`에서 날짜별 작업 기록을 관리합니다. 협업일지는 PR·병합 없이 별도로 관리합니다. 자세한 운영 방식은 [README2.md](README2.md)를 따릅니다.

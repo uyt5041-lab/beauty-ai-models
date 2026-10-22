@@ -1,8 +1,8 @@
-# 이미지 런타임 흐름 비교 · B6
+# 이미지 런타임 흐름 비교 · B7
 
-2026-10-22 · 대상: plan/models · 배치 B6 고정 BiRefNetLite / 로컬 MPS 실누끼
+2026-10-22 · 대상: plan/models · 배치 B7 고정 SDXL / 로컬 배경 adapter
 
-**Flow diagram verification: GAP/PARTIAL.** 고정 BiRefNetLite를 실제 MPS에서 실행하고 TCP CLI로 합성 병 512×512의 RGBA·마스크와 미승인 후보를 저장했다. 전체 339 tests와 실제 모델 실행을 각각 검증했다. 실사진 품질·실제 배경 모델·CUDA/GCP·렌더러·팀 인수는 미완료다.
+**Flow diagram verification: GAP/PARTIAL.** 고정 SDXL을 실제 MPS에서 실행하고 512×512 fixture의 승인 제품 픽셀·텍스트 여백·3개 레이어 파일을 검증했다. 전체 433 tests와 실제 실행을 구분해 기록했다. 꽃 표현 부족과 제품 잔상이 관찰돼 광고 품질·안전은 NOT_ASSESSED다. 실사진·반복/크기별 측정·CUDA/GCP·렌더러·팀 인수는 남아 있다.
 
 ## Target Flow
 
@@ -47,13 +47,13 @@ flowchart TB
     E["E · 명시적 승인 저장<br/>정확한 source / layer / visual hash"]:::green
     P["서버 소유 profile / revision<br/>승인 / 자산을 실행 직전 재검증"]:::green
     T["bright-template / 1<br/>밝은 로컬 템플릿 · AI 모델 아님"]:::gray
-    F["F · GAP: 실제 배경 모델<br/>tokenizer / GPU 실행 검증 필요"]:::red
+    F["F · SDXL 실제 배경 / 고정 profile<br/>512 MPS fixture / 품질 미평가"]:::green
     G["G · 제품 재합성 / 3개 레이어 저장<br/>불투명 픽셀 / 실제 파일 검사"]:::green
     R["결과 파일 / project 확인<br/>성공 commit · 안전한 실패 코드"]:::green
     H["H · 편집 revision CAS / 프로젝트 캐시<br/>실파일 hit 검증 / 늦은 attach 거절"]:::green
     I["I · GAP: 렌더러 / 내보내기<br/>실서비스 연결 없음"]:::red
     J["J · GAP: 사람 평가 / 팀 인수<br/>실제 광고 품질 증거 필요"]:::red
-    Q["영어 프롬프트 수신 DTO / hash<br/>버전·revision 포함 / 기존 None 호환"]:::green
+    Q["영어 프롬프트 수신 / hash<br/>SDXL 두 tokenizer · 각 77 token 검사"]:::green
     X["local template은 prompt 미지원<br/>무시하지 않고 명시적 거절"]:::gray
     V["별도 로컬 평가 입력<br/>버전 / 권리 선언 / 정답 mask"]:::gray
     K["평가 manifest CLI / mask·픽셀 지표<br/>권리 미확인 건너뜀 / 품질 NOT_ASSESSED"]:::green
@@ -61,14 +61,16 @@ flowchart TB
     V --> K -.-> J
     R --> L
     Q --> X
-    Q -.-> F
+    Q --> F
     A --> B --> W --> U --> D --> E --> P --> T --> G --> R
     S["명시적 모델 준비 / 검증<br/>고정 4개 파일 hash / 로컬 로딩"]:::green
     N["GAP: 실사진 품질 / CUDA<br/>합성 fixture 성공과 별도 검증"]:::red
     S --> C
     W --> C --> D
     C -.-> N
-    P -.-> F -.-> G
+    S2["SDXL 고정 fp16 파일 준비<br/>18 runtime + card / license · SHA 검증"]:::green
+    S2 --> F
+    P --> F --> G
     R --> H -.-> I -.-> J
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
 classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px
@@ -88,14 +90,14 @@ classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px
 | A | MATCHED (모듈) | 파일 decode/정규화/hash/프로젝트 경계와 저장 구현. 최종 사용자 로그인은 별도. | assets.py / 자산 테스트 |
 | A → B / B | MATCHED (로컬 서버) | Bearer→project 매핑, atomic PUT, 동일 ID/hash 재사용, WAL ledger와 조회 API. | inference_api.py / job_ledger.py |
 | B → worker | MATCHED (로컬 실행 기반) | POSIX 잠금, DB queued 검색, owner 검증, 실제 파일 확인 후 success. 단일 호스트 범위. | worker·loopback·프로세스 복구 테스트 |
-| 모델 준비 → C | MATCHED (고정 파일) | 별도 prepare만 다운로드. 검토한 source/config/가중치 4개 hash·크기를 검사하고 로컬 safetensors만 로딩. handler.py 제외, 장치 자동 대체 없음. | model_store.py / 실제 파일 verify / 고정 revision |
+| 모델 준비 → C / F | MATCHED (실제 파일 검증) | BiRefNet 4개와 SDXL 18개 fp16 런타임+카드/라이선스의 크기·SHA 검증. 명시 prepare만 다운로드하고 API 다운로드·원격 코드·장치 자동 대체 없음. | 실제 verify / 고정 model manifest |
 | worker → C / C | PARTIAL (실제 MPS 실행) | BiRefNetLite가 실제 MPS에서 합성 병 fixture를 처리. 원본 RGB 유지, alpha 0..255, RGBA·마스크 저장과 수동 확인 경고. 실사진 품질·CUDA는 별도. | 실제 TCP CLI prepare / 339 tests / B6 실행 기록 |
 | C → D / D | MATCHED (로컬 실행) | 실제 누끼 결과를 후보 캔버스·마스크로 준비하고 approved=false로 저장. 사람 확인·품질 통과는 별도. | 실제 MPS job → prepare API → 후보 파일 |
 | D → E / E | MATCHED (저장·검증 범위) | 처음에는 미승인. literal true와 candidate hash를 확인하고 project/실파일/마스크/영역을 검증. 사람 신원·품질 승인은 보증하지 않음. | ProductApprovalStore / 승인 API |
 | E → profile → template → G | MATCHED (로컬 템플릿 경로) | 고정 ID/revision/style/layout/크기만 허용. 승인·자산을 실행 직전 확인하고 3개 레이어를 저장. 실제 AI 모델 대체 증거는 아님. | LocalTemplateProcessor / runtime / CLI |
-| 프롬프트 수신 → F | PARTIAL | ImagePrompt의 텍스트·버전·revision을 수신/hash에 포함하고 None은 기존 body/hash를 유지. 문자 수 한도이며 실제 tokenizer/GPU 소비는 미검증. local template은 prompt를 거절한다. | test_image_prompt.py / 실제 모델 adapter 필요 |
-| E → F / F | GAP | 실제 배경 AI 모델은 미연결. 프롬프트 생성은 텍스트 담당 범위. | GPU 인증·고정 모델·tokenizer·품질 검증 |
-| F → G / G | PARTIAL / MATCHED (로컬 경로) | 로컬 template부터 승인 RGBA 재합성·불투명 픽셀·파일 검증까지 연결. 실모델 결과와 광고 품질은 미검증. | 3개 AssetRef / processor·runtime 테스트 |
+| 프롬프트 수신 → F | MATCHED (고정 SDXL 경로) | ImagePrompt 필수, positive/negative를 두 CLIP tokenizer로 각 77 이하 확인. 특수 token 포함, 무음 절단 없음. 기존 None hash 호환·template prompt 거절은 유지. | SDXL adapter / tokenizer 경계 회귀 |
+| E → F / F | PARTIAL (실제 512 MPS 실행) | 승인·파일·geometry 재검증, SDXL 고정 profile·seed·steps20·guidance7.5·strength0.99. 꽃 예제는 호스트 작성 prompt. | 실제 TCP/MPS receipt / 합성 fixture의 시험 확인 |
+| F → G / G | MATCHED (512 fixture 기술 검증) | 생성 후 Safe Zone 중립색 복원·승인 RGBA 재합성·불투명 픽셀·3개 레이어 검증. 원출력 전부0·NaN/Inf·형상/범위 오류 거절. 안전/품질 경고 유지. | opaque 770 / mismatch 0 / Safe Zone exact / 3개 hash |
 | G → H / H | MATCHED (로컬 API/DB/CLI) | SQLite CAS로 현재 selection을 갱신. 성공 job의 입력 hash/project/실파일을 확인한 뒤 attach. 문구 revision만 바뀌면 같은 image key의 결과 재사용. 늦은 revision은 거절하며 자동 생성하지 않음. | image_edits.py / API·CLI·201 tests PASS |
 | H → I / I | GAP | 렌더러·내보내기 정책과 현재 문구 검수/이미지 품질/레이아웃 대조가 미연결. | 서비스·렌더러 공동 검증 |
 | 별도 파일 → 평가 도구 | MATCHED (로컬 도구) | 권리 선언·dataset/version·dev/holdout을 수신하고 실제 파일 hash·불투명 픽셀·mask IoU·경계를 측정. 권리 미확인은 건너뛰고 정답이 없으면 None. 실제 평가셋·품질 승인은 별도. | evaluation.py / evaluation_metrics.py / CLI |
@@ -106,19 +108,19 @@ classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px
 
 | 순서 | 작업 | 상태 | 연결 점수 | 선정 이유 | 다음 동작 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | B7 · 로컬 실제 배경 모델 | GAP / 다음 후보 | 3 + 3 + 2 + 2 − 2 = 8 | 실누끼 다음의 실제 배경 생성 경로 연결 | B6 게시 후 SDXL 고정 revision·사용 조건·파일·메모리·adapter 계약 |
-| 2 | 실사진 평가셋 / 품질 기준 / 사람 판정 | GAP / 데이터·합의 필요 | 2 + 2 + 1 + 1 − 2 = 4 | 합성 fixture 외 실제 제품의 경계·라벨·투명 품질 확인 | 권리 확보 제품·정답/판정자·기준 준비 |
-| 3 | GCP CUDA 이전 / 렌더러 / 팀 인수 | GAP / 별도 검증 | 1 + 1 + 1 + 1 − 2 = 2 | 로컬 이후 실제 환경과 최종 광고 연결 | 로컬 모델 경로 검증 후 대상 환경·공동 인수 |
-| 완료 | B6 · 고정 실누끼 / MPS / 모델 저장 | MATCHED (합성 fixture 범위) | 선정 대상 제외 | 고정 파일에서 실제 forward·자산·미승인 후보까지 연결 | 339 tests + 실제 TCP MPS CLI PASS |
-| 완료 | B5 · 평가 manifest / 지표 / timing | MATCHED (로컬 도구) | 선정 대상 제외 | UNKNOWN·측정값·사람 판정을 구분 | 280 tests + 실제 CLI + wheel PASS |
-| 완료 | B4 · 프롬프트 / revision / 캐시 | MATCHED (로컬 범위) | 선정 대상 제외 | 입력 버전·늦은 결과·교차 재사용 차단 | 201 tests + 실제 TCP CLI PASS |
-| 완료 | B1 / B2 / B3 · 자산 / worker / 승인 / template | MATCHED (로컬 범위) | 선정 대상 제외 | 파일·DB·HTTP·복구·명시적 승인 | 이전 검증 기록 유지 |
+| 1 | B8 후보 · 동일 job ID 제출 조회·조정 | 부분 구현 / 후속 후보 | 3 + 3 + 2 + 2 − 1 = 9 | 상류 제출 응답 유실에서 중복 생성·잘못된 상태 판단을 방지 | 기존 ID/hash의 bounded 조회·조정 계약 후 검증 |
+| 2 | 로컬 반복/크기 측정·단계별 trace | 미구현 / 로컬 진행 가능 | 1 + 2 + 2 + 2 − 1 = 6 | 실제 모델의 cold/warm·처리 단계·메모리 차이를 기록 | 제출 경계 다음 측정 계약과 반복 실험 |
+| 3 | 실사진 품질 / GCP CUDA / 렌더러·팀 인수 | GAP / 공동 준비 필요 | 2 + 2 + 1 + 1 − 2 = 4 | 제품 유형·품질 기준·실서비스 결과 확인 | 권리 확보 데이터·환경·담당과 병행 |
+| 완료 | B7 · SDXL fp16 / inpaint / prompt guard | MATCHED (512 fixture 기술 범위) | 선정 대상 제외 | 실제 배경 경로와 승인 제품·텍스트 여백 연결 | 433 tests·실제 MPS·wheel PASS / 품질 미평가 |
+| 완료 | B6 · 고정 실누끼 / MPS / 모델 저장 | MATCHED (합성 fixture 범위) | 선정 대상 제외 | 고정 파일부터 실제 누끼·미승인 후보까지 연결 | 339 tests + 실제 MPS/TCP PASS |
+| 완료 | B5 · 평가 manifest / 지표 / timing | MATCHED (로컬 도구) | 선정 대상 제외 | UNKNOWN·측정값·사람 판정 구분 | 280 tests + 실제 CLI PASS |
+| 완료 | B1–B4 · 자산 / job / 승인 / revision·cache | MATCHED (로컬 범위) | 선정 대상 제외 | 파일·DB·HTTP·복구·현재 상태 경계 | 기존 검증 기록 유지 |
 
 ## Scoring Criteria
 
 연결 점수 = upstream_weight(0–4) + connection_value(0–3) + safety_value(0–2) + validation_value(0–2) + risk_penalty(0∼−3). 같은 점수면 상위 노드, 더 작은 검증 가능한 변경을 먼저 선택한다. 모델/환경/합의가 필요한 항목은 점수만으로 완료하지 않는다.
 
-다음 선택: **B7 로컬 실제 배경 모델, 8점**. B6 게시 뒤 SDXL Base의 사용 조건·고정 revision·필요 파일·메모리와 tokenizer를 확인하고 adapter 계약부터 작성한다. 사용자 방향은 로컬 선검증 후 GCP 이전이다. B6에서 SDXL을 설치·실행한 것은 아니며, 현재 배경은 bright-template이다. 실사진 품질·CUDA·렌더러·팀 인수는 별도 근거가 필요하다.
+후속 우선 후보: **동일 job ID/hash의 불확실 제출 조회·조정, 9점**. 상류 제출 경계를 먼저 연결해 응답 유실 뒤 중복 생성이나 잘못된 실패 판정을 막는다. 새 job을 자동 생성하지 않는 bounded 조회·조정 계약부터 정한다. 로컬 반복·크기별 측정과 단계별 trace는 **6점**이다. cold/warm·모델 로딩·대기·전처리·생성·재합성·저장과 메모리 관찰을 구분하며 ledger 경과를 순수 GPU 시간으로 부르지 않는다. 두 후보 모두 미완료이며 B7 게시 후 root가 다음 폼에서 확정한다. 실사진 품질·CUDA·렌더러 공동 준비와 병행할 수 있다.
 
 ## Color Semantics
 
@@ -132,14 +134,14 @@ classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px
 
 ## Validation
 
-- 이전 배치: [B1](../../test/relay-b1.md), [B2](../../test/relay-b2.md), [B3](../../test/relay-b3.md), [B4](../../test/relay-b4.md), [B5](../../test/relay-b5.md) 근거 유지.
-- B6 전체 회귀(root): **339 tests PASS(4.30s, -W error)**. 모델 저장의 HTTPException 오류 정제 회귀를 포함한다. optional backend 단위 검증과 실제 MPS 실행은 별도 근거다. [B6 기록](../../test/relay-b6.md).
-- 실제 모델: 고정 4개 파일 검증 후 HF_HUB_OFFLINE=1·telemetry off, 실제 TCP runtime + 별도 CLI prepare로 MPS forward. 합성 병 512×512의 RGB 유지·alpha 0..255·RGBA/마스크 저장·approved=false·수동 경고를 확인했다.
-- 첫 job ledger_elapsed_ms=6897.11, CLI wall-clock=7.587s. 모델 로딩·대기·파일 처리를 포함하며 순수 GPU 연산 시간이나 반복 성능 수치가 아니다.
-- 같은 job 파일 hash를 대조한 dev fixture 1건: IoU 0.9692321320, boundary F1 0.7558205565(tolerance 2px), opaque_preserved=true. 품질은 NOT_ASSESSED이며 실사진 평가셋 통과가 아니다. wheel build PASS.
-- 합성 fixture의 픽셀: opaque 978 / transparent 194411 / partial 66755. 실사진 경계·라벨·유리 품질이나 사람 인수를 뜻하지 않는다. 실제 실행에 timm의 torch.jit FutureWarning이 있었고 실패는 없었다.
-- 실행 환경: Python 3.11.15, torch 2.14.1, torchvision 0.29.1, transformers 5.20.2, timm 1.0.30, kornia 0.8.3, einops 0.8.2, numpy 2.4.6, Apple M4 Max·64GB·MPS. pip check와 MPS tensor 확인 PASS.
-- 실제 배경 모델·CUDA/GCP·실사진 품질·사람 인수: NOT_RUN/NOT_ASSESSED. 실제 모델 파일·fixture 결과 이미지는 Git 제외 로컬 저장소에만 보관한다.
-- Mermaid: 기존 목표 PNG 재사용, B6 현재 PNG 갱신. HTML 브라우저 검증 **PASS** (Task Space 142): PNG 2개 decode(552×2540, 1568×2972), 제목 7개·범례 5개·GAP 16행·우선순위 7행, 문서/화면 폭 1492px로 가로 넘침 없음. 최종 339 tests와 실제 MPS 실행 근거를 반영한 스크린샷을 직접 확인했다.
-- 스크린샷: [B6 보고서](../../test/playwright-screenshots/image-runtime-flow-b6.png) · [보존한 B5 보고서](../../test/playwright-screenshots/image-runtime-flow-b5.png).
-- 전체 제품 흐름 판정: GAP/PARTIAL. 실제 누끼 한 번의 실행과 완성 서비스·광고 품질을 구분한다.
+- 이전 배치: [B1](../../test/relay-b1.md), [B2](../../test/relay-b2.md), [B3](../../test/relay-b3.md), [B4](../../test/relay-b4.md), [B5](../../test/relay-b5.md), [B6](../../test/relay-b6.md) 근거 유지.
+- B7 최종 회귀(root): **433 tests PASS(9.39s, -W error)**. pip check·최종 wheel·격리 lazy import PASS. 단위 검증과 실제 모델 호출은 별도다. [B7 기록](../../test/relay-b7.md).
+- 수리: 원출력 전부0 거절. 실제 시도 2회 실패 원인이었던 제거된 Diffusers pipeline.enable_vae_tiling()를 pipeline.vae.enable_tiling()로 수정하고 구 API를 허용한 대체 backend 테스트를 보완했다. 실제 설치 API 확인을 포함한 관련 44 tests PASS.
+- 실제 세 번째 실행 PASS: 고정 20개 SDXL 파일 SHA VERIFIED, MPS/CPU fallback 없음, 합성 fixture 512×512, 시험 확인 후 실제 배경 생성·3개 레이어 저장. opaque 770 / mismatch 0, Safe Zone exact neutral.
+- 시간: cutout ledger 2690.63ms, background ledger 14700.575ms, render CLI 15.343s. 모델 로딩·대기·파일 저장을 포함한 단일 실행 경과이며 순수 GPU 연산 시간·warm 반복 성능이 아니다.
+- 작업 후 MPS allocated 7135957248 / driver 10240196608 bytes 관찰. post-job snapshot이며 peak·CUDA VRAM으로 해석하지 않는다.
+- root 결과 관찰: 꽃 표현이 부족하고 큰 cap/반사 형태의 제품 잔상이 보임. 기술 실행 PASS, 광고 품질·안전 NOT_ASSESSED. 확인은 SYNTHETIC_TEST_CONFIRMATION_ONLY이며 실제 사람/제품 승인 증거가 아니다.
+- 실제 제품 사진 품질·CUDA/GCP·렌더러·팀 인수는 미완료. 모델 파일·생성 이미지는 Git 제외 경로에만 보관한다.
+- Mermaid: 기존 목표 PNG 재사용, B7 현재 PNG 갱신. HTML 브라우저 검증 **PASS** (Task Space 143): PNG 2개 decode(552×2540, 1568×3366), 제목 7개·범례 5개·GAP 16행·우선순위 7행, 문서/화면 폭 1492px로 가로 넘침 없음. 최종 실행 근거와 후속 점수표를 반영한 스크린샷을 직접 확인했다.
+- 스크린샷: [B7 보고서](../../test/playwright-screenshots/image-runtime-flow-b7.png) · [보존한 B6 보고서](../../test/playwright-screenshots/image-runtime-flow-b6.png).
+- 전체 제품 흐름 판정: GAP/PARTIAL. 반복·크기·단계 측정과 제출 조정 등 후속 로컬 구현 후보가 남아 있다.

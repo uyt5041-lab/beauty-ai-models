@@ -44,3 +44,10 @@
 - 고정 BiRefNetLite 모델 저장·선택 의존성·명시 장치 adapter·runtime/CLI를 연결했다. 기존 TODO 2-A의 2개만 추가 체크했다(누적 27개).
 - 전체 339 tests PASS(4.30s), 실제 MPS/TCP 합성 병 fixture의 RGBA·마스크·미승인 후보·수동 경고 PASS. 첫 job 6897.11ms는 로딩·대기·파일을 포함한다. [검증](../test/relay-b6.md).
 - 다음 B7 후보는 로컬 실제 배경 모델. 실사진 품질·CUDA/GCP·렌더러·팀 인수는 미완료다.
+
+
+## 2026-10-22 · 릴레이 B7
+
+- 고정 SDXL fp16 파일·inpaint adapter·두 tokenizer·제품/여백 복원·CLI를 연결했다. TODO 2-C의 2개만 추가 체크했다(누적 29개).
+- 전체 433 tests PASS(9.39s), 실제 MPS 512 fixture의 opaque 770/mismatch 0·Safe Zone exact·3개 레이어 PASS. 제거된 VAE API로 실패한 2회를 수리·보존했다. [검증](../test/relay-b7.md).
+- 꽃 표현 부족·제품 잔상이 있어 품질/안전은 NOT_ASSESSED. 다음 로컬 후보는 반복/크기·단계 trace·제출 조회 조정이며 실제 품질·CUDA·팀 인수는 별도다.

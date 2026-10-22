@@ -106,3 +106,17 @@
 - 초기 추론은 단일 이미지, FP32, 1024×1024 정규화 입력, eval/inference_mode. 모델 alpha를 원본 자산 크기로 되돌려 입력 RGB와 합친 RGBA를 저장한다. binary preserve_mask는 alpha>0, needs_manual_check=true와 MODEL_SEGMENTATION_REQUIRES_REVIEW 경고. 빈/불량 출력은 오류이며 제품 식별·사람 품질 합격으로 간주하지 않는다. 다제품/반사/투명 경계는 수동 검수.
 - 런타임은 `BEAUTY_CUTOUT_BACKEND=birefnet-lite`, `BEAUTY_MODEL_ROOT`, `BEAUTY_MODEL_DEVICE` 서버 환경으로 선택. 기본 uploaded-alpha/bright-template 동작을 유지한다. 신규 processor만 실누끼를 처리하고 template 배경은 기존 processor로 위임한다. 기존 자산/작업/승인 wire 계약 유지, CLI prepare에 서버가 허용한 cutout profile 선택을 추가한다.
 - 검증: 저장파일 변조/누락/허용목록·모델어댑터 출력·기존회귀, 실제 MPS 합성제품 fixture 1개 이상 실행과 actual model/환경/시간 기록. fixture는 제품 사진 품질 평가가 아니다. 로컬 자산·가중치·결과 이미지는 공개 Git 제외. 라이선스 출처와 버전은 공개 문서에 기록.
+
+## 배치 7 · 로컬 SDXL 배경 모델
+
+- 검증 수리: finite·shape·range가 맞더라도 원출력 전체가 정확히0이면 IMAGE_RESULT_INVALID로 거절한다. 임의 밝기·광고 품질 점수 기준을 만들지 않으며 새 자산·성공 결과를 저장하지 않는다.
+
+- 고정 후보 `stabilityai/stable-diffusion-xl-base-1.0`, revision `462165984030d82259a11f4367a4eed129e94a7b`, Diffusers0.41.0의 StableDiffusionXLInpaintPipeline. base4채널UNet 지원을공식소스확인. fp16runtime18파일약6.94GB만준비하고모델카드/라이선스도고정해보관. 추가refiner/전체76.9GBrepo/원격코드없음.
+- `sdxl_model_store.py`: MODEL_ID, MODEL_REVISION, model_directory(root), verify_model_directory(path), prepare_model(root), CLI prepare/verify --root models. <root>/sdxl-base/<revision>의고정중첩파일/디렉터리만허용, 경로·symlink·size/SHA검증, 원자적완성폴더반영. 재실행은검증된기존가중치를사용, 요청중다운로드없음.
+- `SDXLBackgroundProcessor(assets, approvals, model_directory, *, device='mps')`, validate_request 및call. profile `sdxl-inpaint`, pipeline_revision `sdxl-base-fp16-v1`. cpu/mps/cuda명시, mpsfallback금지. cpu는float32, mps/cuda는float16가중치, VAEforce_upcast=true유지. local_files_only/use_safetensors/variantfp16, custom remote code미사용. CPUgenerator를요청seed로매번생성하고GPU완료동기화후반환.
+- 서버profile: bright-ad/1·product-right/1, 각축512/768/1024, 최대1024², EulerDiscreteScheduler고정파일, steps20/guidance7.5/strength0.99/batch1, VAEtiling. 효과적인설정을임의요청으로바꾸지못함. 장치/라이브러리간같은픽셀보장없음.
+- ImagePrompt필수. positive/negative둘다두CLIPtokenizer로truncation=False확인, specialtoken포함77이하만통과. 과도한입력은본문echo없이INVALID_IMAGE_REQUEST. 프롬프트는텍스트담당또는명시적호스트입력이며이미지모듈이카피생성/번역하지않음.
+- 제품승인/파일/geometry재검증후승인foreground를밝은중립canvas에합성해초기image생성. binary보호마스크반전(흰=재생성)을인페인트에전달. 텍스트SafeZone은mask에서보존처리하고VAE복원후에도같은중립색사각형을다시보장한다. 최종텍스트사용성/그림자품질은사람확인. 모델은제품없는cleanplate를보장하지않음.
+- pipeline output_type=np의float배열을finite/shape/range검사하고정규RGB로변환. 생성씬위에승인제품RGBA재합성, opaque픽셀일치확인후3layer저장. 부분투명/생성안전검사없음/품질미승인경고항상반환. SDXL기본pipeline에NSFWchecker가없으므로안전검사완료로표시하지않음.
+- 런타임 BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint로선택, BEAUTY_MODEL_ROOT/DEVICE공유. 기본bright-template유지. CLI render/select에 --background-profile과 --prompt <ImagePromptJSON> 추가. sampleprompt는밝은꽃소품장면을위한명시적예제이며LLM생성으로표시하지않음.
+- OpenRAIL++-M모델출처/라이선스를보존하고배포자가용도제한·고지를검토하도록기록. Git에는코드/manifest/문서만, 가중치/이미지/팀정보없음. 실제로컬실행·경과시간·메모리관찰을기록하되실제품사진품질·GCP CUDA·팀인수는별도다.

@@ -26,7 +26,7 @@ FiveCircles의 6단계 개발 흐름을 beautyAi에 적용한 프로젝트 설�
 
 ## BeautyAI 기준
 
-- B4까지 로컬 자산·작업 API·worker·승인·template·프롬프트 수신·편집 revision/캐시를 검증했다. B5 로컬 평가 manifest·지표·작업 경과 시간 도구는 280 tests·CLI로 검증했다. B6 고정 BiRefNetLite는 실제 MPS/TCP 합성 fixture와 339 tests로 검증했다. 다음은 로컬 실제 배경 모델 후보 검토 후 GCP 이전이다. 실사진 품질·CUDA·실제 배경 모델·서비스 사용자 인증·렌더러 통합은 미검증이다. 최신 근거는 [릴레이 기록](work/relay.md)을 따른다.
+- B4까지 로컬 자산·작업 API·worker·승인·template·프롬프트 수신·편집 revision/캐시를 검증했다. B5 로컬 평가 manifest·지표·작업 경과 시간 도구는 280 tests·CLI로 검증했다. B6 고정 BiRefNetLite는 실제 MPS/TCP 합성 fixture와 339 tests로 검증했다. B7 고정 SDXL은 실제 MPS 512 fixture와 433 tests로 기술 검증했다. 후속은 로컬 반복/크기 측정·단계 trace·제출 조회 조정이며 이후 GCP로 이전한다. 광고 품질·실사진·CUDA·서비스 사용자 인증·렌더러 통합은 미검증이다. 최신 근거는 [릴레이 기록](work/relay.md)을 따른다.
 - 이미지: pi. 텍스트·영어 프롬프트: 김다혜. API/렌더러 담당은 별도 확인 대상이다.
 - M1: **2026-10-30 통합**, M2: **2026-11-06 이미지 디테일·고도화 완료**. 텍스트 최종 고정 11/10과 구분한다.
 - 일정과 체크 상태의 원본은 [이미지 TODO](../docs/imageTodo.md)다. [LLM 참고 TODO](../docs/llmTodo.md)는 기존 초안이며 실제 팀 배정을 덮어쓰지 않는다.

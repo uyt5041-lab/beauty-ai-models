@@ -79,7 +79,21 @@
 4. Implementation: COMPLETED. 고정모델저장/해시검증, 선택의존성, 실제누끼adapter, runtime/CLI.
 5. Validation: 전체339tests4.30s PASS, offline실제MPS/TCPCLI합성fixture PASS(첫job6897.11ms), 실제파일과평가hash연결, wheel/pipcheck/소스검토PASS.
 6. Repair: 다운로드HTTPException을안전코드로변환하고정리회귀추가. adapter상호검토/실제실행PASS.
-7. Push / Publication: READY. 로컬참조코드Git전달, GCP배포NOT_RUN.
+7. Push / Publication: a7f3957664eeb98ef76d2352c566c47f2a733ced 일반push/원격SHA일치. 로컬코드/환경/가중치검증PASS, GCP배포NOT_RUN.
 8. Closeout Report: B6 flow/HTML/PNG/browser PASS. 실제제품사진품질/배경실모델/공동인수GAP유지.
 9. Relay: 다음실배경모델은누끼배치검증/전달뒤선정.
-10. Final Ledger: Doc/Implementation/Validation/Repair/Report 완료, Push대기.
+10. Final Ledger: Doc/Implementation/Validation/Repair/Report/Push 완료. CONTINUE_WITH_NEXT_FORM B7.
+
+## B7 · 로컬 SDXL 배경 인페인트
+
+0. Scope Intake: native,plan/models. 사용자로컬선구현방향, base모델만/고정18runtime파일약6.94GB+라이선스기록. 별도refiner/전체repo다운로드없음.
+1. Start Report: B6flow F실배경GAP, E승인/C실누끼/worker/자산/평가연결완료범위사용.
+2. Relay Unit Selection: 2+3+2+2-2=7. 고정SDXL/실제영문prompt/보호마스크인페인트/최종원제품재합성.
+3. Doc / Contract: image-runtime B7 COMPLETED. 실제인페인트지원/tokenizer/VAE/safety조건공식구현검토.
+4. Implementation: COMPLETED. 모델준비와adapter파일분리, root runtime/CLI/실제실행통합.
+5. Validation: 전체433tests9.39s, 실제MPS/TCPCLI512x512 PASS, opaque770/mismatch0/SafeZone정확/다운로드hash일치. 배경14700.575ms는load/queue/storage포함. wheel/격리import/flow브라우저 PASS.
+6. Repair: 전부검정원출력저장차단. 실라이브러리에서제거된pipeline.enable_vae_tiling호출을vae.enable_tiling으로수정하고실API회귀2개추가. 최초2실패증거보존후세번째실행PASS. 꽃부족/제품잔상은광고품질미완료로기록.
+7. Push / Publication: PENDING. 로컬실행/Git전달, GCP배포NOT_RUN.
+8. Closeout Report: B7 HTML/PNG/browser(Task Space143) PASS, GAP/PARTIAL. 실사진광고품질/팀renderer/사용자인수GAP유지.
+9. Relay: 실제평가데이터/공동인수의다음의존성확인.
+10. Final Ledger: PENDING.
