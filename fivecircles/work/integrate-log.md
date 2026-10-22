@@ -20,3 +20,9 @@
 - source SHA: `8cb64029d79ea42a6b9c4aefeaee448656bea41a`. 일반 push 후 원격 plan/models SHA 일치.
 - 검증: 전체112 tests PASS, health 추가 API8 PASS, 실제 TCP loopback/SQLite/프로세스 복구 PASS, staged diff/비밀패턴 검사 PASS.
 - publication: Git 코드 전달. 운영 CD NOT_APPLICABLE (로컬 내부 API 참조 구현, 배포 대상 미설정). GPU 서비스 배포·실모델 품질은 미수행.
+
+## 2026-10-22 · B3 publication
+
+- source SHA: `dbba5da7859f8d23e62d895be39617b1e2e38e3b`. 일반 push 후 원격 plan/models 일치.
+- 148 tests, 실제 TCP CLI, wheel/isolated import, browser 보고서, FiveCircles/staged diff/비밀 패턴 검사 PASS.
+- 로컬 template runtime 코드 전달. 운영 CD NOT_APPLICABLE. GPU·실모델·사람 품질 승인과 구분한다.

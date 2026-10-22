@@ -14,6 +14,8 @@ from beauty_ai.contracts import BackgroundRequest, CutoutRequest, AssetRef, Visu
 from beauty_ai.inference_runtime import build_app
 from beauty_ai.image_gateway import HTTPImageGateway
 from beauty_ai.errors import GatewayError
+from beauty_ai.assets import LocalAssetStore
+from beauty_ai.product_approval import ProductApprovalStore
 
 
 TOKEN = "test-only-runtime-token-0000000000000001"
@@ -94,3 +96,46 @@ def test_gateway_distinguishes_approval_conflict_from_job_id_conflict():
             assert error.value.code == code
     for code in ("PRODUCT_APPROVAL_REQUIRED", "PRODUCT_APPROVAL_CONFLICT", "IDEMPOTENCY_CONFLICT"):
         asyncio.run(check(code))
+
+
+def test_current_edit_reuses_copy_only_result_and_rejects_late_completion(tmp_path):
+    project, campaign = uuid4(), uuid4()
+    assets = LocalAssetStore(tmp_path / "assets")
+    approvals = ProductApprovalStore(tmp_path / "products.sqlite3", assets)
+    source_image = Image.new("RGBA", (32, 48))
+    source_image.paste((30, 80, 120, 255), (8, 4, 24, 44))
+    source = assets.put_image(source_image, project_id=project)
+    candidate = approvals.prepare(project, source, source, visual())
+    approvals.approve(candidate.candidate_id, project, candidate.candidate_hash, confirmed=True)
+    request = BackgroundRequest(source=source, product_rgba=candidate.product_rgba,
+        preserve_mask=candidate.preserve_mask, visual=candidate.visual, seed=42,
+        pipeline_profile_id="bright-template", pipeline_revision="1")
+    url = f"/internal/v1/edits/{campaign}"
+    with TestClient(build_app(tmp_path, project, TOKEN)) as client:
+        assert client.get(url).status_code == 401
+        body = {"expected_revision": 0, "copy_revision": 1, "request": request.model_dump(mode="json")}
+        selected = client.put(url, headers=AUTH, json=body)
+        assert selected.status_code == 200, selected.text
+        assert selected.json()["revision"] == 1 and selected.json()["active_job_id"] is None
+        job_id = uuid4()
+        assert client.put(f"/internal/v1/jobs/{job_id}", headers=AUTH,
+                          json=request.model_dump(mode="json")).status_code == 202
+        assert wait_job(client, job_id)["status"] == "succeeded"
+        attached = client.put(url + "/result", headers=AUTH,
+                             json={"expected_revision": 1, "job_id": str(job_id)})
+        assert attached.status_code == 200, attached.text
+        body.update(expected_revision=1, copy_revision=2)
+        reused = client.put(url, headers=AUTH, json=body)
+        assert reused.json()["revision"] == 2
+        assert reused.json()["active_job_id"] == str(job_id)
+        body["request"]["seed"] = 99
+        body["expected_revision"] = 2
+        changed = client.put(url, headers=AUTH, json=body).json()
+        assert changed["revision"] == 3 and changed["active_job_id"] is None
+        for revision in (2, 3):
+            late = client.put(url + "/result", headers=AUTH,
+                              json={"expected_revision": revision, "job_id": str(job_id)})
+            assert late.status_code == 409
+        assert client.get(url, headers=AUTH).json() == changed
+    with TestClient(build_app(tmp_path, uuid4(), TOKEN)) as foreign:
+        assert foreign.get(url, headers=AUTH).status_code == 404

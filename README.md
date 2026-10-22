@@ -1,6 +1,6 @@
 # 화장품 광고 AI 래퍼 참고 구현
 
-소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. 텍스트·VLM은 OpenAI API로, 이미지 작업은 별도의 private inference 서버로 분리합니다. 내부 이미지 FastAPI 앱·SQLite 작업 저장소·단일 호스트 worker·명시적 제품 승인·로컬 템플릿 실행을 포함합니다. **실제 누끼·배경 AI 모델과 광고 UI·렌더러까지 연결된 완성 서비스는 아닙니다.**
+소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. 텍스트·VLM은 OpenAI API로, 이미지 작업은 별도의 private inference 서버로 분리합니다. 내부 이미지 FastAPI 앱·SQLite 작업 저장소·단일 호스트 worker·명시적 제품 승인·로컬 템플릿 실행·편집 revision·프로젝트 캐시를 포함합니다. **실제 누끼·배경 AI 모델과 광고 UI·렌더러까지 연결된 완성 서비스는 아닙니다.**
 
 ## 1. 쓰는 법
 
@@ -24,7 +24,7 @@ python -m pytest -q -W error
 | `INFERENCE_BASE_URL` | 직접 기동한 내부 이미지 API 주소 |
 | `INFERENCE_INTERNAL_TOKEN` | 내부 서버 인증 토큰 |
 | `BEAUTY_PROJECT_ID` | 로컬 이미지 서버의 프로젝트 UUID |
-| `BEAUTY_STORAGE_ROOT` | 로컬 자산·작업·승인 DB 저장 경로 |
+| `BEAUTY_STORAGE_ROOT` | 로컬 자산·작업·승인·편집 DB 저장 경로 |
 
 모델은 계정에서 사용할 수 있고 해당 입력·구조화 출력을 지원하는지 확인한 뒤 설정합니다. 동시성·시간 제한의 초기값은 `.env.example`과 [클라이언트 조립 예제](examples/wiring.py)를 참고하세요.
 
@@ -36,7 +36,7 @@ python -m pytest -q -W error
 
 로컬 실행기는 위 환경변수를 설정한 뒤 `python -m beauty_ai.inference_runtime`으로 기동합니다. 기본 주소는 `127.0.0.1:8001`입니다. 기존 투명 PNG를 제품 후보로 준비하고 사람이 확인한 뒤 명시적으로 승인하면 밝은 템플릿 위에 합성합니다. `uploaded-alpha/1`은 실제 누끼 모델이 아니며 RGB·완전 불투명 입력은 지원하지 않습니다.
 
-단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B3 기록](fivecircles/test/relay-b3.md)의 **148 tests PASS + 실제 TCP CLI 실행 PASS**를 참고하세요. [TEST_REPORT.md](TEST_REPORT.md)는 초기 래퍼 검증 기록입니다.
+단계별 실행 명령은 [README2.md](README2.md), 최신 검증은 [B4 기록](fivecircles/test/relay-b4.md)의 **201 tests PASS + 실제 TCP CLI 편집·캐시 실행 PASS**를 참고하세요. [TEST_REPORT.md](TEST_REPORT.md)는 초기 래퍼 검증 기록입니다.
 
 ## 2. 기능
 
@@ -54,7 +54,9 @@ python -m pytest -q -W error
 | `image_integrity.py` | 보호 마스크를 인페인트 마스크로 반전하고 승인 RGBA를 장면 위에 재합성 |
 | `ProductApprovalStore` | 후보 snapshot·project·파일·형상 검증, 명시적 확인과 정확한 hash로 승인 저장 |
 | `LocalTemplateProcessor` | 서버 고정 profile로 기존 alpha 처리·밝은 템플릿 합성, 3개 레이어 저장과 보존 검사 |
-| `inference_runtime` / CLI | 로컬 서버 조립, 준비→확인→승인→합성→조회·다운로드 명령 |
+| `inference_runtime` / CLI | 로컬 서버 조립, 준비→확인→승인→합성→조회·다운로드 및 이미지 선택·결과 연결 명령 |
+| `ImagePrompt` | 텍스트 담당이 만든 프롬프트·버전·revision 수신, 문자 수 검증, 기존 요청 hash 호환 |
+| `ImageEditStore` | 현재 selection의 revision CAS, 프로젝트별 검증된 성공 결과 캐시, 늦은 결과 연결 거절 |
 | 공통 오류·메타데이터 | 거절·미완료·타임아웃·프로토콜 오류 분리, 요청 ID·사용량·소요 시간 기록 |
 
 검수 상태는 `no_flags`·`warnings`·`blocked`·`unavailable`입니다. `no_flags`는 설정된 자동 검사에서 표시된 이슈가 없다는 뜻이며 법적 승인이나 광고 효과의 보장이 아닙니다. 규칙집이 준비되지 않았거나 검수가 실패하면 `unavailable`로 남깁니다.
@@ -72,7 +74,8 @@ python -m pytest -q -W error
                                      └─ 주입한 processor
                                           ├─ LocalTemplateProcessor (기존 alpha / 밝은 템플릿)
                                           └─ [연결 필요: 실제 누끼·배경 AI 모델]
-                           └─ ProductApprovalStore (정확한 후보 snapshot 승인)
+                           ├─ ProductApprovalStore (정확한 후보 snapshot 승인)
+                           └─ ImageEditStore (현재 revision / project cache / result attach)
 
 공통 계약: contracts.py / schemas/    이미지 후보: image_preparation.py
 제품 재합성: image_integrity.py      결과 파일 검증 → terminal commit
@@ -86,15 +89,17 @@ python -m pytest -q -W error
 
 실행 잠금은 한 호스트·같은 ledger에 연결한 동기 processor를 직렬화합니다. 실행 중 stop timeout은 취소가 아니며 잠금을 유지합니다. 새 worker는 이전 프로세스 종료로 잠금을 획득한 뒤 running 작업을 interrupted로 수습합니다. 다중 VM 조정과 분리된 GPU subprocess 관리는 포함하지 않습니다.
 
-검수 snapshot은 제품·카피·옵션·규칙·검수 모델·프롬프트에 묶입니다. 이미지 입력 hash는 시각 입력·파이프라인·seed를 구분하지만 실제 편집 revision과 프로젝트 캐시 연결은 다음 구현 대상입니다. [현재 흐름](fivecircles/architecture/spec/image-runtime-flow.html)과 [설계](DESIGN.md)를 참고하세요.
+`PUT/GET /internal/v1/edits/{campaign_id}`로 현재 이미지 선택을 저장·조회하고, `PUT /internal/v1/edits/{campaign_id}/result`로 완료 job을 연결합니다. 현재 revision과 요청 hash가 맞아야 연결되며, 실제 파일을 확인한 성공 결과만 프로젝트 캐시에서 재사용합니다. 문구 revision만 바뀌면 같은 이미지 결과를 재사용하고 visual·seed·profile·자산·프롬프트가 바뀌면 다른 key입니다. 캐시 miss가 자동으로 새 작업을 실행하지는 않습니다.
+
+검수 snapshot은 제품·카피·옵션·규칙·검수 모델·프롬프트에 묶입니다. `BackgroundRequest.image_prompt`가 있으면 텍스트·버전·revision을 이미지 hash에 포함하며, 없으면 기존 body/hash를 유지합니다. 영어 프롬프트 생성·언어 판별·실모델 tokenizer 검증은 하지 않습니다. 로컬 bright-template은 프롬프트를 해석하지 않으므로 제공된 image_prompt를 거절합니다. [현재 흐름](fivecircles/architecture/spec/image-runtime-flow.html)과 [설계](DESIGN.md)를 참고하세요.
 
 ## 4. 미완성으로서 보완해야 할 점
 
-- **서비스 통합:** 사용자용 API·로그인·CampaignService·편집 revision·프로젝트 캐시·SSE·내보내기·렌더러를 연결해야 합니다. 내부 API 인증과 로컬 job 저장·복구는 구현했습니다.
+- **서비스 통합:** 사용자 로그인·CampaignService·SSE·내보내기·렌더러와 실제 UI 연결이 필요합니다. 내부 API 인증·job 복구·이미지 selection revision·프로젝트 캐시는 로컬 구현했습니다.
 - **실제 모델:** GPU용 누끼·배경 모델, 고정 모델/환경·warm-up·품질 검증이 필요합니다. 로컬 `uploaded-alpha/1`, `bright-template/1`의 고정 profile은 구현했으나 실제 누끼·SDXL 모델은 아닙니다.
-- **제품 승인·편집:** 정확한 제품/마스크/구도 snapshot 승인은 구현했습니다. 승인 UI·실제 사용자 신원·현재 편집 revision과 늦은 결과 차단·최종 품질 승인은 별도로 연결해야 합니다.
+- **제품 승인·편집:** 정확한 snapshot 승인과 늦은 result attach 차단을 구현했습니다. 실제 사용자 신원·승인 UI·편집 서비스와 최종 품질 승인은 별도로 연결해야 합니다.
 - **검수 데이터:** 출처·버전·검토 이력이 있는 규칙집, 제품 사실 확인, 카피 수정 후 재검수·DB revision 경쟁 검사가 필요합니다.
-- **품질·실환경:** 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실제 모델 호출·지연·VRAM·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
+- **품질·실환경:** 고정 평가셋·권리 기록·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실제 모델 호출·지연·VRAM·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
 - **운영:** 실제 네트워크 접근 범위·비밀값 관리·배포·예산 상한·모델 모니터링을 구성해야 합니다. 로컬 HTTP/파일/DB 테스트와 운영 GPU 검증을 구분합니다.
 
 ## 5. 하지 말 것

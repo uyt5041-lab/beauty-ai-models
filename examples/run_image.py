@@ -47,11 +47,16 @@ async def run(args) -> dict:
         if args.command == "approve":
             return await json_response("PUT", f"/internal/v1/products/{args.candidate_id}/approval",
                                        json={"candidate_hash": args.candidate_hash, "confirmed": True})
-        if args.command == "render":
+        if args.command in ("render", "select"):
             candidate = await json_response("GET", f"/internal/v1/products/{args.candidate_id}")
             request = BackgroundRequest(source=candidate["source"], product_rgba=candidate["product_rgba"],
                 preserve_mask=candidate["preserve_mask"], visual=candidate["visual"], seed=args.seed,
                 pipeline_profile_id="bright-template", pipeline_revision="1")
+            if args.command == "select":
+                return await json_response("PUT", f"/internal/v1/edits/{args.campaign_id}", json={
+                    "expected_revision": args.expected_revision, "copy_revision": args.copy_revision,
+                    "request": request.model_dump(mode="json"),
+                })
             # Keep the printed ID to resolve an uncertain submission without regenerating.
             job_id = args.job_id
             print(json.dumps({"job_id": str(job_id)}), flush=True)
@@ -59,6 +64,12 @@ async def run(args) -> dict:
             return (await gateway.wait(job_id, expected_request=request)).model_dump(mode="json")
         if args.command == "get-job":
             return await json_response("GET", f"/internal/v1/jobs/{args.job_id}")
+        if args.command == "get-edit":
+            return await json_response("GET", f"/internal/v1/edits/{args.campaign_id}")
+        if args.command == "attach":
+            return await json_response("PUT", f"/internal/v1/edits/{args.campaign_id}/result", json={
+                "expected_revision": args.expected_revision, "job_id": str(args.job_id),
+            })
         if args.command == "download":
             response = await client.get(f"/internal/v1/assets/{args.asset_id}")
             response.raise_for_status()
@@ -84,6 +95,18 @@ def main():
     render.add_argument("--seed", type=int, default=42)
     get_job = commands.add_parser("get-job")
     get_job.add_argument("job_id", type=UUID)
+    select = commands.add_parser("select", help="Compare-and-set the current image input; reuse a valid cached result")
+    select.add_argument("candidate_id", type=UUID)
+    select.add_argument("campaign_id", type=UUID)
+    select.add_argument("--expected-revision", type=int, required=True)
+    select.add_argument("--copy-revision", type=int, required=True)
+    select.add_argument("--seed", type=int, default=42)
+    get_edit = commands.add_parser("get-edit")
+    get_edit.add_argument("campaign_id", type=UUID)
+    attach = commands.add_parser("attach", help="Attach a finished job only if the edit is still current")
+    attach.add_argument("campaign_id", type=UUID)
+    attach.add_argument("job_id", type=UUID)
+    attach.add_argument("--expected-revision", type=int, required=True)
     download = commands.add_parser("download")
     download.add_argument("asset_id", type=UUID)
     download.add_argument("output", type=Path)

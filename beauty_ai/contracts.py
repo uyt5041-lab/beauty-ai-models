@@ -5,7 +5,8 @@ import json
 from typing import Annotated, Generic, Literal, TypeVar
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import (BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler,
+                      field_validator, model_serializer, model_validator)
 
 
 class Contract(BaseModel):
@@ -201,6 +202,26 @@ class CutoutRequest(Contract):
     pipeline_revision: str
 
 
+class ImagePrompt(Contract):
+    """Versioned input supplied by the text service, not generated or translated here.
+
+    Character limits bound the wire payload. A real model adapter must also check
+    its tokenizer limits; ``language`` is the sender's declaration, not detection.
+    """
+    positive: str = Field(min_length=1, max_length=4000)
+    negative: str = Field(default="", max_length=2000)
+    prompt_version: str = Field(min_length=1, max_length=80)
+    source_revision: int = Field(ge=1, strict=True)
+    language: Literal["en"] = "en"
+
+    @field_validator("positive", "prompt_version")
+    @classmethod
+    def nonblank_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Prompt text and version must not be blank")
+        return value  # Preserve all effective input bytes; never silently trim.
+
+
 class BackgroundRequest(Contract):
     kind: Literal["render_background"] = "render_background"
     source: AssetRef
@@ -210,6 +231,16 @@ class BackgroundRequest(Contract):
     seed: int = Field(ge=0, le=2**32 - 1)
     pipeline_profile_id: str  # Server-owned profile: checkpoint/adapters/scheduler/steps.
     pipeline_revision: str
+    image_prompt: ImagePrompt | None = None
+
+    @model_serializer(mode="wrap")
+    def serialize_legacy_compatible(self, handler: SerializerFunctionWrapHandler):
+        # Old queued snapshots have no prompt field. Do not add null to their
+        # canonical body/hash, while retaining every field of an actual prompt.
+        serialized = handler(self)
+        if self.image_prompt is None:
+            serialized.pop("image_prompt", None)
+        return serialized
 
     @model_validator(mode="after")
     def matching_working_canvas(self):

@@ -24,3 +24,9 @@
 - 제품 후보/명시적 승인 저장·서버 고정 profile·로컬 template·실행 CLI를 연결했다. 원본 TODO 로컬 범위 4개만 추가 체크.
 - 전체 148 tests·실제 TCP CLI·512×512 결과 파일 검증 PASS. [상세](../test/relay-b3.md).
 - 다음 B4는 프롬프트 버전 수신·편집 revision·프로젝트 캐시. 실제 GPU/AI 모델·최종 광고 품질·팀 인수는 미검증.
+
+## 2026-10-22 · 릴레이 B4
+
+- 프롬프트 수신·legacy hash, 편집 revision CAS·프로젝트 성공 결과 캐시·늦은 attach 차단을 연결했다.
+- 전체201 tests 및 실제 TCP CLI의 문구 수정 후 동일 job 재사용 PASS. TODO 로컬 검증3개 추가 체크. [상세](../test/relay-b4.md).
+- 다음 B5는 고정 평가 manifest·증거 수집 도구. 실모델/평가셋 품질/사용자 UI/렌더러/팀 인수는 미검증.

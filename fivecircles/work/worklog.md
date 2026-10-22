@@ -37,3 +37,10 @@
 - 검토/수리: 명시적 확인/hash/project/파일/geometry·등록/실행 재검증 확인. 변조 자산 테스트의 기대코드를 승인 경계에 맞춤. [B3 검증](../test/relay-b3.md).
 - 범위: 기존 투명 RGBA·로컬 template이며 실제 AI 모델을 호출하지 않았다. 사람 신원/품질 인증·현재 편집 revision·GPU·렌더러·팀 인수는 남아 있다.
 - 문서: README5절 유지, 이미지 TODO4개 추가 체크, 목표/현재 흐름 및 다음 B4 점수표 갱신.
+
+## 2026-10-22 · B4 · 구현/검증
+
+- 구현: ImagePrompt DTO/직렬화·schema, ImageEditStore의 CAS/project cache/현재 revision attach, 내부 API·CLI 연결.
+- root 검증: 전체201 tests PASS(20.04s), 실제 TCP CLI prepare/approve/select/render/attach/copy-only select/get-edit에서 동일 job 재사용 PASS.
+- 검토 반영: strict integer·64bit 범위·공백 prompt를 거절. 문구 내용·검수DB는 수정하지 않는 이미지 상태 저장 범위.
+- 문서: README5절, 원본 TODO 로컬 항목3개 추가(누적22개), B4 흐름/다음 B5 후보 갱신. [검증](../test/relay-b4.md).

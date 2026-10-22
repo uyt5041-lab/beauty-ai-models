@@ -2,8 +2,8 @@
 
 ## 최신 릴레이 검증 · 2026-10-22
 
-- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **148 passed**.
-- B1 자산·캔버스72 → B2 API·작업 저장/복구112 → B3 승인·제한 profile·로컬 template147로 확장했다.
+- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **201 passed in 20.04s**.
+- B1 자산·캔버스72 → B2 API·작업 저장/복구112 → B3 승인·제한 profile·로컬 template148 → B4 프롬프트·편집/cache201로 확장했다.
 - 실제 파일/SQLite, 프로세스 경쟁·강제 종료 복구, 실제 TCP API와 CLI 6명령을 검증했다. 512×512 결과 PNG를 저장·다운로드했다.
 - [B1](fivecircles/test/relay-b1.md), [B2](fivecircles/test/relay-b2.md), [릴레이 진행](fivecircles/work/relay.md).
 - 실모델·GCP GPU·OpenAI 유료 호출·광고 품질·팀 인수는 검증하지 않았다. 템플릿 결과는 모델 추론 결과가 아니다.

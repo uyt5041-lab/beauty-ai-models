@@ -9,6 +9,7 @@ from uuid import UUID
 from .assets import LocalAssetStore
 from .inference_api import create_app
 from .job_ledger import JobLedger
+from .image_edits import ImageEditStore
 from .local_processor import LocalTemplateProcessor
 from .product_approval import ProductApprovalStore
 
@@ -18,8 +19,10 @@ def build_app(root: str | Path, project_id: UUID, token: str):
     assets = LocalAssetStore(root / "assets")
     approvals = ProductApprovalStore(root / "products.sqlite3", assets)
     processor = LocalTemplateProcessor(assets, approvals)
-    return create_app(JobLedger(root / "jobs.sqlite3"), assets, {token: project_id},
-                      processor, approvals=approvals, request_validator=processor.validate_request)
+    ledger = JobLedger(root / "jobs.sqlite3")
+    edits = ImageEditStore(root / "edits.sqlite3", assets, ledger)
+    return create_app(ledger, assets, {token: project_id}, processor, approvals=approvals,
+                      request_validator=processor.validate_request, edits=edits)
 
 
 def main() -> None:

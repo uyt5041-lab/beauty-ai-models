@@ -37,7 +37,21 @@
 4. Implementation: COMPLETED. 후보·승인 API/SQLite, 고정 profile, local processor, CLI.
 5. Validation: 전체148 tests PASS, 준비/승인/실행/재시작 E2E, 실제 TCP CLI 6명령과512x512PNG PASS.
 6. Repair: 변조 자산 test 기대코드를 승인 경계의 INVALID_IMAGE_REQUEST로 맞춤. 제품 거절 동작은 처음부터 정상.
-7. Push / Publication: PENDING. Git 코드 전달, 운영 CD NOT_APPLICABLE (로컬 template runner).
+7. Push / Publication: dbba5da7859f8d23e62d895be39617b1e2e38e3b 일반push/원격SHA일치. 운영CD NOT_APPLICABLE (로컬 template runner).
 8. Closeout Report: relay-b3.md, B3 flow HTML/PNG/screenshot PASS. 전체목표GAP/PARTIAL.
-9. Relay: B4 프롬프트 버전 수신·편집revision·프로젝트 캐시 재평가.
+9. Relay: CONTINUE_WITH_NEXT_FORM. B4 프롬프트 버전 수신·편집revision·프로젝트 캐시, 점수8.
+10. Final Ledger: Doc/Implementation/Validation/Repair/Push/Report 완료, 실모델/편집revision/팀인수 GAP.
+
+## B4 · 프롬프트 버전과 현재 편집·캐시
+
+0. Scope Intake: native, plan/models. prompt contract와 edit/cache store를 파일별 위임. root가 API/런타임을 연결한다.
+1. Start Report: B3 flow 기준 H 현재 편집 연결과 B 프롬프트hash GAP.
+2. Relay Unit Selection: 2+3+2+2-1=8. 모델 가용성과 독립적으로 검증 가능한 stale-result 차단·project cache 선택.
+3. Doc / Contract: image-runtime B4 절 COMPLETED. 팀 shared contract 수락과 분리한 local proposal.
+4. Implementation: COMPLETED. prompt 수신/해시호환, SQLite편집/cache, API/CLI.
+5. Validation: 전체201 tests PASS20.04s, legacyhash/DB, 프로세스CAS, cache실파일, API 및 실제 TCPCLI copy-only reuse PASS.
+6. Repair: 검토에서 SQLite 정수상한, prompt 공백/엄격revision 검증 추가. 전체 회귀 PASS.
+7. Push / Publication: PENDING. Git reference runtime 전달, 운영CD NOT_APPLICABLE.
+8. Closeout Report: B4 HTML/MD/PNG/browser PASS. 실모델·팀renderer·실제품질 GAP 유지.
+9. Relay: B4후 실제 모델/GPU/평가셋/팀인수 경계 재확인.
 10. Final Ledger: PENDING.

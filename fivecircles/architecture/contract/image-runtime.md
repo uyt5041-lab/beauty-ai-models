@@ -71,3 +71,17 @@
 - API: POST `/internal/v1/products/prepare` {source,cutout,visual}, GET `/internal/v1/products/{candidate_id}`, PUT `/internal/v1/products/{candidate_id}/approval` {candidate_hash,confirmed:true}. project는 기존 Bearer 매핑에서 결정. 기존 job endpoint는 등록 전 runtime validator, worker는 실행 직전 동일 조건을 재확인한다.
 - CLI `python -m beauty_ai.inference_runtime`: 환경변수의 UUID/token/storage root로 조립. 기본127.0.0.1, 명시적설정으로만 포트변경. API키/GCP정보는 코드·예제에 쓰지 않는다.
 - 예: candidate 준비→미승인 background409→호스트가 실제확인 후 approve→same background접수→template3layers조회. 다른visual이면409. 모델이 필요한 RGB입력은 지원불가코드.
+
+## 배치 4 · 프롬프트 수신·편집 revision·프로젝트 캐시
+
+- 영어 프롬프트 생성 담당은 텍스트 팀원이다. 이미지 모듈은 `ImagePrompt(positive, negative='', prompt_version, source_revision, language='en')`만 수신한다. positive1~4000문자, negative최대2000문자, 버전1~80문자, revision>=1. language는 발신자의 선언이며 언어 판별 결과가 아니다. 실제모델 tokenizer 한도는 별도 adapter 검증. 무음 절단하지 않는다.
+- `BackgroundRequest.image_prompt: ImagePrompt | None = None` 추가. None이면 직렬화에서 이 새필드만 생략하여 기존 body/해시/DB snapshot을 유지한다. 실제 prompt가 있으면 텍스트·버전·revision 모두 content_hash에 포함한다. content_hash 공통 함수는 변경하지 않는다.
+- local bright-template은 prompt를 해석하지 않으므로 non-None image_prompt는 `INVALID_IMAGE_REQUEST`로 거절한다. 수신/해시/ledger호환 검증은 합성 fixture로 하고 실모델을 호출했다고 주장하지 않는다.
+- `ImageEditStore(path, assets, ledger)`: `select(campaign_id, project_id, expected_revision, request: BackgroundRequest, copy_revision) -> ImageSelection`; `get(campaign_id, project_id)`; `attach(campaign_id, project_id, expected_revision, job_id) -> ImageSelection`.
+- `ImageSelection`: campaign_id UUID, revision>=1, copy_revision>=1, request_hash, request BackgroundRequest, active_job_id UUID|None. 프로젝트는 호출자의 신뢰된 컨텍스트. 사용자 문구 자체·검수결과는 이 저장소에서 수정/삭제하지 않는다.
+- 최초select는 expected_revision=0, 이후 현재 revision 일치 시만 +1. SQLite BEGIN IMMEDIATE로 CAS. copy_revision 역행 거절. image request가같고 copy_revision만 변하면 project+request_hash의 성공결과 cache를 실제파일검증 후 재사용한다. visual/seed/profile/자산/prompt변경은 다른 key다.
+- attach는 같은 project의 ledger succeeded BackgroundResult만 허용하며 현재 selection revision/request_hash와 일치해야 한다. 결과파일과 layer참조를 검증한 후 active_job/cache를 원자적으로 기록한다. queued/failed/interrupted·타project·다른input·늦은revision은 현재선택을 바꾸지 않는다.
+- cache는 project마다 분리하고 실파일이 사라지거나 hash가틀리면 hit로쓰지 않고 해당cache를 제거하여 active_job_id=None으로 반환한다. 저장소 장애는 miss로숨기지 않고 error. get은 저장메타데이터이며 최종다운로드/내보내기 전 실제자산검증은 유지한다.
+- 오류 EDIT_NOT_FOUND404, EDIT_CONFLICT409, IMAGE_JOB_NOT_READY409, EDIT_STORAGE_ERROR503; 입력형상오류 INVALID_IMAGE_REQUEST400. 같은revision을놓고2개편집이면1개만승인. 자동 retry/새GPU작업은 수행하지 않는다.
+- API PUT `/internal/v1/edits/{campaign_id}` {expected_revision,copy_revision,request}; GET samepath; PUT `/internal/v1/edits/{campaign_id}/result` {expected_revision,job_id}. tokenproject에서만 접근. select 등록 전에 profile/제품승인/파일검증, attach는 ledger권위/실파일을 사용한다.
+- 예: revision1/jobA→문구수정revision2같은imagehash는cachedjobA. 제품변경revision3다른hash→늦은jobA attach(revision1)409. 이미지실패가문구내용/검수DB를지우지않는다. 실제CampaignService/UI연동은별도이며팀수락으로표시하지않는다.

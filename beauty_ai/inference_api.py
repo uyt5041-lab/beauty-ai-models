@@ -17,6 +17,7 @@ from .contracts import (AssetRef, BackgroundRequest, Contract, CutoutRequest, Im
                         ImageRequest, ImageResult, VisualBrief)
 from .errors import GatewayError
 from .image_worker import SingleHostWorker
+from .image_edits import ImageEditStore
 from .job_ledger import JobLedger
 from .product_approval import ProductApprovalStore
 
@@ -36,6 +37,17 @@ class ApproveProduct(Contract):
     confirmed: StrictBool
 
 
+class SelectImage(Contract):
+    expected_revision: int = Field(ge=0, strict=True)
+    copy_revision: int = Field(ge=1, strict=True)
+    request: BackgroundRequest
+
+
+class AttachImage(Contract):
+    expected_revision: int = Field(ge=1, strict=True)
+    job_id: UUID
+
+
 async def _read_limited(request: Request, limit: int) -> bytes:
     data = bytearray()
     async for chunk in request.stream():
@@ -49,7 +61,8 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
                credentials: Mapping[str, UUID],
                processor: Callable[[ImageRequest, UUID], ImageResult] | None = None,
                *, approvals: ProductApprovalStore | None = None,
-               request_validator: Callable[[ImageRequest], None] | None = None) -> FastAPI:
+               request_validator: Callable[[ImageRequest], None] | None = None,
+               edits: ImageEditStore | None = None) -> FastAPI:
     """Bind a server-owned bearer credential to one project, never to user input.
 
     With no processor, requests stay durably queued. A compatible separate
@@ -101,6 +114,8 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
             "PRODUCT_APPROVAL_CONFLICT": 409, "PRODUCT_STORAGE_ERROR": 503,
             "INVALID_IMAGE_REQUEST": 400, "IMAGE_PROFILE_NOT_FOUND": 400,
             "MODEL_UNAVAILABLE": 422,
+            "EDIT_NOT_FOUND": 404, "EDIT_CONFLICT": 409,
+            "IMAGE_JOB_NOT_READY": 409, "EDIT_STORAGE_ERROR": 503,
         }
         code = exc.code if exc.code in statuses else "INTERNAL_ERROR"
         return JSONResponse(status_code=statuses.get(code, 500), content={"detail": {"code": code}})
@@ -190,6 +205,34 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
         payload = await product_input(request, ApproveProduct)
         return await run_in_threadpool(store.approve, candidate_id, project_id,
                                        payload.candidate_hash, confirmed=payload.confirmed)
+
+    def edit_store() -> ImageEditStore:
+        if edits is None:
+            raise HTTPException(503, detail={"code": "EDIT_SERVICE_UNAVAILABLE"})
+        return edits
+
+    @app.put("/internal/v1/edits/{campaign_id}")
+    async def select_image(campaign_id: UUID, request: Request,
+                           project_id: UUID = Depends(project)):
+        store = edit_store()
+        payload = await product_input(request, SelectImage)
+        if request_validator is not None:
+            await run_in_threadpool(request_validator, payload.request)
+        await run_in_threadpool(product_store().require_approved, payload.request, project_id)
+        return await run_in_threadpool(store.select, campaign_id, project_id,
+            payload.expected_revision, payload.request, payload.copy_revision)
+
+    @app.get("/internal/v1/edits/{campaign_id}")
+    async def get_edit(campaign_id: UUID, project_id: UUID = Depends(project)):
+        return await run_in_threadpool(edit_store().get, campaign_id, project_id)
+
+    @app.put("/internal/v1/edits/{campaign_id}/result")
+    async def attach_image(campaign_id: UUID, request: Request,
+                           project_id: UUID = Depends(project)):
+        store = edit_store()
+        payload = await product_input(request, AttachImage)
+        return await run_in_threadpool(store.attach, campaign_id, project_id,
+                                       payload.expected_revision, payload.job_id)
 
     @app.get("/internal/v1/health")
     async def health(project_id: UUID = Depends(project)):

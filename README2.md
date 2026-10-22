@@ -218,3 +218,24 @@ python -m examples.run_image download <composed_preview_asset_id> outputs/previe
 `prepare` 결과는 `approved=false`입니다. 승인 hash가 다르면409, 미승인 배경 제출도409입니다. `approve`는 호스트가 사용자 확인을 전달했다는 기록이며, 최종 광고·문구·법률·이미지 품질 승인이 아닙니다. 파일 저장은 덮어쓰기 없이 수행합니다. 제출 응답이 유실되면 출력된 job ID를 조회하고 같은 ID를 유지합니다.
 
 고정 프로필은 `uploaded-alpha/1`과 `bright-template/1`입니다. 템플릿의 style은 `bright-ad/1`, layout은 `product-right/1`이며 작업 해상도는256~1024,8의 배수입니다. 설정·임의 모델경로는 사용자 요청으로 바꾸지 않습니다. `scene_underlay`, 승인 `product_rgba`, `composed_preview`를 각각 조회할 수 있습니다. `TEMPLATE_NOT_AI_GENERATION`·`MANUAL_QUALITY_REVIEW_REQUIRED` 경고를 숨기지 않습니다.
+
+## 문구 수정·현재 선택·이미지 캐시 (B4)
+
+`ImageEditStore`는 프로젝트·캠페인별 현재 이미지 입력과 성공 결과를 저장합니다. `revision`은 편집 상태 버전이고 `copy_revision`은 호스트가 관리하는 문구 버전입니다. 이 모듈은 문구·검수 내용을 수정하지 않습니다.
+
+```bash
+# 최초 선택: 제품 후보는 앞 절에서 승인한 상태여야 합니다.
+python -m examples.run_image select <candidate_id> <campaign_id> --expected-revision 0 --copy-revision 1 --seed 42
+# active_job_id가 없을 때만 기존 render 명령으로 같은 candidate/seed의 작업을 제출합니다.
+python -m examples.run_image render <candidate_id> --job-id <job_id> --seed 42
+python -m examples.run_image attach <campaign_id> <job_id> --expected-revision 1
+# 문구만 수정하면 같은 이미지 입력의 검증된 결과를 재사용합니다.
+python -m examples.run_image select <candidate_id> <campaign_id> --expected-revision 1 --copy-revision 2 --seed 42
+python -m examples.run_image get-edit <campaign_id>
+```
+
+`select`는 현재 revision과 `expected_revision`이 같을 때만 새 버전을 저장합니다. 결과를 붙일 때도 같은 revision과 요청 hash를 요구합니다. 그사이 제품·구도·seed가 바뀌면 늦은 결과는409로 거절합니다. 성공 cache는 같은 프로젝트에서만 재사용하고 실제 결과 파일이 손상됐으면 miss로 처리합니다. 저장소 장애는 cache miss로 숨기지 않습니다. 오류 뒤 무조건 새 작업 ID를 발급하거나 생성 재시도를 하지 않습니다.
+
+선택 API는 `PUT/GET /internal/v1/edits/{campaign_id}`, 결과 반영은 `PUT /internal/v1/edits/{campaign_id}/result`입니다. 기존 job 조회는 작업의 역사적 결과이고, 현재 화면에 반영할 결과는 edit의 `active_job_id`를 확인해야 합니다. 최종 파일 열람 시에도 자산 권한·파일 무결성 검사를 거칩니다. 실제 CampaignService/UI 연결과 팀 계약 수락은 별도입니다.
+
+`BackgroundRequest.image_prompt`는 텍스트 담당자가 만든 영어 프롬프트를 받는 선택 필드입니다. `positive`, `negative`, `prompt_version`, `source_revision`, `language`를 함께 전달하며 내용·버전이 바뀌면 이미지 hash도 바뀝니다. 필드가 없으면 기존 요청 body/hash를 유지합니다. 길이를 넘으면 거절하고 자동 절단하지 않습니다. 현재 `bright-template`은 이 프롬프트를 실행하지 못하므로 값이 있으면 명시적으로 거절합니다. 실제 모델의 tokenizer 길이·배경 생성 지원은 해당 모델 adapter에서 검증해야 합니다.

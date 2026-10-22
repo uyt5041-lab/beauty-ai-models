@@ -82,6 +82,9 @@ class LocalTemplateProcessor:
         if request.kind != profile.kind:
             raise cls._invalid()
         if isinstance(request, BackgroundRequest):
+            if request.image_prompt is not None:
+                # A deterministic template cannot claim to follow a model prompt.
+                raise cls._invalid()
             visual = request.visual
             if (visual.generation_width > profile.max_dimension
                     or visual.generation_height > profile.max_dimension
