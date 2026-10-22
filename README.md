@@ -7,6 +7,7 @@
 | 날짜 | Markdown | HTML |
 | --- | --- | --- |
 | 2026-10-20 | [작업일지](worklogs/2026-10-20/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-20/park-jisoo-worklog.html) |
+| 2026-10-22 | [스키마 초안 작업일지](worklogs/2026-10-22/schema-draft-worklog.md) | [HTML 파일](worklogs/2026-10-22/schema-draft-worklog.html) |
 
 HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
