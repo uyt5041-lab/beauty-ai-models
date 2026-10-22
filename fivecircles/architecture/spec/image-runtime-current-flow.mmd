@@ -3,7 +3,7 @@ flowchart TB
     B["B · 인증 internal API / WAL ledger<br/>project scope · atomic ID/hash"]:::green
     W["단일 호스트 worker<br/>POSIX 실행 잠금 · queued 복구"]:::green
     U["uploaded-alpha / 1<br/>이미 투명한 RGBA 입력만 처리"]:::gray
-    C["C · GAP: 실제 누끼 모델<br/>GPU 실행 / 품질 검증 필요"]:::red
+    C["C · BiRefNetLite 실제 누끼<br/>고정 revision / MPS fixture 검증"]:::green
     D["D · 제품 후보 캔버스 / 마스크<br/>종횡비 / 실제 alpha 영역 검사"]:::green
     E["E · 명시적 승인 저장<br/>정확한 source / layer / visual hash"]:::green
     P["서버 소유 profile / revision<br/>승인 / 자산을 실행 직전 재검증"]:::green
@@ -24,7 +24,11 @@ flowchart TB
     Q --> X
     Q -.-> F
     A --> B --> W --> U --> D --> E --> P --> T --> G --> R
-    W -.-> C -.-> D
+    S["명시적 모델 준비 / 검증<br/>고정 4개 파일 hash / 로컬 로딩"]:::green
+    N["GAP: 실사진 품질 / CUDA<br/>합성 fixture 성공과 별도 검증"]:::red
+    S --> C
+    W --> C --> D
+    C -.-> N
     P -.-> F -.-> G
     R --> H -.-> I -.-> J
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px

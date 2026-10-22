@@ -260,3 +260,23 @@ manifest에는 평가셋 ID·버전과 case별 ID·dev/holdout 구분·제품 �
 불투명 제품 픽셀 보존과 부분 투명 픽셀 수를 별도로 기록합니다. 유리·반사·경계의 자연스러움은 사람이 판단해야 합니다. `human_review`도 작성자의 선언이며 `quality_approval`은 항상 `NOT_ASSESSED`입니다. 합성 fixture 통과를 실모델 품질 근거로 쓰지 않습니다.
 
 `GET /internal/v1/jobs/{job_id}/timing`은 프로젝트 인증이 필요합니다. `ledger_elapsed_ms`에는 큐 대기·처리·저장이 포함됩니다. 실행 중이면 `null`, 시계가 뒤로 움직였으면 `null`과 사유를 반환합니다. `server_wall_clock` 값은 시스템 시각 보정의 영향을 받을 수 있습니다. 실패·중단 작업에도 시간이 있을 수 있으므로 `status`를 함께 확인합니다. GPU 시간·최대 VRAM·가격은 측정하지 않으며, 작업 ID와 평가 파일이 같은 결과라는 연결도 자동 추정하지 않습니다.
+
+## 실제 로컬 누끼 모델 (B6)
+
+[로컬 모델 설치·GCP 이전 안내](docs/localModelSetup.md)에 설치와 실행 명령을 정리했습니다. 기본 실행은 기존 alpha/template이고, `birefnet-lite`를 명시하면 고정된 BiRefNet Lite를 사용합니다. 모델 가중치는 약178MB이며 `models/` 아래에 별도로 준비합니다. Python 실행 라이브러리 공간은 추가로 필요합니다.
+
+```bash
+python -m pip install -e '.[inference,models]'
+python -m beauty_ai.model_store prepare --root models
+python -m beauty_ai.model_store verify --root models
+export BEAUTY_CUTOUT_BACKEND=birefnet-lite
+export BEAUTY_MODEL_ROOT=models
+export BEAUTY_MODEL_DEVICE=mps
+python -m beauty_ai.inference_runtime
+# 별도 클라이언트 터미널: 인증/주소 환경변수 설정 후 실행
+python -m examples.run_image prepare outputs/product-photo.png examples/bright_visual.json --cutout-profile birefnet-lite
+```
+
+이 경로는 일반 사진에서 제품 alpha를 예측하고 실제 RGBA와 보호 마스크를 저장합니다. 이후 후보 확인·승인 절차는 같습니다. API 요청에서 모델을 내려받지 않으며, 선택한 장치를 사용할 수 없으면 오류를 반환합니다. 검증하지 않은 모델 파일·코드는 실행하지 않습니다. GCP에서는 동일한 API를 유지하면서 CUDA 환경과 모델 파일을 준비하고 장치 설정을 바꿔 검증합니다. Mac과 CUDA의 속도·픽셀 일치는 별도 측정 대상입니다.
+
+M4 Max 64GB에서 합성 제품 fixture로 실제 MPS 추론·TCP API·prepare CLI를 확인했습니다. 첫 작업의 접수→종료 기록은 약6.9초이며 로딩·대기·저장을 포함합니다. 실제 화장품 사진·유리·라벨 경계 품질은 확인하지 않았고, 반환값은 항상 수동 확인 필요 상태입니다. 배경은 아직 로컬 템플릿이며 SDXL 실행과 구분합니다.

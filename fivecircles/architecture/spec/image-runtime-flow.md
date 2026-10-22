@@ -1,8 +1,8 @@
-# 이미지 런타임 흐름 비교 · B5
+# 이미지 런타임 흐름 비교 · B6
 
-2026-10-22 · 대상: plan/models · 배치 B5 로컬 평가 도구 / 실행 시간 기록
+2026-10-22 · 대상: plan/models · 배치 B6 고정 BiRefNetLite / 로컬 MPS 실누끼
 
-**Flow diagram verification: GAP/PARTIAL.** 로컬 파일 평가 manifest, 마스크 IoU·경계 지표와 작업 접수→종료 경과 시간 기록을 추가했다. 전체 280 tests와 실제 CLI·패키지 빌드를 검증했다. 실제 모델 호출·GPU 측정·평가 데이터·사람 품질 판정·렌더러·팀 인수는 미완료다. 날짜는 마일스톤이다.
+**Flow diagram verification: GAP/PARTIAL.** 고정 BiRefNetLite를 실제 MPS에서 실행하고 TCP CLI로 합성 병 512×512의 RGBA·마스크와 미승인 후보를 저장했다. 전체 339 tests와 실제 모델 실행을 각각 검증했다. 실사진 품질·실제 배경 모델·CUDA/GCP·렌더러·팀 인수는 미완료다.
 
 ## Target Flow
 
@@ -42,7 +42,7 @@ flowchart TB
     B["B · 인증 internal API / WAL ledger<br/>project scope · atomic ID/hash"]:::green
     W["단일 호스트 worker<br/>POSIX 실행 잠금 · queued 복구"]:::green
     U["uploaded-alpha / 1<br/>이미 투명한 RGBA 입력만 처리"]:::gray
-    C["C · GAP: 실제 누끼 모델<br/>GPU 실행 / 품질 검증 필요"]:::red
+    C["C · BiRefNetLite 실제 누끼<br/>고정 revision / MPS fixture 검증"]:::green
     D["D · 제품 후보 캔버스 / 마스크<br/>종횡비 / 실제 alpha 영역 검사"]:::green
     E["E · 명시적 승인 저장<br/>정확한 source / layer / visual hash"]:::green
     P["서버 소유 profile / revision<br/>승인 / 자산을 실행 직전 재검증"]:::green
@@ -63,7 +63,11 @@ flowchart TB
     Q --> X
     Q -.-> F
     A --> B --> W --> U --> D --> E --> P --> T --> G --> R
-    W -.-> C -.-> D
+    S["명시적 모델 준비 / 검증<br/>고정 4개 파일 hash / 로컬 로딩"]:::green
+    N["GAP: 실사진 품질 / CUDA<br/>합성 fixture 성공과 별도 검증"]:::red
+    S --> C
+    W --> C --> D
+    C -.-> N
     P -.-> F -.-> G
     R --> H -.-> I -.-> J
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
@@ -84,8 +88,9 @@ classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px
 | A | MATCHED (모듈) | 파일 decode/정규화/hash/프로젝트 경계와 저장 구현. 최종 사용자 로그인은 별도. | assets.py / 자산 테스트 |
 | A → B / B | MATCHED (로컬 서버) | Bearer→project 매핑, atomic PUT, 동일 ID/hash 재사용, WAL ledger와 조회 API. | inference_api.py / job_ledger.py |
 | B → worker | MATCHED (로컬 실행 기반) | POSIX 잠금, DB queued 검색, owner 검증, 실제 파일 확인 후 success. 단일 호스트 범위. | worker·loopback·프로세스 복구 테스트 |
-| worker → C / C | GAP | 실제 누끼 모델과 GPU 품질 검증은 없음. uploaded-alpha/1은 이미 투명한 RGBA만 받으며 불투명 사진을 누끼 성공으로 처리하지 않음. | 모델 선택·접근·고정 환경·평가 조건 필요 |
-| C → D / D | PARTIAL / MATCHED (로컬 입력) | 실모델 연결은 GAP. 기존 RGBA의 종횡비 유지 배치·캔버스·마스크 준비와 저장은 동작. | prepare_product_canvas / prepare API |
+| 모델 준비 → C | MATCHED (고정 파일) | 별도 prepare만 다운로드. 검토한 source/config/가중치 4개 hash·크기를 검사하고 로컬 safetensors만 로딩. handler.py 제외, 장치 자동 대체 없음. | model_store.py / 실제 파일 verify / 고정 revision |
+| worker → C / C | PARTIAL (실제 MPS 실행) | BiRefNetLite가 실제 MPS에서 합성 병 fixture를 처리. 원본 RGB 유지, alpha 0..255, RGBA·마스크 저장과 수동 확인 경고. 실사진 품질·CUDA는 별도. | 실제 TCP CLI prepare / 339 tests / B6 실행 기록 |
+| C → D / D | MATCHED (로컬 실행) | 실제 누끼 결과를 후보 캔버스·마스크로 준비하고 approved=false로 저장. 사람 확인·품질 통과는 별도. | 실제 MPS job → prepare API → 후보 파일 |
 | D → E / E | MATCHED (저장·검증 범위) | 처음에는 미승인. literal true와 candidate hash를 확인하고 project/실파일/마스크/영역을 검증. 사람 신원·품질 승인은 보증하지 않음. | ProductApprovalStore / 승인 API |
 | E → profile → template → G | MATCHED (로컬 템플릿 경로) | 고정 ID/revision/style/layout/크기만 허용. 승인·자산을 실행 직전 확인하고 3개 레이어를 저장. 실제 AI 모델 대체 증거는 아님. | LocalTemplateProcessor / runtime / CLI |
 | 프롬프트 수신 → F | PARTIAL | ImagePrompt의 텍스트·버전·revision을 수신/hash에 포함하고 None은 기존 body/hash를 유지. 문자 수 한도이며 실제 tokenizer/GPU 소비는 미검증. local template은 prompt를 거절한다. | test_image_prompt.py / 실제 모델 adapter 필요 |
@@ -101,19 +106,19 @@ classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px
 
 | 순서 | 작업 | 상태 | 연결 점수 | 선정 이유 | 다음 동작 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | B6 · 로컬 실제 모델 실행 / 이후 GCP 이전 | GAP / 다음 구현 | 3 + 3 + 2 + 2 − 2 = 8 | M4 Max·64GB 로컬에서 먼저 고정 모델·실행 호환성을 확인 | 모델 사용 조건·revision·로컬 backend 확인 후 adapter 검증 |
-| 2 | 실제 평가셋 / 품질 기준 / 사람 판정 | GAP / 데이터·합의 필요 | 2 + 2 + 1 + 1 − 2 = 4 | 측정 도구에 실제 제품과 수용 기준을 연결 | 권리 확보 제품·정답/판정자·기준 준비 |
-| 3 | 렌더러 / 팀 인수 | GAP / 공동 작업 필요 | 1 + 1 + 1 + 1 − 2 = 2 | 실제 서비스의 현재 상태와 최종 광고를 확인 | 담당·인터페이스·실서비스 준비 후 |
-| 완료 | B5 · 평가 manifest / 지표 / timing | MATCHED (로컬 도구) | 선정 대상 제외 | UNKNOWN·측정값·사람 판정을 구분하는 기록 기반 | 280 tests + 실제 CLI + wheel PASS |
-| 완료 | B4 · 프롬프트 / revision / 캐시 | MATCHED (로컬 범위) | 선정 대상 제외 | 입력 버전·늦은 결과·프로젝트 교차 재사용 차단 | 201 tests + 실제 TCP CLI PASS |
-| 완료 | B3 · 승인 / profile / template | MATCHED (로컬 범위) | 선정 대상 제외 | 명시적 승인과 합성 파일 연결 | 148 tests + 실제 TCP CLI PASS |
-| 완료 | B1 / B2 · 자산 / 영속 job / worker | MATCHED (로컬 범위) | 선정 대상 제외 | 파일·DB·HTTP·복구 검증 | 기존 근거 유지 |
+| 1 | B7 · 로컬 실제 배경 모델 | GAP / 다음 후보 | 3 + 3 + 2 + 2 − 2 = 8 | 실누끼 다음의 실제 배경 생성 경로 연결 | B6 게시 후 SDXL 고정 revision·사용 조건·파일·메모리·adapter 계약 |
+| 2 | 실사진 평가셋 / 품질 기준 / 사람 판정 | GAP / 데이터·합의 필요 | 2 + 2 + 1 + 1 − 2 = 4 | 합성 fixture 외 실제 제품의 경계·라벨·투명 품질 확인 | 권리 확보 제품·정답/판정자·기준 준비 |
+| 3 | GCP CUDA 이전 / 렌더러 / 팀 인수 | GAP / 별도 검증 | 1 + 1 + 1 + 1 − 2 = 2 | 로컬 이후 실제 환경과 최종 광고 연결 | 로컬 모델 경로 검증 후 대상 환경·공동 인수 |
+| 완료 | B6 · 고정 실누끼 / MPS / 모델 저장 | MATCHED (합성 fixture 범위) | 선정 대상 제외 | 고정 파일에서 실제 forward·자산·미승인 후보까지 연결 | 339 tests + 실제 TCP MPS CLI PASS |
+| 완료 | B5 · 평가 manifest / 지표 / timing | MATCHED (로컬 도구) | 선정 대상 제외 | UNKNOWN·측정값·사람 판정을 구분 | 280 tests + 실제 CLI + wheel PASS |
+| 완료 | B4 · 프롬프트 / revision / 캐시 | MATCHED (로컬 범위) | 선정 대상 제외 | 입력 버전·늦은 결과·교차 재사용 차단 | 201 tests + 실제 TCP CLI PASS |
+| 완료 | B1 / B2 / B3 · 자산 / worker / 승인 / template | MATCHED (로컬 범위) | 선정 대상 제외 | 파일·DB·HTTP·복구·명시적 승인 | 이전 검증 기록 유지 |
 
 ## Scoring Criteria
 
 연결 점수 = upstream_weight(0–4) + connection_value(0–3) + safety_value(0–2) + validation_value(0–2) + risk_penalty(0∼−3). 같은 점수면 상위 노드, 더 작은 검증 가능한 변경을 먼저 선택한다. 모델/환경/합의가 필요한 항목은 점수만으로 완료하지 않는다.
 
-다음 단위: **B6 로컬 실제 모델 실행 가능성·고정 revision·adapter 검증, 8점**. 사용자 지시에 따라 로컬 Mac에서 먼저 실제 모델을 검증한 뒤 GCP로 이전한다. root가 확인한 로컬 환경은 M4 Max(40 GPU cores)·64GB 메모리·여유 공간 약 352GiB다. 이 사양은 모델 실행 증거가 아니다. 모델 사용 조건·revision과 CPU/MPS 호환성, 필요한 의존성·다운로드 크기를 확인하고 작은 권리 확보 샘플부터 실행한다. 성공하면 같은 모델·프로필·입출력과 측정 조건을 보존해 GCP us-east1로 이전 검증한다. 실제 품질 기준·평가셋·렌더러·팀 인수는 계속 미완료다.
+다음 선택: **B7 로컬 실제 배경 모델, 8점**. B6 게시 뒤 SDXL Base의 사용 조건·고정 revision·필요 파일·메모리와 tokenizer를 확인하고 adapter 계약부터 작성한다. 사용자 방향은 로컬 선검증 후 GCP 이전이다. B6에서 SDXL을 설치·실행한 것은 아니며, 현재 배경은 bright-template이다. 실사진 품질·CUDA·렌더러·팀 인수는 별도 근거가 필요하다.
 
 ## Color Semantics
 
@@ -127,10 +132,14 @@ classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px
 
 ## Validation
 
-- 이전 배치: [B1](../../test/relay-b1.md), [B2](../../test/relay-b2.md), [B3](../../test/relay-b3.md), [B4 201 tests + 실제 TCP CLI](../../test/relay-b4.md) 근거 유지.
-- B5 전체 회귀(root): **280 tests PASS(4.06s, -W error)**. 예제 manifest 실제 CLI는 1건을 권리 미확인으로 건너뛰고 model_invoked=false를 기록했다. timing API/실제 TCP CLI와 wheel build도 PASS. [B5 상세](../../test/relay-b5.md).
-- 코드 범위: mask IoU·경계 측정, private file manifest 검증·평가, 입력 hash·권리/사람 선언 구분, terminal ledger 경과 시간. 실제 모델 호출·GPU·품질 자동 승인은 하지 않는다.
-- 실제 누끼/배경 모델·GPU 연산 시간·VRAM·비용·광고 품질·사람 인수: NOT_RUN/NOT_ASSESSED. 실제 평가 이미지·산출 보고서는 공개 Git에 넣지 않는다.
-- Mermaid: 기존 목표 PNG 재사용, B5 현재 PNG 갱신. HTML 브라우저 검증 **PASS** (Task Space 141): PNG 2개 decode(552×2540, 1568×2534), 제목 7개·범례 5개·GAP 15행·우선순위 7행, 가로 넘침 없음. 1492×4168 스크린샷을 직접 확인했다. 최종 280 tests 결과와 로컬 우선 지시를 반영한 화면을 재검증하고 스크린샷을 확인했다.
-- 스크린샷: [B5 보고서](../../test/playwright-screenshots/image-runtime-flow-b5.png) · [보존한 B4 보고서](../../test/playwright-screenshots/image-runtime-flow-b4.png).
-- 전체 제품 흐름 판정: GAP/PARTIAL. 측정 도구의 구현과 실제 모델 품질·팀 인수를 구분한다.
+- 이전 배치: [B1](../../test/relay-b1.md), [B2](../../test/relay-b2.md), [B3](../../test/relay-b3.md), [B4](../../test/relay-b4.md), [B5](../../test/relay-b5.md) 근거 유지.
+- B6 전체 회귀(root): **339 tests PASS(4.30s, -W error)**. 모델 저장의 HTTPException 오류 정제 회귀를 포함한다. optional backend 단위 검증과 실제 MPS 실행은 별도 근거다. [B6 기록](../../test/relay-b6.md).
+- 실제 모델: 고정 4개 파일 검증 후 HF_HUB_OFFLINE=1·telemetry off, 실제 TCP runtime + 별도 CLI prepare로 MPS forward. 합성 병 512×512의 RGB 유지·alpha 0..255·RGBA/마스크 저장·approved=false·수동 경고를 확인했다.
+- 첫 job ledger_elapsed_ms=6897.11, CLI wall-clock=7.587s. 모델 로딩·대기·파일 처리를 포함하며 순수 GPU 연산 시간이나 반복 성능 수치가 아니다.
+- 같은 job 파일 hash를 대조한 dev fixture 1건: IoU 0.9692321320, boundary F1 0.7558205565(tolerance 2px), opaque_preserved=true. 품질은 NOT_ASSESSED이며 실사진 평가셋 통과가 아니다. wheel build PASS.
+- 합성 fixture의 픽셀: opaque 978 / transparent 194411 / partial 66755. 실사진 경계·라벨·유리 품질이나 사람 인수를 뜻하지 않는다. 실제 실행에 timm의 torch.jit FutureWarning이 있었고 실패는 없었다.
+- 실행 환경: Python 3.11.15, torch 2.14.1, torchvision 0.29.1, transformers 5.20.2, timm 1.0.30, kornia 0.8.3, einops 0.8.2, numpy 2.4.6, Apple M4 Max·64GB·MPS. pip check와 MPS tensor 확인 PASS.
+- 실제 배경 모델·CUDA/GCP·실사진 품질·사람 인수: NOT_RUN/NOT_ASSESSED. 실제 모델 파일·fixture 결과 이미지는 Git 제외 로컬 저장소에만 보관한다.
+- Mermaid: 기존 목표 PNG 재사용, B6 현재 PNG 갱신. HTML 브라우저 검증 **PASS** (Task Space 142): PNG 2개 decode(552×2540, 1568×2972), 제목 7개·범례 5개·GAP 16행·우선순위 7행, 문서/화면 폭 1492px로 가로 넘침 없음. 최종 339 tests와 실제 MPS 실행 근거를 반영한 스크린샷을 직접 확인했다.
+- 스크린샷: [B6 보고서](../../test/playwright-screenshots/image-runtime-flow-b6.png) · [보존한 B5 보고서](../../test/playwright-screenshots/image-runtime-flow-b5.png).
+- 전체 제품 흐름 판정: GAP/PARTIAL. 실제 누끼 한 번의 실행과 완성 서비스·광고 품질을 구분한다.

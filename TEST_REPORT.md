@@ -2,14 +2,19 @@
 
 ## 최신 릴레이 검증 · 2026-10-22
 
-- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **280 passed in 4.06s**.
-- B1 자산·캔버스72 → B2 API·작업 저장/복구112 → B3 승인·제한 profile·로컬 template148 → B4 프롬프트·편집/cache201 → B5 평가·작업 시간280으로 확장했다. 테스트 시간은 이번 실행 관찰값이며 모델 성능 수치가 아니다.
+- Python3.11.15, `.venv/bin/python -m pytest -q -W error`: **339 passed in 4.30s**.
+- B1 자산·캔버스72 → B2 API·작업 저장/복구112 → B3 승인·제한 profile·로컬 template148 → B4 프롬프트·편집/cache201 → B5 평가·작업 시간280 → B6 모델준비·누끼어댑터339로 확장했다. 자동 테스트는 실제 가중치를 내려받지 않으며 실모델 smoke는 아래에 구분한다.
 - 실제 파일/SQLite, 프로세스 경쟁·강제 종료 복구, 실제 TCP API와 CLI 6명령을 검증했다. 512×512 결과 PNG를 저장·다운로드했다.
 - [B1](fivecircles/test/relay-b1.md), [B2](fivecircles/test/relay-b2.md), [릴레이 진행](fivecircles/work/relay.md).
-- 실모델·GCP GPU·OpenAI 유료 호출·광고 품질·팀 인수는 검증하지 않았다. 템플릿 결과는 모델 추론 결과가 아니다.
+- B6에서 실제 BiRefNet Lite의 Mac MPS 누끼를 검증했다. GCP CUDA·배경 생성 AI·OpenAI 유료 호출·실제 광고 품질·팀 인수는 검증하지 않았다. 기존 배경 템플릿은 모델 추론 결과가 아니다.
 - B5: 실제 파일·정답 마스크·빈 마스크·권리 미확인·누락 정답·경로 제한·FIFO 거절·보고서 덮어쓰기 차단, 실패/중단 작업의 시간과 clock 역행을 검사했다. manifest 예제 CLI는 1건 NOT_ASSESSED, 실제 TCP 시간 조회 CLI는 PASS(70.61ms 서버 wall-clock, GPU 시간 아님).
 - 동료 검토에서 manifest가 FIFO이면 멈출 수 있는 문제를 발견해 nonblocking open과 regular-file 검사로 수정했다. 실제 FIFO 회귀 테스트와 전체 테스트를 통과했다.
 - B5 wheel 생성 PASS, SHA256 `79bff5bc59cc8bf1319edd0e5d0dd352b3b6180dca67424cf6e85c0679990b2c`.
+- B6: 고정 revision `aa62cd87eafb9cc43056d08ef3615a14628b831d`의 코드·설정·177,634,392바이트 가중치 SHA256 검증 PASS. 네 파일 외 코드는 로딩하지 않으며, 실행은 HF offline/telemetry disabled로 수행했다.
+- 실제 M4 Max64GB/MPS에서 합성 병 이미지512×512를 TCP API와 prepare CLI로 실행했다. RGBA·binary 보호마스크·미승인 후보 저장, RGB보존, alpha0..255, 수동확인경고 PASS. 첫 job 경과6897.11ms/CLI7.587s는 로딩·큐·저장을 포함한다. GPU연산시간·실사진품질이 아니다.
+- 같은 합성 fixture의 파일hash를 실제job출력과 연결해 평가 도구를 실행했다. IoU0.9692321320, boundaryF1 0.7558205565(2px 정사각 허용), opaque보존true. 1개 dev fixture 결과이며 품질승인 NOT_ASSESSED다.
+- 검증 환경: torch2.14.1/torchvision0.29.1/transformers5.20.2/timm1.0.30/kornia0.8.3/einops0.8.2/numpy2.4.6. pip check·MPS tensor smoke PASS. 실제 import 중 upstream torch.jit deprecation 경고는 있었고 실행 오류는 없었다. CUDA와 다른버전은 미검증.
+- B6 동료 검토: 모델 다운로드의 HTTPException을 안전코드로 변환하고 임시파일 정리 회귀를 추가했다. B6 wheel 생성 PASS, SHA256 `1932d8a7a0bc2b792caf49e839b0596dcf27fea83b48e2eef9fa6c9276b373f8`.
 
 ---
 

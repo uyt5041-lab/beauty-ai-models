@@ -181,12 +181,14 @@ pi는 모델 선정·누끼·배경 생성·제품 레이어 재합성·이미�
 
 **대상:** `CutoutRequest` → `CutoutResult` · **산출물:** 제품 RGBA, 보호 마스크, 경고.
 
+**B6 범위:** 고정 BiRefNetLite의 실제 MPS forward와 합성 병 512×512에서 RGBA·마스크·수동 경고를 검증했다. 실제 제품 사진 품질·라벨/경계·투명 용기·CUDA는 미완료다. [B6 근거](../fivecircles/test/relay-b6.md).
+
 - [x] 실제 파일의 hash·크기·형식이 `AssetRef`와 일치하는지 확인한다. 메타데이터만 믿고 처리하지 않는다.
-- [ ] 실제 누끼 모델로 alpha matte를 만들고, alpha가 있는 RGBA PNG로 결과를 저장한다.
+- [x] 실제 누끼 모델로 alpha matte를 만들고, alpha가 있는 RGBA PNG로 결과를 저장한다.
 - [ ] 제품의 뚜껑·펌프·얇은 경계·라벨·반투명 부분이 잘리지 않는지 확인한다.
 - [ ] 검정·흰색·유사색 배경에서 잔여 배경, 경계 테두리, 구멍과 잘못 선택한 객체를 검사한다.
 - [ ] 여러 제품이나 소품이 있는 입력의 대상 선택 기준을 정하고, 모호하면 수동 확인으로 넘긴다.
-- [ ] 누끼 결과가 불확실한 경우 `needs_manual_check`와 `warnings`를 반환한다.
+- [x] 누끼 결과가 불확실한 경우 `needs_manual_check`와 `warnings`를 반환한다.
 - [ ] alpha matte와 별개로 제품 보호 마스크를 만들고, 사용자 확인·보정 뒤 승인된 제품 버전을 저장하도록 연결한다.
 
 ### 단계 2-B. 작업 캔버스와 마스크 정렬
@@ -369,3 +371,5 @@ pi는 모델 선정·누끼·배경 생성·제품 레이어 재합성·이미�
 2026-10-22 B4: 프롬프트 수신·기존 body/hash 호환, 이미지 selection revision CAS·프로젝트 캐시·현재 revision의 결과 attach를 구현했다. 전체 **201 tests PASS(20.04s)**, 실제 TCP CLI에서 문구 revision만 변경한 뒤 같은 job 재사용을 확인했다. 로컬 hash·재사용·늦은 결과 차단 3개를 추가 체크했다. 실제 사용자 인증·문구/검수DB 공동 연동·UI·GPU·tokenizer·모델 품질은 미완료다. [검증 기록](../fivecircles/test/relay-b4.md).
 
 2026-10-22 B5: 로컬 평가 manifest·mask IoU/경계·픽셀 지표와 job timing API/CLI를 구현했다. 전체 **280 tests PASS(4.06s)**, 예제 manifest CLI·실제 TCP timing·wheel build PASS. 검증된 도구 하위 항목 3개만 추가 체크했다(누적 25개). 권리 미확인은 건너뛰고 정답/비교 픽셀이 없으면 None, quality_approval은 NOT_ASSESSED다. 실제 데이터·품질·GPU 단계별 시간·VRAM·비용은 미완료다. 다음은 사용자 지시에 따라 로컬 실제 모델 검증 후 GCP 이전이다. [검증 기록](../fivecircles/test/relay-b5.md).
+
+2026-10-22 B6: 고정 BiRefNetLite 4개 파일 검증·선택 의존성·명시 장치 adapter를 구현했다. 전체 **339 tests PASS(4.30s)**와 실제 TCP CLI/MPS 누끼 실행을 별도로 확인했다. 합성 병 512×512의 RGB 유지·alpha 0..255·RGBA/마스크·미승인 후보·수동 경고가 근거다. 2-A 기존 항목 2개만 추가 체크했다(누적 27개). 실사진 품질·배경 모델·CUDA·최종 품질·팀 인수는 미완료다. 다음 B7 후보는 로컬 실제 배경 모델이다. [검증](../fivecircles/test/relay-b6.md) · [설치/이전](localModelSetup.md).

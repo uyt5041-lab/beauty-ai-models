@@ -37,3 +37,10 @@
 - 로컬 평가 manifest·mask/픽셀 지표·job timing API/CLI를 추가했다. 원본 TODO의 도구 하위 3개만 체크했다(누적 25개).
 - 전체 280 tests PASS(4.06s), 예제 manifest CLI·실제 TCP timing·wheel build PASS. FIFO manifest 대기를 발견·수리하고 재검증했다. [상세](../test/relay-b5.md).
 - 실제 모델·평가셋·사람 품질·GPU 시간·VRAM·비용은 미검증. 다음 B6는 로컬 Mac 실제 모델 검증 후 GCP 이전이다.
+
+
+## 2026-10-22 · 릴레이 B6
+
+- 고정 BiRefNetLite 모델 저장·선택 의존성·명시 장치 adapter·runtime/CLI를 연결했다. 기존 TODO 2-A의 2개만 추가 체크했다(누적 27개).
+- 전체 339 tests PASS(4.30s), 실제 MPS/TCP 합성 병 fixture의 RGBA·마스크·미승인 후보·수동 경고 PASS. 첫 job 6897.11ms는 로딩·대기·파일을 포함한다. [검증](../test/relay-b6.md).
+- 다음 B7 후보는 로컬 실제 배경 모델. 실사진 품질·CUDA/GCP·렌더러·팀 인수는 미완료다.

@@ -96,3 +96,13 @@
 - output: dataset/version, evaluation_environment, model_invoked=false, quality_approval=NOT_ASSESSED, cases의 MEASURED/NOT_ASSESSED/ERROR, 입력파일sha256·크기, opaque/pixel/partialalpha계수, maskmetrics또는None/사유, 선언된human_review. 정답mask가없으면GTmetric은None. 실제모델품질·VRAM·가격은None/NOT_MEASURED. 민감경로/원본텍스트를예외로그에출력하지않음. 예제manifest는가상경로/권리unknown, 실제이미지와보고서는Git제외outputs/data에둔다.
 - `JobLedger.timing(job_id, project_id) -> JobTiming`: 저장된created_at/updated_at와terminalstatus로ledger_elapsed_ms를제공. queued/running 또는음수clock차이는None. 이는서버wallclock의접수기록→terminal기록간경과이며대기/처리/저장을포함, GPU연산시간·VRAM·비용과같지않다. 과거상태에서시작phase를추정하지않는다.
 - API GET `/internal/v1/jobs/{job_id}/timing`, CLI `examples.run_image get-timing <job_id>`. project인증유지. 품질case와job의결합을자동추정하지않고명시적동일이미지증거가없는경우별도기록으로취급한다.
+
+## 배치 6 · 로컬 실누끼 모델과 이식 경계
+
+- 사용자 방향: 로컬에서 먼저 실행하고 이후 GCP로 옮긴다. 현재 Mac의 MPS를 검증하고 CUDA는 설정 경계만 준비한다. CUDA 실행 성공이나 두 장치의 픽셀 일치를 추정하지 않는다.
+- 고정 후보: `ZhengPeng7/BiRefNet_lite`, revision `aa62cd87eafb9cc43056d08ef3615a14628b831d`, MIT 모델 카드. upstream source/config를 검토하고 개별 SHA256·가중치 LFS SHA256/크기를 고정한다. 준비 명령만 다운로드하며 API 요청에서 다운로드하거나 임의 repo/path/code를 지정할 수 없다.
+- `beauty_ai.model_store`: 고정 allowlist 파일의 준비·검증. 모델 루트는 서버 설정이며 Git에서 제외하는 models/ 사용. 파일은 크기·SHA 검증 뒤 원자적으로 반영, 부분 다운로드를 정상 모델로 인식하지 않는다. 런타임은 검증된 로컬 파일만 로딩한다. `python -m beauty_ai.model_store prepare --root <models>`와 `verify` 지원, 비밀값/임의 예외문자열 출력 없음.
+- `BiRefNetCutoutProcessor(assets, model_directory, *, device='mps')`: profile `birefnet-lite`, revision `aa62cd87eafb9cc43056d08ef3615a14628b831d`. validate_request와 __call__(request,project_id) 지원. 명시된 cpu/mps/cuda 장치를 가용성 확인 후 사용하고 자동 CPU 대체로 실패를 숨기지 않는다. 모델·라이브러리는 선택 의존성이다.
+- 초기 추론은 단일 이미지, FP32, 1024×1024 정규화 입력, eval/inference_mode. 모델 alpha를 원본 자산 크기로 되돌려 입력 RGB와 합친 RGBA를 저장한다. binary preserve_mask는 alpha>0, needs_manual_check=true와 MODEL_SEGMENTATION_REQUIRES_REVIEW 경고. 빈/불량 출력은 오류이며 제품 식별·사람 품질 합격으로 간주하지 않는다. 다제품/반사/투명 경계는 수동 검수.
+- 런타임은 `BEAUTY_CUTOUT_BACKEND=birefnet-lite`, `BEAUTY_MODEL_ROOT`, `BEAUTY_MODEL_DEVICE` 서버 환경으로 선택. 기본 uploaded-alpha/bright-template 동작을 유지한다. 신규 processor만 실누끼를 처리하고 template 배경은 기존 processor로 위임한다. 기존 자산/작업/승인 wire 계약 유지, CLI prepare에 서버가 허용한 cutout profile 선택을 추가한다.
+- 검증: 저장파일 변조/누락/허용목록·모델어댑터 출력·기존회귀, 실제 MPS 합성제품 fixture 1개 이상 실행과 actual model/환경/시간 기록. fixture는 제품 사진 품질 평가가 아니다. 로컬 자산·가중치·결과 이미지는 공개 Git 제외. 라이선스 출처와 버전은 공개 문서에 기록.

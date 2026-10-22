@@ -53,3 +53,12 @@
 - 독립 검토 수리: FIFO manifest가 대기하지 않도록 nonblocking open·fstat·실제 FIFO 회귀를 추가했다.
 - 문서: README 5절, 원본 TODO 하위 3개 추가(누적 25개), 흐름/브라우저 비교 갱신. 실제 품질·GPU·팀 인수는 GAP.
 - 다음: 사용자 로컬 우선 지시에 따라 모델 revision·CPU/MPS 호환성·adapter·샘플을 검증하고 이후 GCP로 이전한다. [검증](../test/relay-b5.md).
+
+
+## 2026-10-22 · B6 · 구현/검증
+
+- 구현: model_store.py·birefnet_processor.py, 선택 models 의존성, 명시적 runtime/CLI profile. 검토한 4개 파일 hash와 source revision을 고정했다.
+- root 검증: 전체 339 tests PASS(4.30s), 실제 TCP+MPS forward로 합성 병 512×512 RGBA/mask 저장. RGB 유지·alpha 0..255·수동 경고·approved=false.
+- 검토/수리: 모델 저장의 HTTPException을 안전한 오류로 정제하고 회귀. 실제 실행의 timm FutureWarning은 기록했으며 실패는 없었다.
+- 문서: README 5절·설치/이전 안내·원본 TODO 2개 체크(누적 27개)·흐름/브라우저 비교. 실제 출력 파일은 공개 Git 제외.
+- 다음: B6 게시 후 B7 실제 로컬 배경 모델 계약·검증. 실사진 품질·CUDA·팀 인수는 별도. [검증](../test/relay-b6.md).

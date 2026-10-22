@@ -32,7 +32,12 @@ async def run(args) -> dict:
             if len(data) > 20 * 1024 * 1024:
                 raise ValueError("Input exceeds 20 MiB")
             source = await json_response("POST", "/internal/v1/assets", content=data)
-            request = CutoutRequest(source=source, pipeline_profile_id="uploaded-alpha", pipeline_revision="1")
+            if args.cutout_profile == "birefnet-lite":
+                from beauty_ai.model_store import MODEL_REVISION
+                revision = MODEL_REVISION
+            else:
+                revision = "1"
+            request = CutoutRequest(source=source, pipeline_profile_id=args.cutout_profile, pipeline_revision=revision)
             job_id = uuid4()
             print(json.dumps({"job_id": str(job_id)}), flush=True)
             await gateway.submit(request, job_id=job_id)
@@ -85,9 +90,10 @@ async def run(args) -> dict:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    prepare = commands.add_parser("prepare", help="Existing transparent RGBA only; no model segmentation")
+    prepare = commands.add_parser("prepare", help="Prepare a product candidate using a configured cutout profile")
     prepare.add_argument("input", type=Path)
     prepare.add_argument("visual", type=Path)
+    prepare.add_argument("--cutout-profile", choices=("uploaded-alpha", "birefnet-lite"), default="uploaded-alpha")
     approve = commands.add_parser("approve", help="Run only after a person inspected the candidate")
     approve.add_argument("candidate_id", type=UUID)
     approve.add_argument("candidate_hash")

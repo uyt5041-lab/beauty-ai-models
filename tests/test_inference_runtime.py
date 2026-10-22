@@ -30,6 +30,15 @@ def visual():
                        text_safe_zone={"x": .05, "y": .1, "width": .45, "height": .7})
 
 
+def test_runtime_does_not_silently_replace_missing_model_with_template(tmp_path):
+    with pytest.raises(GatewayError) as raised:
+        build_app(tmp_path / "runtime", uuid4(), TOKEN, cutout_backend="birefnet-lite",
+                  model_root=tmp_path / "not-prepared")
+    assert raised.value.code == "MODEL_UNAVAILABLE"
+    with pytest.raises(ValueError):
+        build_app(tmp_path / "unknown", uuid4(), TOKEN, cutout_backend="unknown")
+
+
 def wait_job(client, job_id):
     deadline = time.monotonic() + 5
     while time.monotonic() < deadline:

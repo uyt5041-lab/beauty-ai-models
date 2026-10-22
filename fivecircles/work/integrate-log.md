@@ -32,3 +32,10 @@
 - source SHA: `a1b1602f52834191dca6730600c6ac475c106b00`. 일반push 후 원격 plan/models 일치.
 - 전체201 tests와 실제TCP CLI 문구수정/동일job재사용 PASS. legacyhash/DB호환, CAS경쟁, 늦은결과, 타project, 파일손상/장애 검증.
 - 코드publication이며 운영CD NOT_APPLICABLE. 실제모델/사용자UI/팀인수는미검증.
+
+## 2026-10-22 · B5 publication
+
+- source SHA: `c0c1240508c253872ee8cc480e2bf19d256ccaa2`. 일반push 후 원격 plan/models SHA일치.
+- 전체280 tests4.06s, 평가예제CLI, 실제TCP timingCLI, wheel/isolatedimport, HTML/PNG/browser, 설정/비밀패턴/diff 검사 PASS.
+- 로컬 `/Users/pio/IdeaProjects/beautyAi`에 공개tracked125파일을동일하게반영했다. 기존파일백업후72파일갱신, Git생성/비밀값/생성이미지복사없음. 로컬설정검사PASS.
+- 오프라인평가/로컬참조API 코드publication. 운영CD NOT_APPLICABLE. 모델호출·품질승인은미수행.

@@ -65,7 +65,21 @@
 4. Implementation: COMPLETED. 로컬 평가manifest/CLI·마스크metric·job timing/API/CLI.
 5. Validation: 전체280 tests PASS4.06s, 실제예제manifest CLI1건 NOT_ASSESSED, 실제TCP timingCLI PASS70.61ms(server wallclock), wheel/isolatedimport PASS.
 6. Repair: 동료 검토에서 발견한 FIFO manifest 입력 대기를 nonblocking open/fstat로 수정. 실제 FIFO 회귀와 전체 검사 PASS.
-7. Push / Publication: READY. 일반 Git push/readback 예정. 운영CD NOT_APPLICABLE(오프라인평가도구와로컬참조API).
+7. Push / Publication: c0c1240508c253872ee8cc480e2bf19d256ccaa2 일반push와원격SHA일치. 운영CD NOT_APPLICABLE(오프라인평가도구와로컬참조API).
 8. Closeout Report: B5 HTML/PNG/browser PASS. 실제GPU·품질평가·팀인수 GAP.
 9. Relay: 사용자 로컬 선구현·후속 GCP 이식 방향에 따라 B6 로컬 모델·고정 revision·이식 가능한 adapter를 검토. B5 publication 확인 뒤 다음 폼 작성.
-10. Final Ledger: Doc/Implementation/Validation/Repair/Report 완료, Push 대기. 실제모델준비는 다음배치.
+10. Final Ledger: Doc/Implementation/Validation/Repair/Report/Push 완료. 실제모델준비는 다음배치.
+
+## B6 · 로컬 BiRefNet Lite 실누끼
+
+0. Scope Intake: native, plan/models. 사용자 로컬선구현/후GCP이식 방향. root model store/runtime/실행검증/Git, adapter와upstream검토분리.
+1. Start Report: B5 flow C 실누끼GAP, Mac64GB/MPS준비가능. GCP인증대기대신로컬경계로진행.
+2. Relay Unit Selection: 3+3+2+2-2=8. 고정모델/의존성/명시장치/실누끼를기존승인흐름에연결.
+3. Doc / Contract: image-runtime B6 COMPLETED. source/hash검토후에만고정로컬코드실행.
+4. Implementation: COMPLETED. 고정모델저장/해시검증, 선택의존성, 실제누끼adapter, runtime/CLI.
+5. Validation: 전체339tests4.30s PASS, offline실제MPS/TCPCLI합성fixture PASS(첫job6897.11ms), 실제파일과평가hash연결, wheel/pipcheck/소스검토PASS.
+6. Repair: 다운로드HTTPException을안전코드로변환하고정리회귀추가. adapter상호검토/실제실행PASS.
+7. Push / Publication: READY. 로컬참조코드Git전달, GCP배포NOT_RUN.
+8. Closeout Report: B6 flow/HTML/PNG/browser PASS. 실제제품사진품질/배경실모델/공동인수GAP유지.
+9. Relay: 다음실배경모델은누끼배치검증/전달뒤선정.
+10. Final Ledger: Doc/Implementation/Validation/Repair/Report 완료, Push대기.
