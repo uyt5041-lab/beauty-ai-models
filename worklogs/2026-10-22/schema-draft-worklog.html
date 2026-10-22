@@ -13,171 +13,57 @@
 </ul>
 <h2>[2] 오늘 맡은 역할 및 구체적인 작업 내용</h2>
 <p>이미지 담당으로 로컬 자산·작업 API·제품 보존 기반과 실험용 이미지 엔진을 구현·검증한 기록을 정리했다. 후속 사용자 결정에 따라 현재 MVP 방향을 외부 이미지 API 래퍼로 맞췄다. 텍스트·카피·영어 이미지 프롬프트는 김다혜의 담당이다.</p>
-<p>오늘 시작 전 이미지 TODO에는 완료 체크가 0개였고, 현재 원본에는 35개다. 35개 모두 원본 완료일이 2026-10-22이고 B1~B9 검증 문서가 연결돼 있다. 프레임워크 도입 3개와 문서 정리도 확인했다. B1~B9 요약은 동일 작업의 묶음이므로 완료 수에 다시 더하지 않는다.</p>
-<h3>작업 순서와 검증 기록</h3>
-<p>아래 시각은 실행 시작/종료 시각이 아닌 **Git 커밋 기록 시각(KST)**이다. 실제 실행 결과는 각 검증 문서에 따로 남아 있다. 기존 검증 기록을 확인했으며 일지를 쓰기 위해 모델이나 전체 테스트를 다시 실행하지 않았다.</p>
+<p>오늘까지 계획된 범위 중 완료 근거가 있는 26개를 체크했다. 실제 완료일은 2026-10-22다. 이후 예정 단계의 작업은 이 일지에서 제외했다. 프레임워크 구성과 스키마 초안 작성 기록은 별도로 남겼다.</p>
+<h3>오늘까지의 계획 체크</h3>
+<p>**<a href="completed-checks.md">오늘까지 계획된 항목의 완료 체크</a>**에서 완료한 26개를 모두 체크했다. 아직 끝나지 않은 당일 계획은 빈 체크로 남겼다. <a href="completed-checks.json">동일 자료 JSON</a>도 함께 보관한다. 이후 예정 단계의 항목은 넣지 않았다.</p>
 <table>
 <thead>
 <tr>
-<th>커밋 기록 시각</th>
-<th>작업</th>
-<th>검증 결과와 범위</th>
+<th>계획 범위</th>
+<th>완료 체크</th>
 <th>근거</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>12:05:36</td>
-<td>B1 자산 검증·제품 캔버스</td>
-<td>72 tests; 파일/SQLite/캔버스 및 CLI 기록</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b1.md">1bc4fea</a></td>
+<td>입력·파일·마스크 계약</td>
+<td>3개</td>
+<td>로컬 파일 검증과 AssetRef·마스크 정의</td>
 </tr>
 <tr>
-<td>12:26:13</td>
-<td>B2 작업 저장·인증 API·worker</td>
-<td>112 tests; 실제 TCP 모의 처리기와 프로세스 복구</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b2.md">8cb6402</a></td>
+<td>실행 프로필·버전·재현 범위</td>
+<td>2개</td>
+<td>고정 프로필과 제한된 로컬 재현 검사</td>
 </tr>
 <tr>
-<td>15:08:54</td>
-<td>B3 제품 후보 승인·고정 프로필·재합성</td>
-<td>148 tests; 실제 TCP template 실행. AI 생성 아님</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b3.md">dbba5da</a></td>
+<td>누끼·제품 레이어</td>
+<td>3개</td>
+<td>파일 무결성, 실제 누끼 기술 실행, 수동 확인 경고</td>
 </tr>
 <tr>
-<td>15:22:50</td>
-<td>B4 프롬프트 버전·revision·캐시</td>
-<td>201 tests; 오래된 결과 차단 및 문구 변경 이미지 재사용</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b4.md">a1b1602</a></td>
+<td>품질 평가 도구</td>
+<td>2개</td>
+<td>manifest와 마스크·픽셀 지표 도구</td>
 </tr>
 <tr>
-<td>15:32:57</td>
-<td>B5 평가 도구·job 경과 시간</td>
-<td>280 tests; 권리/정답 미확인 상태를 값과 구분</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b5.md">c0c1240</a></td>
+<td>시간·반복 측정 기반</td>
+<td>3개</td>
+<td>경과 시간·단계 관찰·반복 기록</td>
 </tr>
 <tr>
-<td>15:48:24</td>
-<td>B6 로컬 BiRefNetLite 누끼</td>
-<td>339 tests; 합성 병의 실제 MPS 실행. 실사진 품질 인수 아님</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b6.md">a7f3957</a></td>
+<td>API·자산 병렬 준비 기반</td>
+<td>9개</td>
+<td>작업 저장·인증·동일 ID 처리·복구·결과 파일 확인</td>
 </tr>
 <tr>
-<td>16:25:24</td>
-<td>B7 로컬 SDXL 배경</td>
-<td>433 tests; 512 합성 입력 실행과 제품 재합성</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b7.md">b71fadc</a></td>
-</tr>
-<tr>
-<td>16:37:04</td>
-<td>B8 동일 ID 제출 조정</td>
-<td>521 tests; 응답 유실 후 PUT/처리 각 1회 확인</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b8.md">1e05f94</a></td>
-</tr>
-<tr>
-<td>17:20:55</td>
-<td>B9 실행 관찰·반복·크기 측정</td>
-<td>624 tests; MPS 누끼1+배경5, 512 두 번 hash 일치</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/relay-b9.md">858c6f7</a></td>
-</tr>
-<tr>
-<td>17:22:42</td>
-<td>B9 게시·동기화 기록</td>
-<td>독립 소스 624 tests 기록; 테스트 수 중복 합산 안 함</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/work/integrate-log.md">9f1d133</a></td>
-</tr>
-<tr>
-<td>18:14:18</td>
-<td>외부 이미지 API 방향으로 문서 정렬</td>
-<td>LLM 김다혜, 이미지 API 래퍼 pi; 제공자 미정</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/ssotAlignment.md">bddddde</a></td>
-</tr>
-<tr>
-<td>18:52:53</td>
-<td>연동 스키마 초안 게시</td>
-<td>기존 13종·제안 2종·예제 4종. 초안·팀 미합의</td>
-<td><a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/schemaDraft.md">64124ed</a></td>
+<td>프롬프트·버전 연결 준비</td>
+<td>4개</td>
+<td>입력 hash·재사용·늦은 결과 차단·실행 추적</td>
 </tr>
 </tbody>
 </table>
-<p>FiveCircles 도입 검증은 08:49:40 KST 기록으로 확인했다. 출처와 라이선스, 역할·문서·프로젝트 스킬, 기존 파일 보존 및 두 소스의 공통 파일을 검사했다. <a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/fivecircles/test/setup-validation.md">도입 검증</a>.</p>
-<p>SSOT 대조표와 구현 TODO도 작성해 입력 사진 2~5장, 참고 배경 0~5장, 카피/이미지 각 1개, 사용자 검토, 최종 4:5 한글 합성·캡션/태그가 현재 구현과 어디서 다른지 정리했다. 문서 정리는 해당 기능 구현 완료를 뜻하지 않는다.</p>
-<h3>오늘까지의 예정 체크와 완료 항목</h3>
-<p>단계별 시작 예정일로 나눴다. 계획에 여러 날짜가 함께 있어 개별 항목의 마감일과는 구분한다.</p>
-<table>
-<thead>
-<tr>
-<th>구분</th>
-<th>원본 완료 체크 수</th>
-<th>기록</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>10/22 이전 시작 예정일을 포함하는 단계</td>
-<td>26</td>
-<td>자산/마스크 계약, 실행 프로필·재현 범위, 누끼, 평가/시간 도구, 작업 신뢰성, revision/추적</td>
-</tr>
-<tr>
-<td>10/23 이후 시작 단계에서 앞당겨 완료</td>
-<td>9</td>
-<td>캔버스 정렬 4개, 배경 생성 2개, 승인 제품 재합성/저장 3개</td>
-</tr>
-<tr>
-<td>합계</td>
-<td>35</td>
-<td>같은 항목을 중복 집계하지 않음</td>
-</tr>
-</tbody>
-</table>
-<p>**<a href="completed-checks.md">완료 체크 35개 전체와 원본 줄번호</a>**에 모든 항목, 계획 단계, 완료일과 검증 범위를 실었다. <a href="completed-checks.json">동일 자료 JSON</a>도 함께 보관한다. 체크 상태의 기준은 원본 <code>docs/imageTodo.md</code>다.</p>
-<p>현재 외부 이미지 API-01~06과 SSOT-01~12는 미체크 상태다. 아래 묶음은 해당 단계의 전체 미완료 수이며, 모두 오늘이 마감이라는 뜻은 아니다.</p>
-<table>
-<thead>
-<tr>
-<th>단계</th>
-<th>완료 / 미완료</th>
-<th>아직 남은 내용</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>단계 1-A. SSOT 입력 범위와 자산 계약 확정</td>
-<td>3 / 5</td>
-<td>실제 제품 수집·평가 기준, 최종4:5와 입력/참조 계약 합의</td>
-</tr>
-<tr>
-<td>단계 1-B. 모델·파이프라인·GPU 환경 확정</td>
-<td>2 / 6</td>
-<td>현재 외부 API 제공자·모델 및 지원 기능 결정. GPU 구축은 재선택 시에만 적용</td>
-</tr>
-<tr>
-<td>단계 2-A. 누끼와 제품 레이어 생성</td>
-<td>3 / 4</td>
-<td>실제 제품의 펌프·투명/반사·라벨·얇은 경계 품질과 수동 검토</td>
-</tr>
-<tr>
-<td>단계 3-A. 고정 평가셋과 이미지 품질</td>
-<td>2 / 8</td>
-<td>실제 평가셋·정답·사람 판정과 실패 분류</td>
-</tr>
-<tr>
-<td>단계 3-B. 성능·메모리·비용 측정</td>
-<td>3 / 5</td>
-<td>서비스 목표·실제 API 비용·최대 자원/성능 기준</td>
-</tr>
-<tr>
-<td>단계 4-A. private inference 서버와 작업 신뢰성</td>
-<td>9 / 2</td>
-<td>실제 운영 환경에서 남은 장애 시나리오와 외부 API 제출 조정</td>
-</tr>
-<tr>
-<td>단계 4-B. API·내부 revision/cache·검토 흐름 연결 및 인계</td>
-<td>4 / 4</td>
-<td>김다혜 실제 산출물·사용자 검토·렌더러·팀 인수 연결</td>
-</tr>
-</tbody>
-</table>
+<p>실제 외부 API의 지원 기능·인증·쿼터, 다양한 제품 사진의 품질 점검, 품질 실패/수동 확인 흐름, 파트별 담당과 합의는 아직 끝나지 않았다. 전체 계획이 완료된 것으로 체크하지 않았다.</p>
+<p>FiveCircles 구성과 스키마 자료 확인은 기존 문서·검증 기록을 읽어 정리했다. 일지를 쓰기 위해 모델이나 전체 테스트를 새로 실행하지 않았다. 원본 개발 기록과 체크 상태는 유지한다.</p>
 <h3>스키마 초안 공유</h3>
 <p>기존 코드에서 추출한 계약 13종, 제안 2종, 가상 예제 4종을 <a href="https://github.com/uyt5041-lab/beauty-ai-models/blob/64124ed119dc6cf96a4e211e6b96d2d62e26060a/docs/schemaDraft.md">plan/models의 스키마 안내</a>에 게시했다. <strong>초안·팀 미합의</strong>로 표시했으며 다혜님이 만든 계약이나 확정 API로 설명하지 않았다.</p>
 <p>현재 코드 계약과 JSON Schema의 일치, JSON 파싱/내부 참조, 공개 파일의 로컬 절대 경로 제거와 비밀값 패턴을 확인했다. 최초 초안 작성 때 제안 예제와 사진 1장/6장 및 revision 불일치 거절을 확인했다. 게시 검사에서 그 제안 런타임 검증을 다시 실행한 것으로 적지 않았다.</p>
@@ -214,8 +100,8 @@
 </tbody>
 </table>
 <h2>[3] 오늘 작업 완료도 체크</h2>
-<p><strong>75% (작성 지원자가 근거로 정리한 잠정 평가, 본인 확인 필요).</strong></p>
-<p>당일 목표였던 로컬 처리 기반, 합성 입력의 실제 모델 기술 검증, 실행 관찰과 문서 공유는 끝냈다. 실제 제품 품질·서비스 통합·사용자 검토·최종 한글 렌더러가 남았고 외부 API 전환 후의 제공자 선정과 래퍼 구현도 미완료다. 이 값은 전체 MVP 완료율이나 <code>35/130</code>의 산술 비율이 아니다.</p>
+<p><strong>75% (근거를 바탕으로 정리한 잠정 평가).</strong></p>
+<p>오늘 범위의 완료 항목 26개는 모두 체크했다. 외부 API 지원 기능·권한, 실사진 품질과 수동 확인 흐름, 파트별 계약 합의가 남아 전체 계획 완료로 표시하지 않았다. 이 값은 전체 MVP 완료율이나 체크 개수의 산술 비율이 아니다.</p>
 <h2>[4] 오늘 협업 중 제안하거나 피드백한 내용</h2>
 <ul>
 <li>텍스트 담당과 이미지 담당 사이의 필드·revision·프롬프트 버전, Safe Zone·카피 길이 및 출력 계약을 문서로 정리했다. 10/26 조기 합의 요청을 팀 수락으로 표시하지 않았다.</li>
@@ -223,16 +109,15 @@
 <li>스키마를 비교 가능한 파일과 예제로 GitHub에 게시했다. 문서 게시 사실과 팀원이 읽거나 동의했다는 사실을 구분한다. 팀원 수신·인수 확인은 아직 없다.</li>
 </ul>
 <h2>[5] 오늘 분석/실험 중 얻은 인사이트나 발견한 문제점</h2>
-<p>합성 입력에서 누끼·배경 실행이 성공해도 실제 제품 광고 품질을 보장하지 않는다. B9의 배경 5건은 승인된 불투명 제품 영역 mismatch 0이었지만 꽃 표현 편차와 제품 주변 잔상이 남았다. 부분 투명·라벨·원본 전체 보존을 통과했다고 확대하지 않았다.</p>
-<p>B7에서는 Diffusers에서 제거된 <code>pipeline.enable_vae_tiling()</code> 때문에 실제 실행이 2번 실패했다. <code>pipeline.vae.enable_tiling()</code>로 바꾸고 실제 설치 API 확인을 보완한 뒤 기술 실행을 확인했다. 대체 backend 테스트 통과만으로 실제 라이브러리 호환을 보장할 수 없었다.</p>
-<p>B5의 FIFO manifest 읽기 대기, B8의 원문 오류 코드 노출 가능성도 수정한 기록을 확인했다. 작업 후 메모리 snapshot은 peak VRAM이 아니며, ledger 경과 시간도 순수 GPU 연산 시간이 아니다.</p>
-<p>스키마 역시 필드 모양이 맞는 것과 팀이 같은 의미로 사용하는 것은 다르다. 기존 요청의 마스크·seed·세 레이어 반환을 외부 제공자가 지원한다고 가정하지 않기로 정리했다.</p>
+<p>누끼 모델의 기술 실행 성공과 실제 제품 사진의 품질 판정은 구분해야 한다. 합성 입력에서 alpha와 파일 저장이 정상이어도 펌프·라벨·투명/반사 제품의 품질 기준을 통과한 것은 아니다.</p>
+<p>작업 후 메모리 snapshot은 최대 메모리 사용량이 아니며, 접수부터 종료까지의 경과 시간도 순수 GPU 연산 시간과 다르다. 측정값의 범위를 명시했다.</p>
+<p>스키마는 필드 모양뿐 아니라 담당자가 같은 의미로 쓰는지도 맞춰야 한다. 초안 작성을 팀 계약 합의나 외부 API 구현 완료로 체크하지 않았다.</p>
 <h2>[6] 일정 지연이나 협업 중 어려웠던 점</h2>
 <p>서비스/API/렌더러 담당의 이름과 인수, 실제 제품 평가 자료와 기준, 외부 제공자·모델·인증·예산이 아직 확정되지 않았다. 이를 구현 완료로 표시하면 10/30 통합 판단이 잘못될 수 있다.</p>
-<p>GCP 인증 제약과 B9 최종 흐름 HTML의 브라우저 정책 차단은 각각 원래 기록에 남아 있다. 현재 외부 API 방향에서 GCP GPU 구축을 필수 선행조건으로 잡지 않는다. 차단된 B9 최종 화면을 PASS로 바꾸지 않았다.</p>
+<p>외부 API 방향에서는 GCP GPU 구축을 필수 선행조건으로 잡지 않는다. 필요한 제공자 계정·지원 기능·권한과 비용 조건을 먼저 확인해야 한다.</p>
 <p>앞서 협업일지를 스키마 작업 보고서 형식으로 올려 공식 8항목을 빠뜨렸다. 이번 수정에서 작성 계약을 브랜치에 남기고 본문을 고쳤으며 스키마와 상세 완료 체크는 별첨으로 연결했다. 개인적인 협업 소감은 제공된 기록이 없어 추가하지 않았다.</p>
 <h2>[7] 오늘 발표 준비나 커뮤니케이션에서 기여한 부분</h2>
-<p>완료35개와 미완료 범위, SSOT 차이, 스키마 초안 및 실행 검증 근거를 다른 담당자가 찾아볼 수 있게 GitHub 문서로 정리했다. 8항목 작성 계약과 날짜별 Markdown·HTML 및 인덱스도 마련했다.</p>
+<p>오늘 범위에서 완료한 26개와 남은 일, 스키마 초안을 다른 담당자가 찾아볼 수 있게 GitHub 문서로 정리했다. 8항목 작성 계약과 날짜별 Markdown·HTML 및 인덱스도 마련했다.</p>
 <p>슬라이드 작성·발표 연습·팀 시연을 수행했다는 근거는 없다. 문서 공개를 팀 설명 완료나 공동 인수로 기록하지 않았다.</p>
 <h2>[8] 내일 목표 / 할 일</h2>
 <ol>

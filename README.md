@@ -23,7 +23,7 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
 [협업일지 작성 계약](contracts/collaboration-journal.md)에 따라 2026-10-22부터 본문 8항목을 작성합니다.
 
-- [10/22 완료 체크 35개 전체](worklogs/2026-10-22/completed-checks.md)
+- [10/22까지 계획된 항목의 완료 체크](worklogs/2026-10-22/completed-checks.md)
 - [10/22 스키마 초안 상세 기록](worklogs/2026-10-22/schema-draft-details.md)
 
 이전 날짜의 일지는 당시 기록으로 보존합니다.
