@@ -1,5 +1,12 @@
 # 최근 변경
 
+## 2026-10-23 · B14 W&B 실험 비교와 FinOps40%
+
+- Langfuse를 유지하고 기존 실제 실행20건(API7/로컬13)을 비공개 W&B에 게시했다. 입력/결과·프롬프트·시간·비용·비교표와 평가계획 원격 readback PASS. 새 이미지 모델 호출0회.
+- 팀 Notion 기반 임시 평가계획·빈 실제품10개manifest·오프라인 채점 도구를 추가했다. 이미지40/FinOps40/서비스20이며 실제품·확정청구·팀잔액·서비스 인수는 미확인으로 유지한다.
+- 전체1078 tests20.36s·FiveCircles·의존성·diff검사 PASS. [게시/비용/검증](../test/wandb-finops-b14.md), [사용법](../../docs/wandbExperiments.md), [임시 평가](../../docs/imageEvaluationPlan.md). Git 전달은 [반영 기록](integrate-log.md)에서 별도로 확인한다.
+- 후속 정리: 원본 이미지 TODO에 완료 7개와 남은 작업 7개를 구분했다. [쉬운 한글 작업 예시](../../docs/wandbFinopsWorkExamples.md)는 설명용 가상 자료다. 실제 팀 점수나 비용으로 집계하지 않는다.
+
 ## 2026-10-22 · BEAUTY-FC-001
 
 - FiveCircles 원본을 받아 BeautyAI 운영 문서/설정/프로젝트 스킬을 추가했다.

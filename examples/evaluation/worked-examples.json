@@ -1,0 +1,314 @@
+{
+  "example_version": "worked-examples-v0.1",
+  "evidence_status": "FICTIONAL_EXAMPLES_ONLY",
+  "notice": "모든 숫자·시각·제품·해시·사람·검수·청구 확인은 설명용 가정입니다. 실제 제품이나 파일은 없습니다. 실제 20개 실험과 팀 실적에 합치지 않습니다.",
+  "input_field_note": "confirmed, true, reviewer_type=human도 이 파일에서는 가상 조건입니다. 증거의 실재를 확인한 값이 아닙니다. origin=synthetic인 이미지 사례는 실제품 평가에 포함할 수 없습니다.",
+  "model_api_called": false,
+  "wandb_upload_allowed": false,
+  "examples": [
+    {
+      "id": "EXAMPLE_01_UNKNOWN",
+      "fictional": true,
+      "kind": "finops",
+      "title": "1. 청구와 잔액을 모르면 보류한다",
+      "goal": "모르는 비용을 0달러로 처리하지 않는다.",
+      "input_summary": "광고 10장과 예상 비용 4달러를 가정한다. 실제 청구액, 팀 잔액과 조회 시각은 모른다.",
+      "execution": "evaluate_finops()로 제출된 숫자와 누락값을 확인한다.",
+      "input_record": {
+        "evaluation_cycle_id": "FICTIONAL_EXAMPLE_CYCLE",
+        "candidate_settings_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "accounting_window_id": "FICTIONAL_EXAMPLE_WINDOW",
+        "accepted_final_ads": 10,
+        "production_total_confirmed_usd": null,
+        "production_total_estimated_usd": 4,
+        "avoidable_failure_retry_confirmed_usd": null,
+        "production_team_api_confirmed_usd": null,
+        "research_team_api_confirmed_usd": null,
+        "research_confirmed_usd": 1,
+        "research_estimated_usd": 1,
+        "team_key_confirmed": null,
+        "team_budget_usd": 30,
+        "team_spend_confirmed_usd": null,
+        "team_remaining_confirmed_usd": null,
+        "balance_checked_at": null,
+        "evaluation_as_of": "2026-10-23T12:01:00+09:00",
+        "budget_controls_verified": true,
+        "billing_lag_hours": 24,
+        "eligible_receipts": 12,
+        "matched_receipts": null,
+        "pending_within_billing_lag": 0,
+        "cost_traceability_complete": true
+      },
+      "expected_result": {
+        "status": "BLOCKED",
+        "score_100": null,
+        "unit_cost_confirmed_usd": null,
+        "unit_cost_estimated_usd": 0.4,
+        "reason_codes": [
+          "FINOPS_EVIDENCE_UNKNOWN"
+        ],
+        "new_paid_calls_allowed_by_this_report": false
+      },
+      "expected_explanation": "보류(BLOCKED). 점수와 실제 광고당 비용은 미확인이다. 예상 광고당 비용 0.40달러만 별도로 표시한다.",
+      "next_action": "팀 키와 공유 잔액을 확인한다. 청구 내역을 작업 영수증과 맞춘다. 확인 후 기록을 다시 계산한다."
+    },
+    {
+      "id": "EXAMPLE_02_PROVISIONAL",
+      "fictional": true,
+      "kind": "finops",
+      "title": "2. 가상 비용 조건을 모두 맞춘다",
+      "goal": "임시 FinOps 기준의 통과 조건을 확인한다.",
+      "input_summary": "가상 광고 10장, 전체 생산비 4달러, 낭비 0.20달러를 넣는다. 팀 공유 사용액 12달러와 잔액 18달러를 가정한다. 가상 영수증 12개를 모두 대조한 것으로 둔다.",
+      "execution": "evaluate_finops()로 원가·낭비·예산·청구 대조의 네 조건을 계산한다.",
+      "input_record": {
+        "evaluation_cycle_id": "FICTIONAL_EXAMPLE_CYCLE",
+        "candidate_settings_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "accounting_window_id": "FICTIONAL_EXAMPLE_WINDOW",
+        "accepted_final_ads": 10,
+        "production_total_confirmed_usd": 4,
+        "production_total_estimated_usd": 4,
+        "avoidable_failure_retry_confirmed_usd": 0.2,
+        "production_team_api_confirmed_usd": 3,
+        "research_team_api_confirmed_usd": 1,
+        "research_confirmed_usd": 1,
+        "research_estimated_usd": 1,
+        "team_key_confirmed": true,
+        "team_budget_usd": 30,
+        "team_spend_confirmed_usd": 12,
+        "team_remaining_confirmed_usd": 18,
+        "balance_checked_at": "2026-10-23T12:00:00+09:00",
+        "evaluation_as_of": "2026-10-23T12:01:00+09:00",
+        "budget_controls_verified": true,
+        "billing_lag_hours": 24,
+        "eligible_receipts": 12,
+        "matched_receipts": 12,
+        "pending_within_billing_lag": 0,
+        "cost_traceability_complete": true
+      },
+      "expected_result": {
+        "status": "PASS_PROVISIONAL",
+        "score_100": 100,
+        "unit_cost_confirmed_usd": 0.4,
+        "avoidable_waste_rate": 0.05,
+        "team_utilization": 0.4,
+        "billing_match_rate": 1,
+        "reason_codes": [],
+        "new_paid_calls_allowed_by_this_report": false
+      },
+      "expected_explanation": "임시 기준 통과(PASS_PROVISIONAL). FinOps 점수는 100점이다. 광고당 비용은 0.40달러, 낭비는 5%, 팀 예산 사용은 40%다. 모두 가상 계산이다.",
+      "next_action": "실제 적용 전 증거를 확인한다. 이미지 품질과 서비스 평가를 따로 마친다. 팀 인수와 유료 호출 허가는 별도다."
+    },
+    {
+      "id": "EXAMPLE_03_COST_FAIL",
+      "fictional": true,
+      "kind": "finops",
+      "title": "3. 원가·낭비·예산 기준을 넘는다",
+      "goal": "돈이 남아 있어도 중단선에 도달하면 실패하는지 확인한다.",
+      "input_summary": "가상 광고 10장, 생산비 6달러, 낭비 1.20달러를 넣는다. 팀 사용액은 28달러, 잔액은 2달러다. 청구 대조 조건은 충족한 것으로 가정한다.",
+      "execution": "evaluate_finops()로 광고당 0.50달러, 낭비 10%, 예산 사용 90% 기준을 확인한다.",
+      "input_record": {
+        "evaluation_cycle_id": "FICTIONAL_EXAMPLE_CYCLE",
+        "candidate_settings_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "accounting_window_id": "FICTIONAL_EXAMPLE_WINDOW",
+        "accepted_final_ads": 10,
+        "production_total_confirmed_usd": 6,
+        "production_total_estimated_usd": 6,
+        "avoidable_failure_retry_confirmed_usd": 1.2,
+        "production_team_api_confirmed_usd": 5,
+        "research_team_api_confirmed_usd": 1,
+        "research_confirmed_usd": 1,
+        "research_estimated_usd": 1,
+        "team_key_confirmed": true,
+        "team_budget_usd": 30,
+        "team_spend_confirmed_usd": 28,
+        "team_remaining_confirmed_usd": 2,
+        "balance_checked_at": "2026-10-23T12:00:00+09:00",
+        "evaluation_as_of": "2026-10-23T12:01:00+09:00",
+        "budget_controls_verified": true,
+        "billing_lag_hours": 24,
+        "eligible_receipts": 12,
+        "matched_receipts": 12,
+        "pending_within_billing_lag": 0,
+        "cost_traceability_complete": true
+      },
+      "expected_result": {
+        "status": "FAIL",
+        "score_100": 25,
+        "unit_cost_confirmed_usd": 0.6,
+        "avoidable_waste_rate": 0.2,
+        "budget_state": "BLOCK_NEW_PAID_CALLS",
+        "reason_codes": [
+          "UNIT_COST_GATE_FAILED",
+          "AVOIDABLE_WASTE_GATE_FAILED",
+          "BUDGET_CONTROL_GATE_FAILED"
+        ],
+        "new_paid_calls_allowed_by_this_report": false
+      },
+      "expected_explanation": "실패(FAIL). 광고당 0.60달러, 낭비 20%, 팀 예산 사용 약 93.3%다. 청구 대조 25점만 남는다. 이 함수는 중단 필요 상태를 계산하며 실제 호출을 차단하는 장치는 아니다.",
+      "next_action": "새 유료 호출을 중단한다. 낭비 원인을 고친다. 팀 예산과 실행 한도를 다시 정한 뒤 확인한다."
+    },
+    {
+      "id": "EXAMPLE_04_PRODUCT_CHANGE",
+      "fictional": true,
+      "kind": "image_review",
+      "title": "4. 총점이 높아도 제품이 바뀌면 실패한다",
+      "goal": "제품 보존 오류를 평균 점수로 숨기지 않는다.",
+      "input_summary": "가상 검수자 A와 B가 제품 형태 2점, 나머지 네 항목 5점에 동의한 것으로 둔다. 두 사람 모두 제품 정체성이 바뀌었다고 표시한다. 실제 사람이나 이미지는 없다.",
+      "execution": "score_image_case()로 두 검수 기록과 보존 조건을 계산한다. 이미지 파일을 판독하지 않는다.",
+      "input_record": {
+        "case_id": "FICTIONAL_IMAGE_CASE",
+        "evaluation_cycle_id": "FICTIONAL_EXAMPLE_CYCLE",
+        "product_id": "FICTIONAL_PRODUCT_NOT_COLLECTED",
+        "split": "smoke",
+        "condition": "baseline",
+        "origin": "synthetic",
+        "rights_confirmed": true,
+        "source_photo_sha256": [
+          "1111111111111111111111111111111111111111111111111111111111111111",
+          "2222222222222222222222222222222222222222222222222222222222222222"
+        ],
+        "reference_photo_sha256": [],
+        "output_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "output_width": 1152,
+        "output_height": 1440,
+        "request_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "settings_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "label_expected": true,
+        "reviews": [
+          {
+            "reviewer_id": "FICTIONAL_REVIEWER_A",
+            "reviewer_type": "human",
+            "scores": {
+              "shape": 2,
+              "label_logo": 5,
+              "color_material": 5,
+              "reference_concept": 5,
+              "composition_copyspace": 5
+            },
+            "fatal_flags": {
+              "product_identity_changed": true,
+              "critical_part_missing": false,
+              "required_label_logo_changed": false,
+              "unrequested_product_or_ad_text": false
+            },
+            "not_applicable": []
+          },
+          {
+            "reviewer_id": "FICTIONAL_REVIEWER_B",
+            "reviewer_type": "human",
+            "scores": {
+              "shape": 2,
+              "label_logo": 5,
+              "color_material": 5,
+              "reference_concept": 5,
+              "composition_copyspace": 5
+            },
+            "fatal_flags": {
+              "product_identity_changed": true,
+              "critical_part_missing": false,
+              "required_label_logo_changed": false,
+              "unrequested_product_or_ad_text": false
+            },
+            "not_applicable": []
+          }
+        ],
+        "consensus": null
+      },
+      "expected_result": {
+        "status": "FAIL",
+        "score_100": 85,
+        "reason_codes": [
+          "FATAL_PRODUCT_IDENTITY_CHANGED",
+          "PRESERVATION_BELOW_MINIMUM"
+        ],
+        "asset_approval": "NOT_GRANTED",
+        "service_release_approval": "NOT_GRANTED",
+        "real_evaluation_eligible": false,
+        "model_invoked": false
+      },
+      "expected_explanation": "실패(FAIL). 총점은 85점이지만 형태 보존 기준 4점에 못 미친다. 제품 정체성 변경도 치명적 오류다. 광고는 승인되지 않는다.",
+      "next_action": "실제 작업에서는 원본과 결과를 나란히 확인한다. 제품 보존 조건을 고친 뒤 별도 승인 범위에서 재평가한다."
+    },
+    {
+      "id": "EXAMPLE_05_DISAGREEMENT",
+      "fictional": true,
+      "kind": "image_review",
+      "title": "5. 검수 의견이 다르면 평균을 내지 않는다",
+      "goal": "의견 차이를 숨기지 않고 보류한다.",
+      "input_summary": "가상 검수자 A는 색·재질 4점, B는 3점을 준 것으로 둔다. 다른 항목은 4점이다. 합의 기록은 없다.",
+      "execution": "score_image_case()로 두 기록의 차이와 합의 유무를 확인한다.",
+      "input_record": {
+        "case_id": "FICTIONAL_IMAGE_CASE",
+        "evaluation_cycle_id": "FICTIONAL_EXAMPLE_CYCLE",
+        "product_id": "FICTIONAL_PRODUCT_NOT_COLLECTED",
+        "split": "smoke",
+        "condition": "baseline",
+        "origin": "synthetic",
+        "rights_confirmed": true,
+        "source_photo_sha256": [
+          "1111111111111111111111111111111111111111111111111111111111111111",
+          "2222222222222222222222222222222222222222222222222222222222222222"
+        ],
+        "reference_photo_sha256": [],
+        "output_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "output_width": 1152,
+        "output_height": 1440,
+        "request_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "settings_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "label_expected": true,
+        "reviews": [
+          {
+            "reviewer_id": "FICTIONAL_REVIEWER_A",
+            "reviewer_type": "human",
+            "scores": {
+              "shape": 4,
+              "label_logo": 4,
+              "color_material": 4,
+              "reference_concept": 4,
+              "composition_copyspace": 4
+            },
+            "fatal_flags": {
+              "product_identity_changed": false,
+              "critical_part_missing": false,
+              "required_label_logo_changed": false,
+              "unrequested_product_or_ad_text": false
+            },
+            "not_applicable": []
+          },
+          {
+            "reviewer_id": "FICTIONAL_REVIEWER_B",
+            "reviewer_type": "human",
+            "scores": {
+              "shape": 4,
+              "label_logo": 4,
+              "color_material": 3,
+              "reference_concept": 4,
+              "composition_copyspace": 4
+            },
+            "fatal_flags": {
+              "product_identity_changed": false,
+              "critical_part_missing": false,
+              "required_label_logo_changed": false,
+              "unrequested_product_or_ad_text": false
+            },
+            "not_applicable": []
+          }
+        ],
+        "consensus": null
+      },
+      "expected_result": {
+        "status": "BLOCKED",
+        "score_100": null,
+        "reason_codes": [
+          "REVIEW_DISAGREEMENT_UNRESOLVED"
+        ],
+        "asset_approval": "NOT_GRANTED",
+        "service_release_approval": "NOT_GRANTED",
+        "real_evaluation_eligible": false,
+        "model_invoked": false
+      },
+      "expected_explanation": "보류(BLOCKED). 점수는 미확인이다. 3점과 4점을 임의로 평균 내어 통과시키지 않는다.",
+      "next_action": "두 검수자가 같은 원본과 결과를 다시 본다. 합의 점수와 근거를 남기고 두 검수자가 확인한다. 합의가 없으면 보류를 유지한다."
+    }
+  ]
+}

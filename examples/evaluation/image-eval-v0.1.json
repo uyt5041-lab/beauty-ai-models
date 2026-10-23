@@ -1,0 +1,272 @@
+{
+  "plan_version": "image-eval-v0.1",
+  "status": "PROVISIONAL_NOT_TEAM_ACCEPTED",
+  "created_on": "2026-10-23",
+  "executed": false,
+  "scope": "Image-layer quality before Korean text composition; not the prior 60-point project-fit assessment",
+  "image_quality": {
+    "version": "image-eval-v0.1",
+    "weights": {
+      "shape": 25,
+      "label_logo": 25,
+      "color_material": 20,
+      "reference_concept": 15,
+      "composition_copyspace": 15
+    },
+    "pass_score": 80,
+    "preservation_minimum": 4,
+    "required_reviewers": 2
+  },
+  "scoring": {
+    "formula": "sum(weight * human_rating / 5)",
+    "complete_score_range": [
+      20,
+      100
+    ],
+    "rating_values": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "unknown": null,
+    "fatal_flags": [
+      "product_identity_changed",
+      "critical_part_missing",
+      "required_label_logo_changed",
+      "unrequested_product_or_ad_text"
+    ],
+    "fatal_rule": "Any agreed true fatal flag fails regardless of weighted score",
+    "disagreement_rule": "Do not average. Resolve all differing ratings, N/A decisions and fatal flags in a consensus record endorsed by both reviewers with a reason. Otherwise BLOCKED.",
+    "label_na_rule": "Only if both reviewers confirm the original has no printed label or logo: score label_logo=null and not_applicable=[label_logo]. Normalize other dimensions over weight 75 and label the result DIAGNOSTIC_ONLY. A real printed-label product must separately pass both conditions in each split; all-N/A evidence cannot meet the dataset label gate.",
+    "approval_rule": "Computed criteria do not authenticate people or rights and never approve an asset or release the service",
+    "mandatory_output_gate": "Recorded output width/height must be known and exactly 4:5. A high weighted score cannot offset the wrong ratio."
+  },
+  "rating_anchors": {
+    "shape": {
+      "1": "Different product or severely changed silhouette; fatal checks also apply",
+      "2": "Obvious proportion, pump/cap or component geometry errors",
+      "3": "Recognizable but visible geometry drift requires correction before advertising",
+      "4": "Same silhouette and parts; only minor non-identity perspective or shading differences",
+      "5": "Reference shape, proportions and visible parts faithfully retained at review scale"
+    },
+    "label_logo": {
+      "1": "Required identity text or logo missing, replaced or unreadable; fatal checks also apply",
+      "2": "Several character, placement or logo-shape distortions",
+      "3": "Identity is recognizable but visible printing errors require correction",
+      "4": "Required brand/product text and logo intact; only minor non-identity print differences",
+      "5": "Required characters, logo, placement and visible packaging artwork faithfully retained"
+    },
+    "color_material": {
+      "1": "Clearly wrong product color or material",
+      "2": "Strong hue, reflectivity, transparency or surface-finish drift",
+      "3": "Noticeable tint or matte/gloss change requiring correction",
+      "4": "Reference color and material response retained with small lighting differences",
+      "5": "Reference color, matte/gloss response and visible texture convincingly retained"
+    },
+    "reference_concept": {
+      "1": "Wrong concept or required reference scene ignored",
+      "2": "Major layout/light/style conflict with the requested scene",
+      "3": "Main concept present but a requested reference element is weak or misplaced",
+      "4": "Requested concept and reference layout/light mostly followed without copying another product",
+      "5": "Requested concept and reference roles followed clearly and coherently; baseline judged against its brief"
+    },
+    "composition_copyspace": {
+      "1": "Product cut off/hidden, wrong output ratio or unusable copy space",
+      "2": "Severe framing, obstruction or copy-space conflict",
+      "3": "Usable draft but framing or copy space needs visible correction",
+      "4": "4:5, whole product, requested placement and largely clear copy space",
+      "5": "4:5 composition supports both the product and planned copy with clean margins and no obstruction"
+    }
+  },
+  "dataset": {
+    "collection_status": "NOT_COLLECTED",
+    "real_products": 10,
+    "dev_products": 5,
+    "holdout_products": 5,
+    "photos_per_product_min": 2,
+    "photos_per_product_max": 5,
+    "split_unit": "real product identity; all source views of one product stay in one split",
+    "coverage_tags_per_split_minimum_one": [
+      "transparent",
+      "reflective",
+      "printed_label",
+      "tube",
+      "pump",
+      "jar"
+    ],
+    "coverage_note": "Tags may overlap on one product; they test risks and package forms, not allowed service categories. Unlabeled products remain supported.",
+    "conditions": [
+      "baseline",
+      "reference"
+    ],
+    "paired_cases": 20,
+    "reference_condition": "Each product has one baseline with no reference and one reference scene with 1-5 authorized background images. Across the 10 reference cases include both one-reference and multiple-reference examples.",
+    "holdout_policy": "Freeze the model/prompt versions/options and review policy before holdout inspection. Store their configuration-bundle hash on the manifest and each holdout review. Changing settings after looking starts a new cycle; do not reuse the old result as independent holdout evidence.",
+    "synthetic_policy": "Existing fictional unbranded product runs are smoke evidence only; never count toward the 10 real products or holdout acceptance",
+    "image_dataset_gate": "All 20 paired cases pass applicable dimensions, both splits meet coverage, and at least one printed-label product per split passes both conditions with label/logo assessed. Any unknown, failed or unresolved case blocks the gate. This is not MVP release approval.",
+    "evaluation_cycle_rule": "Use one evaluation_cycle_id and one frozen candidate settings bundle for the final 20-case score. Development tuning history stays separate; rerun final dev conditions after changes as needed. Image, service and FinOps records must identify that same candidate before computing a combined score."
+  },
+  "repeatability_proposal": {
+    "executed": false,
+    "representative_conditions": 3,
+    "runs_per_condition": 3,
+    "total_outputs": 9,
+    "additional_calls_if_initial_outputs_reused": 6,
+    "rule": "Select three conditions before checking results, including one preservation risk and one multiple-reference case. Compare fixed settings; a seed guarantee is unavailable. Reuse a baseline only if its settings and inputs exactly match. Each output gets a review; do not average away a fatal case."
+  },
+  "service_gates": {
+    "status": "PROVISIONAL_NOT_EXECUTED",
+    "separate_from_image_score": true,
+    "valid_e2e_cases": 20,
+    "success_at_least": 18,
+    "success_rate_minimum": 0.9,
+    "success_definition": "A valid planned user flow reaches the approved current-revision Korean 4:5 composite plus caption/tags download without unhandled errors or stale results. Expected-invalid input rejections are a separate robustness set and do not inflate this denominator.",
+    "unknown_rule": "All 20 outcomes must be known. Missing/not-run/incomplete cases are not silently dropped or called successes.",
+    "machine_p95_seconds_maximum": 90,
+    "latency_boundary": "From accepted validated upload request to final downloadable assets, sum machine-active intervals and exclude only explicitly timestamped human review waits. Include queueing, uploads/normalization, LLM/image calls, rendering, storage and retries. Report human-inclusive elapsed time separately.",
+    "p95_method": "Nearest rank: sort all 20 completed machine durations and select rank ceil(0.95*20)=19. Known failures count with time to terminal error; timeouts/censored or missing durations prevent a latency PASS and must be reported separately. Never calculate p95 only on successes.",
+    "novice_users": 5,
+    "independent_completion_minimum": 4,
+    "usability_rule": "Each of five first-time users completes a prespecified input-review-download task. No task-specific facilitator hints or operator fixes; ordinary in-product help is allowed. Record help, completion, duration and revision count. All five outcomes must be known.",
+    "text_evaluation_owner": "Kim Dahye: copy, factual/regulatory claims and text quality; aggregate her evidence without replacing her rubric",
+    "release_rule": "Image gate, E2E outcome/time gates, novice-user gate and text/renderer acceptance must each pass, then named team owners sign off. None is inferred from the weighted image score.",
+    "scoring": "25 each for E2E success, all-case latency, novice completion and text+renderer owner acceptance. Unknown evidence leaves total null; all gates required."
+  },
+  "budget": {
+    "generation_authorized_by_this_file": false,
+    "team_budget_usd": 30,
+    "verified_team_key": null,
+    "verified_remaining_budget_usd": null,
+    "image_budget_cap_usd": null,
+    "per_call_reservation_usd": null,
+    "abort_remaining_budget_usd": null,
+    "proposed_base_image_outputs": 20,
+    "proposed_extra_repeat_outputs_if_initial_three_reused": 6,
+    "proposed_extra_repeat_outputs_if_initial_three_not_reused": 9,
+    "e2e_calls_are_additional_or_explicitly_deduplicated": true,
+    "rule": "Before any new paid calls, verify the team key and balance, allocate LLM/image shares, configure hard caps and reserve per-call upper bounds. Count every attempt, including failures. A local reservation and token-derived estimate are not confirmed billing.",
+    "warning_usd": 24,
+    "block_new_paid_calls_usd": 27,
+    "paid_call_count_note": "20 image cases plus 6 extra repeated outputs if the initial 3 are reused, otherwise 9 extra repeated outputs, are proposals only; E2E calls are additional unless the same run satisfies both protocols and is explicitly linked, not counted twice in cost."
+  },
+  "review_record_example": {
+    "status": "EMPTY_FORMAT_EXAMPLE_NOT_AN_ACTUAL_REVIEW",
+    "instructions": "Fill hashes and rights only after collecting actual authorized assets. Two humans independently fill every rating and fatal check. null means unknown, never zero. Example reviewer IDs must be replaced with attributable project IDs.",
+    "record": {
+      "case_id": "EXAMPLE_CASE_NOT_RUN",
+      "product_id": "EXAMPLE_PRODUCT_NOT_COLLECTED",
+      "split": "dev",
+      "condition": "baseline",
+      "origin": "real",
+      "rights_confirmed": null,
+      "source_photo_sha256": [],
+      "reference_photo_sha256": [],
+      "output_sha256": null,
+      "request_sha256": null,
+      "settings_sha256": null,
+      "label_expected": null,
+      "reviews": [
+        {
+          "reviewer_id": "EXAMPLE_REVIEWER_A",
+          "reviewer_type": "human",
+          "scores": {
+            "shape": null,
+            "label_logo": null,
+            "color_material": null,
+            "reference_concept": null,
+            "composition_copyspace": null
+          },
+          "fatal_flags": {
+            "product_identity_changed": null,
+            "critical_part_missing": null,
+            "required_label_logo_changed": null,
+            "unrequested_product_or_ad_text": null
+          },
+          "not_applicable": []
+        },
+        {
+          "reviewer_id": "EXAMPLE_REVIEWER_B",
+          "reviewer_type": "human",
+          "scores": {
+            "shape": null,
+            "label_logo": null,
+            "color_material": null,
+            "reference_concept": null,
+            "composition_copyspace": null
+          },
+          "fatal_flags": {
+            "product_identity_changed": null,
+            "critical_part_missing": null,
+            "required_label_logo_changed": null,
+            "unrequested_product_or_ad_text": null
+          },
+          "not_applicable": []
+        }
+      ],
+      "consensus": null,
+      "output_width": null,
+      "output_height": null,
+      "evaluation_cycle_id": null
+    }
+  },
+  "sources": [
+    {
+      "title": "Team SSOT",
+      "url": "https://app.notion.com/p/401b13f77dbd80f39bbccd2e3a489566"
+    },
+    {
+      "title": "PM service evaluation v0.1",
+      "url": "https://app.notion.com/p/aaeb13f77dbd83c3a9140157cb49e6df"
+    },
+    {
+      "title": "Team project plan",
+      "url": "https://app.notion.com/p/3fbb13f77dbd807281cefde0aae5c6ea"
+    }
+  ],
+  "release_evaluation": {
+    "status": "PROVISIONAL_NOT_TEAM_ACCEPTED",
+    "weights": {
+      "image_quality": 40,
+      "finops": 40,
+      "service": 20
+    },
+    "formula": "0.4 * image_quality_score + 0.4 * finops_score + 0.2 * service_score",
+    "image_quality_score": "Mean of the 20 declared case scores only when required dataset evidence is known; identify label-N/A diagnostic normalization separately.",
+    "unknown_rule": "Any missing component evidence makes the overall score null and blocks release; do not convert missing billing to zero cost.",
+    "hard_gates": "Every image/FinOps/service gate must pass before team signoff. A cheap image cannot offset product identity failure, missing coverage, unsafe budget operation, or unknown billing. The weighted score alone has no release cutoff."
+  },
+  "finops": {
+    "status": "PROVISIONAL_NOT_EXECUTED",
+    "weights": {
+      "unit_cost": 30,
+      "avoidable_waste": 20,
+      "budget_control": 25,
+      "reconciliation": 25
+    },
+    "scoring": "Each dimension earns its full stated weight only when its complete gate passes; known failure earns zero, unknown evidence makes the total null. All four dimensions are mandatory for release.",
+    "unit_cost_confirmed_usd_maximum": 0.5,
+    "unit_cost_denominator": "Number of human-accepted final downloadable ads in the fixed accounting window; zero accepted ads leaves cost per success unknown.",
+    "unit_cost_numerator": "All production variable costs in that same window: LLM, images, paid rendering/storage and attributable variable serving costs, including production failures and retries. Not just the image stage. Report provided/free infrastructure and allocation assumptions separately.",
+    "estimated_cost_separate": true,
+    "avoidable_production_waste_rate_maximum": 0.1,
+    "waste_definition": "Confirmed cost of avoidable production failures/retries divided by all confirmed production variable costs. Classify reason codes before scoring; planned research/preset comparisons are separate R&D cost, never silently treated as production waste or omitted from team spend.",
+    "team_shared_budget_usd": 30,
+    "budget_warning_fraction": 0.8,
+    "block_new_paid_calls_fraction": 0.9,
+    "budget_rule": "Confirm current team key, all-team spend and remaining balance for the same time. At $24 warn; at $27 block new paid calls. Release acceptance additionally requires utilization below 90%. Verify controls and cap checks before execution; this evaluation does not authorize calls. Unknown balance/key blocks release.",
+    "balance_freshness_minutes_provisional": 15,
+    "balance_timestamp_fields": ["balance_checked_at", "evaluation_as_of"],
+    "balance_freshness_rule": "Both timestamp fields require timezone-aware ISO 8601 values. At the declared evaluation_as_of time, balance_checked_at must be neither in the future nor more than 15 minutes old. Unknown or stale timestamps block release. An offline report does not establish current balance for a later paid call; verify shared balance and outstanding reservations again immediately before execution.",
+    "billing_lag_hours_provisional": 24,
+    "billing_match_rate_required": 1.0,
+    "billing_rule": "Match 100% of eligible provider receipts to actual invoice/usage billing records after the provisional 24-hour settlement lag. Pending in-lag calls remain explicit and block final acceptance until reconciled. A response usage object or token estimate is not actual billing. If provider aggregation prevents attribution, retain unknown and seek account-level evidence.",
+    "cost_traceability_required": true,
+    "traceability": "Link job/request/provider IDs, model, prompt version and input text/image/output token counts to estimates and billing records; no keys in records.",
+    "estimate_relative_error_maximum": 0.2,
+    "estimate_error_formula": "abs(estimated production total - confirmed production total) / confirmed production total; confirmed actual=estimated=0 yields0, actual=0 and estimate>0 is undefined and fails reconciliation.",
+    "current_evidence": "Previous 7 image calls are synthetic-product R&D smoke/prompt experiments. They supply usage-based estimates, not confirmed billing or a successful production-ad cost denominator.",
+    "accounting_scope": "accounting_window_id identifies the fixed accounting period. Separate production_team_api_confirmed_usd and research_team_api_confirmed_usd from all-provider variable costs; their sum cannot exceed confirmed cumulative spend on the shared OpenAI team key. Production team-API cost cannot exceed all-provider production cost. Use the same evaluation_cycle_id/candidate_settings_sha256 as service and image evaluation."
+  }
+}

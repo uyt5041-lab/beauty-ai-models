@@ -1,5 +1,7 @@
 # 기술 명세 인덱스
 
+실험 비교: [W&B 계약](../contract/wandb-experiments.md), [실행 안내](../../../docs/wandbExperiments.md), [이미지·FinOps 임시 평가](../../../docs/imageEvaluationPlan.md).
+
 현재 소스와 기존 문서가 근거다. 이 인덱스는 중복 API 정의를 만들지 않는다.
 
 | 근거 | 범위 | 상태 |

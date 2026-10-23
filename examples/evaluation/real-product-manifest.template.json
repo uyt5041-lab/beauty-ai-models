@@ -1,0 +1,190 @@
+{
+  "dataset_id": "beautyai-real-product-evaluation",
+  "version": "image-eval-v0.1",
+  "state": "DRAFT_NOT_COLLECTED",
+  "products": [
+    {
+      "slot_id": "EMPTY_DEV_01",
+      "product_id": null,
+      "split": "dev",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_DEV_02",
+      "product_id": null,
+      "split": "dev",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_DEV_03",
+      "product_id": null,
+      "split": "dev",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_DEV_04",
+      "product_id": null,
+      "split": "dev",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_DEV_05",
+      "product_id": null,
+      "split": "dev",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_HOLDOUT_01",
+      "product_id": null,
+      "split": "holdout",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_HOLDOUT_02",
+      "product_id": null,
+      "split": "holdout",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_HOLDOUT_03",
+      "product_id": null,
+      "split": "holdout",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_HOLDOUT_04",
+      "product_id": null,
+      "split": "holdout",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    },
+    {
+      "slot_id": "EMPTY_HOLDOUT_05",
+      "product_id": null,
+      "split": "holdout",
+      "collection_status": "NOT_COLLECTED",
+      "origin": "real",
+      "rights_confirmed": null,
+      "rights_evidence": null,
+      "source_photo_sha256": [],
+      "coverage": {
+        "transparent": null,
+        "reflective": null,
+        "printed_label": null,
+        "tube": null,
+        "pump": null,
+        "jar": null
+      }
+    }
+  ],
+  "holdout_settings_sha256": null,
+  "holdout_frozen_before_review": null,
+  "evaluation_cycle_id": null
+}

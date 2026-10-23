@@ -1,5 +1,13 @@
 # 추가 사용 예제와 기존 안내
 
+## W&B 실험 비교와 비용 관리
+
+Langfuse는 프롬프트 버전을 관리한다. W&B는 이미지 실험을 비교한다. 기존 실행 20건을 W&B에 올렸고, 저장된 내용이 원본과 같은지 확인했다. 비용 관리 작업을 FinOps라고 부른다. 추정 비용과 실제 청구액은 따로 기록한다.
+
+[설치와 비교 방법](docs/wandbExperiments.md) · [쉬운 한글 작업 예시](docs/wandbFinopsWorkExamples.md) · [평가 계획](docs/imageEvaluationPlan.md) · [완료·남은 TODO](docs/imageTodo.md#단계-3-c-wb-실험-기록과-finops-평가)
+
+종합 비중은 **이미지 품질 40% · FinOps 40% · 서비스 20%**다. 실제품 10개, 2인 검수, 이미지 80점은 임시 기준이다. 팀 합의와 실제 평가가 남아 있다. 숫자로 읽을 수 있는 기준은 [정책 JSON](examples/evaluation/image-eval-v0.1.json)에 있다.
+
 ## Langfuse 프롬프트 관리와 3종 비교
 
 `python -m pip install -e '.[test,observability]'`로 선택 의존성을 설치합니다. 로컬 `.env`에 `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`을 설정합니다. 환경 파일은 자동 로드하지 않습니다.

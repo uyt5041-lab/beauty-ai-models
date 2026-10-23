@@ -39,3 +39,5 @@
 - [x] B11 화장품 프롬프트3종·배치·revision2 제공자 지시·오프라인 프리뷰. 기본 꽃 요구만 제거, 꽃 금지 없음. 전체866 tests·로컬60 tests PASS. [검증](../test/cosmetics-prompts-b11.md). 실제품 품질/팀인수는 원본imageTodo의 API-06·SSOT 항목에서 계속 관리한다.
 
 - B12: Langfuse 관리 프롬프트·고정 스냅샷·실행 관찰과 화장품 3종 실비교. [계약](contract/langfuse-prompts.md), [검증](../test/cosmetics-langfuse-b12.md). 서비스 인수와 구분한다.
+
+- B14: W&B의 기존20실행 비교·FinOps40% 임시 평가계획·오프라인 채점. [계약](contract/wandb-experiments.md), [검증](../test/wandb-finops-b14.md). 실제품 평가·실제청구/잔액·런타임 예산통제·서비스 인수는 [원본 TODO](../../docs/imageTodo.md)의 미완료 항목으로 유지한다.

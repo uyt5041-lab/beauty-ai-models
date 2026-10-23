@@ -58,3 +58,9 @@ config.local.*
 # Team policy: local datasets are not committed
 data/
 .ipynb_checkpoints/
+
+# Local W&B run cache (experiments are uploaded explicitly)
+wandb/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
