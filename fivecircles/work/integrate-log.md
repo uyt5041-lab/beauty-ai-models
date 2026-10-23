@@ -98,3 +98,14 @@
 - plan/models에서 Langfuse 관리프롬프트3개·고정스냅샷·SDK관찰·실비교실행기를 구현했다. 일반push 대상이며 PR/협업일지/배포 변경은 없다.
 - 원격기준 25d9e69와 HEAD 0/0에서 작업했다. 전체934 tests19.88s, 로컬신규68 tests7.04s, pip check·설정/링크·README5절·diff 검사PASS.
 - 실제OpenAI편집3회 성공. Langfuse3종production v1과 실행관찰의 프롬프트/버전/결과해시/사용량을 원격재조회해 일치 확인. 실제청구/사람최종인수는 미확인. [검증](../test/cosmetics-langfuse-b12.md).
+
+## 2026-10-23 · B14 W&B·FinOps와 한글 예시 전달
+
+- 구현 커밋: `7db85d99d7047f0ded3d42c7d7d93bd3a0940800`. W&B 기록 도구, 임시 평가 도구, TODO, 설명 문서, 가상 예시를 포함한다.
+- 대상은 `uyt5041-lab/beauty-ai-models`의 `plan/models`다. 원격 기준 `8ba5bded8faace5b69a79394523290dfba3ed9b2`와 같은 상태에서 시작했다. 원격 이력을 보존하는 일반 push를 사용한다. PR을 만들거나 협업일지 브랜치를 합치지 않는다.
+- [이미지 TODO](../../docs/imageTodo.md)의 단계 3-C에 완료 7개와 남은 작업 7개를 나눴다. [사용법](../../docs/wandbExperiments.md), [평가 계획](../../docs/imageEvaluationPlan.md), [한글 작업 예시](../../docs/wandbFinopsWorkExamples.md)를 연결했다.
+- W&B의 기존 20건은 원격 저장 확인을 마친 자료다. FinOps는 종합 비중 40%다. 실제 청구와 팀 잔액, 실제품 검수, 서비스 인수는 미확인으로 유지한다.
+- 전체 테스트 1,078개 통과(21.61초). 가상 예시 5개의 상태·점수·이유도 예상값과 같다. 예시의 API 호출과 W&B 업로드는 0회다.
+- 결과 HTML·JSON은 로컬 `outputs/worked-examples/2026-10-23-delivery/`에 둔다. 가상 자료를 실제 실험 20건이나 팀 성과에 더하지 않는다.
+- Python 코드는 graft로 위치와 변경 영향을 좁혀 확인했다. graft 인덱스는 로컬 캐시다. 생성 이미지·결과 파일·키와 함께 Git에서 제외한다.
+- 서비스 배포와 새 이미지 생성은 하지 않았다. 실제 원격 SHA와 로컬 파일 일치 결과는 전송 후 `outputs/wandb-experiments/2026-10-23/git-delivery-receipt.json`에 남긴다.
