@@ -108,3 +108,7 @@
 
 - 관리 템플릿3개, 고정버전/최종본문/해시, SDKgeneration 관찰을 연결했다. 실제편집3회 성공, 원격저장 readback3건 일치.
 - 전체934tests PASS. 밝은컬러는 광고주목도, 클린은 제품재질 표현에 우선추천. 실제품라벨/팀인수 미검증. [실행·비용·시각 비교](../test/cosmetics-langfuse-b12.md).
+
+## 2026-10-23 · B13 밝은 컬러 무광 보강
+
+- 사용자 선택한 밝은 컬러에 원본무광 보존지시를 보강하고 Langfuse v2로 기록했다. 동일원본으로 실제1장 추가, remote readback PASS. [실행·시각 비교·참고출처](../test/cosmetics-matte-b13.md).

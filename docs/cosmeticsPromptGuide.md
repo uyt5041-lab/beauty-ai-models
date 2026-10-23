@@ -68,7 +68,9 @@ print(json.dumps(prompt.model_dump(mode="json"), ensure_ascii=False, indent=2))
 
 B10 이후2026-10-22에는 사용자 승인으로 MidProject에 있던 키를 사용해 생성·편집·누끼3회를 실행했다. 모두 기술 실행은 성공했으나 누끼 테두리와 제품 재구성 문제가 있어 시각 품질은 `NOT_APPROVED`다. 해당 키가 현재 팀 지급 키인지는 확인하지 않았고 실제 청구액도 미확인이다. B11의 프롬프트 변경은 오프라인 검증 대상으로, 이3회 결과를 새 프롬프트 품질 검증으로 재사용하지 않는다.
 
-Langfuse/promptfoo 연동은 후속 선택 사항이다. 이번 변경은 프롬프트 파일과 래퍼 버전을 관리하며 추가 도구 설치나 유료 자동 평가를 실행하지 않는다.
+이 문서의 B11은 오프라인 프롬프트 도입 기록이다. 후속 B12에서는 Langfuse 프리셋3개와 실행 기록 연결을 구현하고 실제 편집3회 및 원격 readback을 확인했다. [관리 안내](langfusePromptManagement.md), [B12 검증](../fivecircles/test/cosmetics-langfuse-b12.md)을 참고한다. promptfoo와 유료 자동 평가는 도입하지 않았다.
+
+2026-10-23 B13은 밝은 컬러의 Langfuse 버전2에서 배경과 제품의 조명을 나누고 원본 무광 재질 보존을 보강했다. [v2 템플릿](../prompts/cosmetics/vivid-pop-v2.json)은 원격 버전을 재현할 수 있는 저장본이다. 기존 로컬 `cosmetics-v1` 빌더는 최초 도입 버전을 유지하며, 운영 프롬프트는 Langfuse에서 조회해 고정한다. 버전2는 이번 라벤더 병/코럴 펌프 원본을 위한 지시다. 다른 제품에서는 부위 표현을 그 원본에 맞게 검토하며, 모든 제품을 일괄 무광으로 바꾸지 않는다. [실제1회 결과](../fivecircles/test/cosmetics-matte-b13.md).
 
 ## 참고 자료
 
