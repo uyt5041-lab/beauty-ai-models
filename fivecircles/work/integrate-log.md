@@ -84,3 +84,10 @@
 - Git 코드 전달 완료. 저장소에 CI workflow 없음. 운영 CD NOT_APPLICABLE: 기본 외부호출 차단 Python 래퍼와 문서 전달이며 배포대상/요청 없음.
 - 최종 HTML 브라우저 검증은 기존BLOCKED. PNG 직접/HTML정적 검증과 소스게시를 구분한다. 실계정·실품질·잔액·실제비용은 NOT_RUN.
 - 이 receipt와 TODO 재검토 결정은 별도 문서 커밋으로 같은 브랜치에 게시하며 source SHA는 위 값을 유지한다. PR·협업일지브랜치작업·force push 없음.
+
+## 2026-10-23 · B11 화장품 프롬프트 전달
+
+- 소스 커밋: `aa54a6ed0ccb80465eade1963c931c2fa6743714`. `plan/models` 일반 push 성공 후 원격 `refs/heads/plan/models` SHA 일치를 확인했다. 강제 push/PR/협업일지 변경 없음.
+- 전체866 tests(13.90s), 로컬beautyAi 신규60 tests(0.38s), 설정/링크/diff 검사 PASS. [검증](../test/cosmetics-prompts-b11.md).
+- 로컬beautyAi에 같은 파일을 동기화했다. 프리뷰CLI는 프롬프트/요청템플릿만 출력했고 실제API0회·생성이미지0이다. 꽃은 필수연출에서 제거했으며 금지하지 않는다.
+- CI/CD: NOT_RUN. 이 전달은 Python라이브러리·프리셋·문서와 로컬 오프라인CLI 범위이며 서비스배포/팀인수가 아니다. 실제품 품질과 서비스 연결은 남아 있다.
