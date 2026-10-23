@@ -32,7 +32,7 @@ def asset(data):
 
 def request(operation="generate", *, products=(), backgrounds=()):
     prompt = None if operation == "cutout" else ImagePrompt(
-        positive="A bright flower studio with space for the ad copy.",
+        positive="A bright cosmetics studio with space for the ad copy.",
         negative="extra products, extra caps, text", prompt_version="image-v1", source_revision=1)
     return ExternalImageRequest(operation=operation, prompt=prompt,
                                 product_images=[asset(data) for data in products],

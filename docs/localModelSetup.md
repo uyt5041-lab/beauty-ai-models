@@ -154,10 +154,10 @@ python -m beauty_ai.inference_runtime
 
 ```bash
 python -m examples.run_image render "$CANDIDATE_ID" --job-id "$JOB_ID" \
-  --background-profile sdxl-inpaint --prompt examples/bright_flower_prompt.json
+  --background-profile sdxl-inpaint --prompt examples/bright_cosmetics_prompt.json
 ```
 
-`select`도 같은 `--background-profile`·`--prompt`를 받는다. 현재 campaign·expected revision·copy revision은 기존 편집 계약을 따른다. 예제 [bright_flower_prompt.json](../examples/bright_flower_prompt.json)은 밝은 분홍·청록 광고 장면과 꽃 소품을 요청하는 호스트 작성 입력이다. LLM이 생성한 문구나 실제 이미지 생성 결과로 표시하지 않는다.
+`select`도 같은 `--background-profile`·`--prompt`를 받는다. 현재 campaign·expected revision·copy revision은 기존 편집 계약을 따른다. 예제 [bright_cosmetics_prompt.json](../examples/bright_cosmetics_prompt.json)은 꽃을 필수 요소로 지정하지 않은 밝은 화장품 광고 장면의 호스트 작성 입력이다. 꽃 사용 자체는 금지하지 않는다. 제품 자체의 색·라벨·인쇄 그림은 보존한다. B7/B9의 꽃 평가 기록은 이전 실행의 증거이며 현재 프리셋 요구사항이 아니다. LLM이 생성한 문구나 실제 이미지 생성 결과로 표시하지 않는다.
 
 ### 프롬프트·제품·여백 경계
 

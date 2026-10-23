@@ -1,6 +1,8 @@
 # 화장품 광고 AI 래퍼 참고 구현
 
-소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. **2026-10-22 사용자 정정: LLM·제품 분석·카피·영어 프롬프트는 김다혜가, 이미지 모델 호출은 pi가 외부 이미지 API 래퍼로 담당합니다.** **이미지 생성·편집·누끼는 OpenAI API로 결정했습니다.** B10은 실제 호출 없이 래퍼와 내부 연결을 구현하는 범위입니다. 기본 모델은 `gpt-image-2.5-sunburst-2026-09-08`, 허용 대안은 `gpt-image-2-2026-04-21`입니다. 계정 권한·실제 품질·가격 우위는 확인하지 않았습니다.
+소상공인 화장품 광고 제작 MVP에 연결할 Python 참고 패키지입니다. **LLM·제품 분석·카피·영어 프롬프트는 김다혜가, 이미지 생성·편집·누끼의 OpenAI API 래퍼는 pi가 담당합니다.** 기본 모델은 `gpt-image-2.5-sunburst-2026-09-08`, 허용 대안은 `gpt-image-2-2026-04-21`입니다. B10은 오프라인 구현이었고 이후2026-10-22 사용자 승인으로 MidProject 키를 사용한 실제 생성·편집·누끼3회가 성공했습니다. 누끼 테두리와 제품 재구성 문제로 시각 품질은 `NOT_APPROVED`이며, 현재 팀 지급 키 여부·실제 청구액·가격 우위는 미확인입니다.
+
+**2026-10-23 정정:** 현재 제품은 화장품이며, 꽃을 반드시 넣으라는 조건은 제거했습니다. 꽃 사용 자체를 금지하지 않으며 명시한 연출이나 참고 이미지에 따라 사용할 수 있습니다. B11은 화장품 프리셋3개와 제품 보존·문구 여백·누끼 지시를 버전2로 적용하는 오프라인 작업입니다. [프롬프트 안내](docs/cosmeticsPromptGuide.md)를 참고하세요.
 
 현재 코드는 OpenAI 이미지 어댑터·영속 제출 기록과 내부 이미지 FastAPI·SQLite 작업 저장·자산·승인·revision/cache·평가 도구, 로컬 BiRefNetLite·SDXL 실험 경로를 포함합니다. 로컬 MPS 기술 검증은 보존하지만 자체 GPU 구축·모델 튜닝·GCP CUDA 이전은 현재 MVP의 필수 선행조건에서 제외합니다. 입력 검증·원본 제품 보존·최종 한글 합성·품질 확인은 외부 API를 사용해도 필요합니다.
 
@@ -8,7 +10,7 @@
 
 ## 1. 쓰는 법
 
-OpenAI 경로의 기준은 [B10 이미지 계약](fivecircles/architecture/contract/openai-images.md)입니다. 기본 설정은 **`live_calls=False`·이미지 예산 `0`**이며 실제 API 호출은 현재 작업에서 금지합니다. 로컬 모델 설명은 보존한 선택 경로의 사용법입니다.
+OpenAI 경로는 [B10 이미지 계약](fivecircles/architecture/contract/openai-images.md)과 [B11 프롬프트 계약](fivecircles/architecture/contract/cosmetics-prompts.md)을 따릅니다. 기본 설정은 **`live_calls=False`·이미지 예산 `0`**입니다. B11은 실제 API 추가 호출 없이 검증합니다. 로컬 모델 설명은 보존한 선택 경로의 사용법입니다.
 
 Python 3.11 이상에서 프로젝트 루트 기준으로 설치합니다.
 
@@ -25,6 +27,12 @@ python -m pytest -q -W error
 python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 ```
 
+화장품 프리셋3개의 프롬프트만 확인하려면 아래 명령을 사용합니다. 키 조회·네트워크·이미지 생성 없이 파일을 내보냅니다.
+
+```bash
+python -m beauty_ai.cosmetics_prompt_demo --output outputs/cosmetics-prompts
+```
+
 설정 예시는 [.env.example](.env.example)에 있습니다. 파일에는 비밀값을 넣지 마세요. 실제 값은 로컬 환경변수나 별도의 비밀 관리 수단으로 주입합니다. **패키지는 `.env`를 자동으로 읽지 않습니다.**
 
 | 환경변수 | 용도 |
@@ -37,7 +45,7 @@ python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 | `INFERENCE_INTERNAL_TOKEN` | 내부 서버 인증 토큰 |
 | `BEAUTY_PROJECT_ID` | 로컬 이미지 서버의 프로젝트 UUID |
 | `BEAUTY_STORAGE_ROOT` | 로컬 자산·작업·승인·편집 DB 저장 경로 |
-| `BEAUTY_OPENAI_IMAGE_LIVE_CALLS` | 기본 `false`. 현재 실제 호출 금지, 이후 명시적 승인 전 변경 금지 |
+| `BEAUTY_OPENAI_IMAGE_LIVE_CALLS` | 기본 `false`. 승인된 실행 범위에서만 활성화하며 B11은 오프라인 검증 |
 | `BEAUTY_IMAGE_BUDGET_USD` / `BEAUTY_IMAGE_RESERVATION_USD` | 서버 예약 한도·요청별 예약액. 기본 `0` / `1`, 실제 과금액이나 제공자 가격이 아님 |
 | `BEAUTY_OPENAI_IMAGE_TIMEOUT_SECONDS` | OpenAI 이미지 요청 대기 제한. 기본 `180`초 |
 | `BEAUTY_CUTOUT_BACKEND` / `BEAUTY_BACKGROUND_BACKEND` | 보존한 로컬 실험 backend. 기본 alpha/template과 구분 |
@@ -55,11 +63,11 @@ python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 
 보존한 로컬 실험의 실제 누끼는 `.[inference,models]` 선택 의존성과 고정 모델 준비가 필요합니다. `BEAUTY_CUTOUT_BACKEND=birefnet-lite`·명시적 MPS 장치를 설정하고 `prepare --cutout-profile birefnet-lite`를 사용합니다. API에서 모델을 자동 다운로드하거나 CPU/template으로 자동 대체하지 않습니다. [로컬 모델 설치·GCP 이전](docs/localModelSetup.md)을 따르세요.
 
-보존한 로컬 실험의 실제 배경은 `.[inference,models,background]`와 명시적 SDXL 파일 준비 후 `BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint`로 선택합니다. 승인된 후보에 `render/select --background-profile sdxl-inpaint --prompt examples/bright_flower_prompt.json`을 사용합니다. 두 tokenizer의 77 token 한도를 넘으면 거절하며 잘라서 실행하지 않습니다.
+보존한 로컬 실험의 실제 배경은 `.[inference,models,background]`와 명시적 SDXL 파일 준비 후 `BEAUTY_BACKGROUND_BACKEND=sdxl-inpaint`로 선택합니다. 승인된 후보에 `render/select --background-profile sdxl-inpaint --prompt examples/bright_cosmetics_prompt.json`을 사용합니다. 두 tokenizer의 77 token 한도를 넘으면 거절하며 잘라서 실행하지 않습니다.
 
 로컬 평가 도구는 `python -m beauty_ai.evaluation examples/evaluation_manifest.json --output outputs/evaluation-report.json`으로 실행합니다. 예제의 권리는 `unknown`이므로 이미지를 읽지 않고 미평가로 기록합니다. 실제 평가는 권리와 출처를 확인한 파일을 manifest 폴더 아래에 두고, 비공개 `data/`·`outputs/`에서 실행하세요. 기존 결과 파일은 덮어쓰지 않습니다.
 
-최신 B10은 **806 tests PASS**이며 로컬 beautyAi에서도 신규182개와 mock CLI를 확인했습니다. 실제 OpenAI 호출은0회입니다. [B10 검증](fivecircles/test/relay-b10.md).
+B10은 **806 tests PASS**이며 로컬 beautyAi에서도 신규182개와 mock CLI를 확인했습니다. **B10 배치 당시** 실제 OpenAI 호출은0회였으며, 이후 승인된3회 실행과 구분합니다. [B10 검증](fivecircles/test/relay-b10.md).
 
 단계별 실행 명령은 [README2.md](README2.md), 기존 로컬 검증은 [B9 기록](fivecircles/test/relay-b9.md)을 참고하세요. **B9 당시 624 tests PASS + 실제 MPS 6 jobs/실행 관찰 PASS** 기록입니다. B10의 테스트 총수나 실제 OpenAI 호출 검증을 뜻하지 않습니다. 같은512 입력·seed의 두 번 실행에서 출력 hash가 같았습니다. B8 실제 TCP 응답 유실 조정 근거도 보존했습니다. [TEST_REPORT.md](TEST_REPORT.md)는 누적 검증 기록입니다.
 
@@ -70,6 +78,7 @@ python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 | `OpenAIImagesAdapter` | 생성·편집·생성형 누끼 요청 변환, 고정 모델·PNG 1장·base64 응답 검증. 실제 호출은 기본 차단 |
 | `ExternalImageProcessor` / `ProviderAttemptStore` | 자산 검증, 작업당 1회 POST를 위한 영속 예약·제출 기록, 결과 저장과 요청 ID·nullable usage 관찰 |
 | `openai_images_demo` | 네트워크·키 없는 mock 전용 예제. 합성 fixture만 생성 |
+| 화장품 프롬프트 빌더 / `cosmetics_prompt_demo` | 영어 입력을 프리셋3개·제품 보존·문구 여백 조건으로 조립하고 버전2 요청/프롬프트를 준비. LLM 호출 없이 예제 내보내기 |
 | `OpenAITextGateway` | 제품 이미지 관찰, 광고 기획·카피 후보 생성, 문맥 검수, 수정안 생성 |
 | 구조화 계약 | Pydantic 입력·출력 검증과 [JSON Schema](schemas/) 제공 |
 | `ReviewService` | 전체 카피의 규칙 검사와 LLM 검사 병합, 검토된 규칙집 확인, revision·해시로 검수 대상 식별 |
@@ -144,15 +153,16 @@ python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 ## 4. 미완성으로서 보완해야 할 점
 
 - **서비스 통합:** 사용자 로그인·CampaignService·SSE·내보내기·렌더러와 실제 UI 연결이 필요합니다. 내부 API 인증·job 복구·이미지 selection revision·프로젝트 캐시는 로컬 구현했습니다.
-- **OpenAI 실제 검증:** 제공자 선택과 오프라인 래퍼 구현을 실제 서비스 검증과 구분합니다. 계정의 고정 모델 권한·잔액과 예산을 확인하고 별도 실제 호출 승인을 받은 뒤, 같은 실제 제품 사진으로 품질·처리 시간·성공한 최종 광고당 비용을 측정해야 합니다. seed·마스크 옵션은 현재 계약에 없고 생성형 누끼·복수 참조의 제품 보존 성능은 미검증입니다. 로컬 MPS 6건은 기존 실험 증거이며 외부 API 검증이 아닙니다. GPU 메모리/OOM·CUDA 검증은 자체 호스팅을 다시 선택할 때만 적용합니다.
+- **OpenAI 실제 검증:** 승인된3회 기술 실행과 실제 서비스 인수를 구분합니다. 팀 키·잔액·예산을 확인하고 같은 실제 제품 사진으로 새 프롬프트의 품질·처리 시간·성공한 최종 광고당 비용을 측정해야 합니다. seed·마스크 옵션은 현재 계약에 없고 생성형 누끼·복수 참조의 제품 보존 성능은 미검증입니다. 로컬 MPS 6건은 기존 실험 증거이며 외부 API 검증이 아닙니다. GPU 메모리/OOM·CUDA 검증은 자체 호스팅을 다시 선택할 때만 적용합니다.
 - **제품 승인·편집:** 정확한 snapshot 승인과 늦은 result attach 차단을 구현했습니다. 실제 사용자 신원·승인 UI·편집 서비스와 최종 품질 승인은 별도로 연결해야 합니다.
 - **검수 데이터:** 출처·버전·검토 이력이 있는 규칙집, 제품 사실 확인, 카피 수정 후 재검수·DB revision 경쟁 검사가 필요합니다.
-- **품질·실환경:** 크기별 꽃 표현 편차와 제품 잔상이 관찰돼 광고 품질을 승인하지 않았습니다. 측정 도구는 구현했지만 실제 고정 평가셋·권리 근거·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실사진 모델 품질·반복 지연·외부 API 사용량·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
+- **품질·실환경:** 기존 로컬 실험에는 제품 잔상이, 후속 OpenAI 누끼에는 테두리와 제품 재구성 문제가 관찰돼 광고 품질을 승인하지 않았습니다. 꽃 장식은 기본 프리셋의 필수 조건이 아닙니다. 측정 도구는 구현했지만 실제 고정 평가셋·권리 근거·판정 기준을 준비하고 라벨·경계·투명/반사·그림자·여백·최종 텍스트 합성, 실사진 모델 품질·반복 지연·외부 API 사용량·비용을 평가해야 합니다. 불투명 픽셀 검사만으로 광고 품질을 승인하지 않습니다.
 - **운영:** 실제 429/쿼터·권한·응답 유실·청구 정산과 사용자 대기 UI를 검증해야 합니다. OpenAI 응답은 base64 PNG만 수신하며 URL-only 응답은 거절합니다. 서버 예약 예산은 LLM과 공유하는 팀 계정의 실제 잔액을 알거나 제한하지 못합니다. 현재 잔액·실제 청구는 미확인입니다.
 
 ## 5. 하지 말 것
 
-- 현재 작업에서 실제 이미지 API를 호출하거나 live 설정·예산을 올리지 않습니다. 이후 계정 권한·잔액·운영 한도와 입력 권리를 확인하고 별도 실제 호출 승인을 받아야 합니다. mock 성공을 모델 품질·비용·실제 호출 성공으로 설명하지 않습니다.
+- B11 오프라인 작업에서 실제 이미지 API를 추가 호출하거나 live 설정·예산을 올리지 않습니다. 실제 실행은 승인된 범위와 계정·운영 한도에 맞춰 수행합니다. mock 성공을 모델 품질·비용·실제 호출 성공으로 설명하지 않습니다.
+- 제품에 원래 인쇄된 그림·라벨·로고는 보존하며 배경색을 제품색으로 적용하지 않습니다.
 - 생성형 누끼 결과를 원본 픽셀 보존·기존 제품 레이어 승인으로 처리하거나 단일 PNG 결과를 세 레이어 캐시에 자동 연결하지 않습니다.
 - API 키, 실제 `.env`, 로컬 설정·DB·로그·테스트 캐시, 업로드·생성 이미지, 모델 가중치를 커밋하지 않습니다. `.env.example`에는 빈 값이나 명백한 예시만 둡니다.
 - VLM이 읽은 라벨·효능 문구를 확인된 제품 사실이나 기능성 분류로 자동 승격하지 않습니다. 업로드 이미지·사용자 텍스트를 시스템 지시로 취급하지 않습니다.

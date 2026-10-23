@@ -18,6 +18,7 @@ import httpx
 from pydantic import ValidationError
 
 from .contracts import ExternalImageRequest, ImageProviderUsage
+from .cosmetics_prompts import render_cosmetics_provider_prompt
 
 _MIB = 1024 * 1024
 _BASE_URL = "https://api.openai.com/v1/"
@@ -143,6 +144,8 @@ class OpenAIImagesAdapter:
 
     @staticmethod
     def _prompt(request: ExternalImageRequest) -> str:
+        if request.pipeline_revision == "2":
+            return render_cosmetics_provider_prompt(request)
         if request.operation == "cutout":
             return _CUTOUT_PROMPT
         assert request.prompt is not None  # Enforced by the validated snapshot.

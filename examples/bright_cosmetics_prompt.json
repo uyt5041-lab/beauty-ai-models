@@ -1,0 +1,7 @@
+{
+  "positive": "Bright cosmetics studio, cobalt blue and coral backdrop, soft side light, single intact bottle on the right, empty copy area on the left, preserve original label and product color.",
+  "negative": "extra products, invented efficacy claims, new ad text, changed label, cropped bottle",
+  "prompt_version": "bright-cosmetics-sdxl-v1",
+  "source_revision": 1,
+  "language": "en"
+}

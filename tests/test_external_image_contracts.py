@@ -45,7 +45,7 @@ def test_maximum_inputs_preserve_order_and_snapshot_hash():
 
 @pytest.mark.parametrize("changes", [
     {"seed": 1}, {"url": "https://example.invalid/private.png"}, {"quality": "auto"},
-    {"model": "gpt-image-2"}, {"pipeline_revision": "2"}, {"pipeline_profile_id": "local"},
+    {"model": "gpt-image-2"}, {"pipeline_revision": "3"}, {"pipeline_profile_id": "local"},
     {"width": 1025}, {"width": True}, {"height": 1440.0},
     {"width": 256, "height": 256}, {"width": 3840, "height": 3840},
     {"width": 3840, "height": 512}, {"width": 4096, "height": 1024},

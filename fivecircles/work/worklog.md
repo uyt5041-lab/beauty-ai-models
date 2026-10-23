@@ -1,5 +1,12 @@
 # 작업 기록
 
+## 2026-10-23 · B11 화장품 프롬프트 구현 전
+
+- Intent: OpenAI/Agency Agents의 지시 구조를 화장품 프리셋3개·제품 보존·문구 여백·누끼에 적용한다.
+- Conflict/Winner: 이전 꽃 배경 예제를 현재 요구로 취급하지 않는다. 사용자 정정에 따라 화장품 기본 연출에서 꽃 자동 추가 요구만 제거한다. 꽃 금지 규칙은 두지 않는다. 과거 실행/스냅샷 증거는 보존한다.
+- 계약: [cosmetics-prompts.md](../architecture/contract/cosmetics-prompts.md). 기존 revision1을 유지하고 새 revision2만 적용한다. 다혜의 LLM 기능을 중복 구현하지 않는다.
+- 검증 계획: 버전/hash·실제 mock 전송·입력 검증·키/통신 없는 프롬프트 예제·전체 회귀. 실제 이미지 API 추가 호출 없이 소스와 로컬beautyAi를 갱신한다.
+
 ## 2026-10-22T08:48:02+09:00 · BEAUTY-FC-001 · Design / Implementation
 
 - 요청: 공개 FiveCircles 프레임워크를 beautyAi용으로 도입.
@@ -131,3 +138,10 @@
 - 전체806 tests PASS51.05s, mock CLI actual_provider_calls=0, mock_provider_calls=3. 출력 경고 분류 문제 수리와 회귀 [근거](../test/errorlogs/2026-10-22-relay-b10.md).
 - native 역할 분담: root는 attempt/processor/runtime·통합 검증, 계약/worker/API·예제 담당과 adapter 담당, 문서 담당을 제한된 파일로 병렬 위임했다. 실제 모델/키/제공자 호출 없음.
 - 게시 대상 plan/models, PR/협업일지/배포 없음. 실제 API 인수와 서비스 UI/renderer는 이번 전달 완료로 표시하지 않는다.
+
+## 2026-10-23 · B11 검증 완료
+
+- 화장품 프롬프트3종·3배치·revision2 어댑터 지시·오프라인 프리뷰를 구현했다. 기본 꽃 요구만 제거하고 꽃 금지는 두지 않는다.
+- 전체866 tests(13.90s), 로컬beautyAi 신규60 tests(0.38s), 설정/링크/diff 검사 PASS. [검증](../test/cosmetics-prompts-b11.md). 실제 API호출0회·생성이미지0장.
+- 문서/TODO의 B10과 후속실호출 상태를 구분하고, 활성예제를 화장품으로 교체했다. 과거 꽃 예제는 legacy로 동일바이트 보존.
+- 배포/LLM구현/팀인수는 이번 범위가 아니다. 게시 대상plan/models, PR/협업일지 변경 없음.

@@ -35,3 +35,5 @@
 - [x] 별도 사용자 요청: SSOT 대조문서·현재 구현/검증/실행 TODO 정리 (2026-10-22). [대조표](../../docs/ssotAlignment.md)와 [원본 TODO](../../docs/imageTodo.md). 신규 SSOT-01~12 구현은 미완료이며 다음 코드 배치를 실행한 것은 아니다.
 - 최신 우선순위: [원본 이미지 TODO](../../docs/imageTodo.md)의 외부 API 제공자 조사·adapter·오류/과금·출력 검증. 제공자·모델은 미정이다. 로컬 GPU OOM·다음 job 복구는 자체호스팅을 다시 선택할 때의 보존 후보로 전환한다. 부분 결과 자산 처리는 API 경로에서도 필요하다.
 - [ ] 실사진 품질·외부 API 실제 실행·서비스/렌더러·팀 인수: 실제 환경/공동 확인 근거 필요. CUDA/GCP GPU 이전은 현재 필수 제외.
+
+- [x] B11 화장품 프롬프트3종·배치·revision2 제공자 지시·오프라인 프리뷰. 기본 꽃 요구만 제거, 꽃 금지 없음. 전체866 tests·로컬60 tests PASS. [검증](../test/cosmetics-prompts-b11.md). 실제품 품질/팀인수는 원본imageTodo의 API-06·SSOT 항목에서 계속 관리한다.

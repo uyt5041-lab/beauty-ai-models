@@ -1,0 +1,64 @@
+{
+  "additionalProperties": false,
+  "description": "Caller-supplied English facts; language and source are not auto-verified.",
+  "properties": {
+    "product_description": {
+      "maxLength": 600,
+      "minLength": 1,
+      "title": "Product Description",
+      "type": "string"
+    },
+    "preset_id": {
+      "default": "clean_studio",
+      "enum": [
+        "clean_studio",
+        "premium_minimal",
+        "vivid_pop"
+      ],
+      "title": "Preset Id",
+      "type": "string"
+    },
+    "layout_id": {
+      "default": "product_right",
+      "enum": [
+        "product_right",
+        "product_left",
+        "product_center_bottom"
+      ],
+      "title": "Layout Id",
+      "type": "string"
+    },
+    "brand_colors": {
+      "items": {
+        "pattern": "^#[0-9A-Fa-f]{6}$",
+        "type": "string"
+      },
+      "maxItems": 3,
+      "title": "Brand Colors",
+      "type": "array"
+    },
+    "creative_direction": {
+      "default": "",
+      "maxLength": 800,
+      "title": "Creative Direction",
+      "type": "string"
+    },
+    "source_revision": {
+      "minimum": 1,
+      "title": "Source Revision",
+      "type": "integer"
+    },
+    "language": {
+      "const": "en",
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    }
+  },
+  "required": [
+    "product_description",
+    "source_revision"
+  ],
+  "title": "CosmeticsPromptBrief",
+  "type": "object"
+}

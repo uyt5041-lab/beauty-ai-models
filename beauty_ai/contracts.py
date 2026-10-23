@@ -262,7 +262,7 @@ class ExternalImageRequest(Contract):
     kind: Literal["api_image"] = "api_image"
     operation: ImageOperation
     pipeline_profile_id: Literal["openai-images"] = "openai-images"
-    pipeline_revision: Literal["1"] = "1"
+    pipeline_revision: Literal["1", "2"] = "1"
     model: ImageProviderModel = "gpt-image-2.5-sunburst-2026-09-08"
     product_images: list[AssetRef] = Field(default_factory=list, max_length=5)
     reference_images: list[AssetRef] = Field(default_factory=list, max_length=5)
@@ -273,6 +273,9 @@ class ExternalImageRequest(Contract):
 
     @model_validator(mode="after")
     def valid_operation(self):
+        if (self.pipeline_revision == "2" and self.operation != "cutout"
+                and self.width * 5 != self.height * 4):
+            raise ValueError("Cosmetics generation and editing require a 4:5 canvas")
         if (self.width % 16 or self.height % 16
                 or not 655360 <= self.width * self.height <= 3686400
                 or self.width > 3 * self.height or self.height > 3 * self.width):

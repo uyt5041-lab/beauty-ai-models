@@ -2,7 +2,7 @@
 
 ## 현재 공개 저장소 운영
 
-**2026-10-22 최신 결정:** LLM은 김다혜, 이미지 생성·편집·누끼는 pi의 **OpenAI API 래퍼**로 구현합니다. B10은 실제 호출 없이 내부 연결을 구현하는 범위입니다. 기본 모델은 `gpt-image-2.5-sunburst-2026-09-08`, 허용 대안은 `gpt-image-2-2026-04-21`이며 실제 계정 권한·품질은 미확인입니다. 아래 BiRefNetLite·SDXL 예제는 보존한 로컬 실험 안내이며 MVP 필수 순서가 아닙니다. 최신 기준은 [이미지 TODO](docs/imageTodo.md)와 [OpenAI 계약](fivecircles/architecture/contract/openai-images.md)을 따릅니다.
+**2026-10-23 현재 기준:** LLM은 김다혜, 이미지 생성·편집·누끼는 pi의 **OpenAI API 래퍼**입니다. 화장품 프리셋에서 꽃을 반드시 넣으라는 조건을 제거했습니다. 꽃 사용은 연출 요청이나 참고 이미지에 따라 가능합니다. B11은 [화장품 프롬프트](docs/cosmeticsPromptGuide.md)를 오프라인으로 적용합니다. 기본 모델은 `gpt-image-2.5-sunburst-2026-09-08`, 허용 대안은 `gpt-image-2-2026-04-21`입니다. B10의 오프라인 구현 이후 사용자 승인으로 MidProject 키를 사용한 실제3회 실행은 성공했으나, 누끼 경계·제품 재구성 때문에 시각 품질은 `NOT_APPROVED`입니다. 현재 팀 지급 키 여부·실제 청구액은 미확인입니다. 아래 BiRefNetLite·SDXL 예제는 보존한 로컬 실험이며 MVP 필수 순서가 아닙니다.
 
 2026-10-22 수신한 확정 MVP와의 대조는 [ssotAlignment.md](docs/ssotAlignment.md)를 따릅니다. 아래 제공받은 README 원문은 과거 설명입니다. 현재 MVP는 카피·이미지·최종 광고 각각1개, 최종4:5이며 부분 수정 UI·복수 시안·다른 비율/플랫폼은 고도화입니다. 기존 내부 revision/hash/cache 보호는 계속 사용합니다.
 
@@ -24,7 +24,7 @@
 
 ## OpenAI 이미지 래퍼 · 실제 호출 없는 예제
 
-현재 실제 API 호출은 금지되어 있습니다. 다음 명령은 키와 환경변수를 읽지 않고 `httpx.MockTransport`만 사용합니다. 생성·편집·누끼 요청, 내부 job, 제출 기록과 다운로드 연결을 합성 fixture로 확인합니다.
+다음 예제는 항상 오프라인입니다. 키와 환경변수를 읽지 않고 `httpx.MockTransport`만 사용합니다. 생성·편집·누끼 요청, 내부 job, 제출 기록과 다운로드 연결을 합성 fixture로 확인합니다.
 
 ```bash
 python -m pip install -e '.[inference,test]'
@@ -42,15 +42,29 @@ python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 | 기본 출력 | 1152×1440, 4:5. 최종 한글 합성·검토·다운로드 서비스는 별도 연결 필요 |
 | 프롬프트 | 김다혜가 생성. negative는 `Avoid` 지시로 명시 전달하며 seed·임의 옵션은 받지 않음 |
 
-`inference_runtime.build_app`은 `OpenAIImagesConfig(live_calls=False)`, 이미지 예산 `0`, 요청별 예약액 `1`을 기본으로 조립합니다. CLI도 `BEAUTY_OPENAI_IMAGE_LIVE_CALLS=false`, `BEAUTY_IMAGE_BUDGET_USD=0`이 기본입니다. 실제 키가 있어도 이것만으로 호출 권한이 생기지 않습니다. 실제 호출은 계정의 모델 권한·잔액, 운영 예산·입력 권리를 확인하고 별도 승인을 받은 뒤에만 활성화합니다. 현재 승인 범위는 오프라인 구현입니다.
+`inference_runtime.build_app`은 `OpenAIImagesConfig(live_calls=False)`, 이미지 예산 `0`, 요청별 예약액 `1`을 기본으로 조립합니다. CLI도 `BEAUTY_OPENAI_IMAGE_LIVE_CALLS=false`, `BEAUTY_IMAGE_BUDGET_USD=0`이 기본입니다. 실제 키가 있어도 이것만으로 호출 권한이 생기지 않습니다. 실제 호출은 계정의 모델 권한·잔액, 운영 예산·입력 권리를 확인하고 별도 승인을 받은 뒤에만 활성화합니다. B11 프롬프트 적용은 추가 실제 호출 없이 검증합니다.
 
 POST 전에 작업 ID·요청 hash·예약을 SQLite에 기록하고 고정 job당 POST를 한 번만 시도합니다. timeout·5xx·응답 유실은 `PROVIDER_SUBMISSION_UNKNOWN`이며 자동 재제출하지 않습니다. 조회는 `GET /internal/v1/jobs/{job_id}/provider`로 내부 기록만 반환합니다. 제공자의 원격 작업 조회·정확히 한 번 처리·자동 환불/정산을 보장하지 않습니다.
 
 제출한 요청의 예약은 과금 미확인·결과 검증/저장 실패에도 유지합니다. 예약액은 실제 가격이나 청구액이 아니며 LLM과 공유하는 팀 예산의 잔액을 조회하지 않습니다. `usage`는 관찰값만 저장하고 없으면 `null`입니다. 응답은 base64 PNG만 받고 URL-only 응답은 거절합니다.
 
-단일 PNG를 기존 `BackgroundResult`의 세 레이어 결과로 바꾸거나 기존 제품 승인·편집 캐시를 자동 통과시키지 않습니다. 생성형 누끼는 사람이 제품 형태·라벨·경계를 확인해야 합니다. 실 API·계정 권한·제품 품질·비용은 아직 검증하지 않았고 모델 성능 우위를 주장하지 않습니다.
+단일 PNG를 기존 `BackgroundResult`의 세 레이어 결과로 바꾸거나 기존 제품 승인·편집 캐시를 자동 통과시키지 않습니다. 생성형 누끼는 사람이 제품 형태·라벨·경계를 확인해야 합니다. 후속3회 실제 실행은 기술 확인이며, 실제품 평가셋·새 프롬프트 품질·실제 청구·팀 인수는 검증하지 않았습니다.
 
 [2026-10-22 스키마 초안](docs/schema-draft-2026-10-22/)은 당시 전달 기록으로 수정하지 않습니다. 현재 `api_image` 단일 PNG 계약은 [OpenAI 계약](fivecircles/architecture/contract/openai-images.md)과 코드 스키마가 기준입니다. 과거 B9의 624 tests·MPS 실행 기록은 B10 검증 총수나 OpenAI 실측이 아닙니다.
+
+## 화장품 프롬프트 · B11
+
+```bash
+python -m beauty_ai.cosmetics_prompt_demo --output outputs/cosmetics-prompts
+```
+
+[입력 예제](examples/cosmetics_brief.json)와 [사용 안내](docs/cosmeticsPromptGuide.md)를 기준으로 `clean_studio`, `premium_minimal`, `vivid_pop`을 비교합니다. CLI는 프롬프트와 검토표를 파일로 내보내며 키·네트워크·이미지 생성은 사용하지 않습니다.
+
+`build_cosmetics_prompt`는 영어 제품 설명·연출을 `ImagePrompt`로 조립하고, `build_cosmetics_request`는 이를 `pipeline_revision="2"`의 편집/가상 생성 요청으로 준비합니다. `build_cosmetics_cutout_request`는 버전2 고정 누끼 지시를 선택합니다. 기본1152×1440이며 버전2 생성/편집은4:5입니다. 기존 버전1 요청·저장 hash·제공자 지시는 유지합니다.
+
+첫 제품 사진을 대표 시점으로, 나머지를 동일 제품 세부 확인 자료로 전달합니다. 새 광고 글자는 추가하지 않고 원래 패키지 그림·라벨·로고는 보존합니다. 꽃은 기본 필수 요소가 아니며 명시한 연출이나 참고 이미지에 따라 사용할 수 있습니다. 브랜드색은 배경에 적용하며 제품을 재색칠하지 않습니다. 한글 카피는 사용자 검토 뒤 렌더러가 합성합니다. 프리셋 여백은 모델에 주는 지시이며 자동 품질 합격이 아닙니다.
+
+다혜의 LLM 프롬프트 생성 기능을 대신하지 않습니다. Langfuse/promptfoo 설치·유료 평가 루프도 이번 범위에 포함하지 않습니다. 필드와 출처는 [B11 계약](fivecircles/architecture/contract/cosmetics-prompts.md)에 있습니다.
 
 ## 대상 저장소의 기존 README 원문
 
@@ -330,12 +344,12 @@ export BEAUTY_MODEL_DEVICE=mps
 python -m beauty_ai.inference_runtime
 # 별도 클라이언트: 후보 확인·승인을 마친 뒤 실행
 python -m examples.run_image render <candidate_id> --job-id <new_uuid> --seed 42 \
-  --background-profile sdxl-inpaint --prompt examples/bright_flower_prompt.json
+  --background-profile sdxl-inpaint --prompt examples/bright_cosmetics_prompt.json
 ```
 
 `sdxl-inpaint/sdxl-base-fp16-v1`은 `bright-ad/1`, `product-right/1`에 연결됩니다. 각 작업 축의 허용 크기는512·768·1024이며 실제로 검증한 크기는 [설치 문서](docs/localModelSetup.md)의 실행 기록을 따릅니다. Euler scheduler·20steps·guidance7.5·strength0.99는 서버 설정입니다. `select`에도 같은 `--background-profile`, `--prompt`, seed를 전달해야 현재 편집의 입력 hash와 생성 작업이 일치합니다.
 
-예제 프롬프트는 직접 작성한 꽃 배경 입력이며 팀 LLM 산출물은 아닙니다. 영어 프롬프트의 positive·negative 각각을 두 tokenizer로 검사합니다. 시작·끝 토큰 포함77개를 넘으면 내용을 로그에 출력하거나 잘라 쓰지 않고 거절합니다.
+현재 예제 프롬프트는 꽃을 필수 요소로 지정하지 않은 화장품 광고 입력이며 팀 LLM 산출물은 아닙니다. 과거 B7/B9의 꽃 관련 실행 기록은 당시 증거로 보존합니다. 영어 프롬프트의 positive·negative 각각을 두 tokenizer로 검사합니다. 시작·끝 토큰 포함77개를 넘으면 내용을 로그에 출력하거나 잘라 쓰지 않고 거절합니다.
 
 제품 영역을 보호하도록 인페인트 마스크를 만들고, 생성 후 텍스트 여백을 중립색으로 복원하며 승인된 제품 레이어를 다시 합성합니다. `scene_underlay`에는 생성 제품 잔상이 남을 수 있습니다. 중복 제품·가짜 문자·부분 투명 경계·조명은 사람이 확인해야 합니다. base SDXL에는 이 경로에서 사용하는 NSFW 검사기가 없으며 `GENERATION_SAFETY_NOT_ASSESSED`를 반환합니다. 유효한 PNG 저장과 광고 품질 승인은 별개입니다.
 

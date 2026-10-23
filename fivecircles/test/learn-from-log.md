@@ -7,3 +7,5 @@
 - B1: deprecated Pillow API는 tests에서도 warning-as-error로 잡는다. 실행 예제는 문서에 명시한 루트 모듈 명령으로 직접 검증한다. [근거](errorlogs/2026-10-22-relay-b1.md).
 
 - B10: 이미지 디코더의 경고 계열을 직접 확인한다. 응답 이후 decode/크기 실패를 전송 여부 미확인으로 분류하지 않는다. [재현·수리](errorlogs/2026-10-22-relay-b10.md).
+
+- 2026-10-23 B11: 사용자의 기본연출 제거 요청을 대상 금지 규칙으로 확대하지 않는다. 기본값과 명시적 연출의 회귀를 분리했다. [사례](errorlogs/2026-10-23-cosmetics-prompts-b11.md).

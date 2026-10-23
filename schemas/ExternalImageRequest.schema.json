@@ -113,8 +113,11 @@
       "type": "string"
     },
     "pipeline_revision": {
-      "const": "1",
       "default": "1",
+      "enum": [
+        "1",
+        "2"
+      ],
       "title": "Pipeline Revision",
       "type": "string"
     },

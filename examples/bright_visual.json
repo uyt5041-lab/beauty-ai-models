@@ -1,8 +1,21 @@
 {
-  "concept": "Bright cosmetics advertisement with flower accents",
-  "style_preset_id": "bright-ad", "style_preset_version": "1",
-  "layout_template_id": "product-right", "layout_template_version": "1",
-  "generation_width": 512, "generation_height": 512,
-  "product_box": {"x": 0.6, "y": 0.2, "width": 0.3, "height": 0.65},
-  "text_safe_zone": {"x": 0.05, "y": 0.12, "width": 0.45, "height": 0.65}
+  "concept": "Bright cosmetics advertisement with clean color-block backgrounds",
+  "style_preset_id": "bright-ad",
+  "style_preset_version": "1",
+  "layout_template_id": "product-right",
+  "layout_template_version": "1",
+  "generation_width": 512,
+  "generation_height": 512,
+  "product_box": {
+    "x": 0.6,
+    "y": 0.2,
+    "width": 0.3,
+    "height": 0.65
+  },
+  "text_safe_zone": {
+    "x": 0.05,
+    "y": 0.12,
+    "width": 0.45,
+    "height": 0.65
+  }
 }

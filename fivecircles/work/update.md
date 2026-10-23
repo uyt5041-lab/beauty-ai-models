@@ -98,3 +98,8 @@
 - 실제 계정/품질/비용·최종 UI/렌더러·팀 인수는 미완료. Git 게시와 로컬 동기화는 [receipt](integrate-log.md)로 별도 확인한다.
 
 - B10 전달 확인: source `fb7305bfb9acc123a71092ab2bc715b402f64efa` 일반push/원격일치, local192파일일치. 다음 실API인수는 사용자 호출금지로 NOT_RUN, 릴레이 STOP_WITH_REASON. 문서 receipt는 별도커밋으로 같은브랜치에 남긴다.
+
+## 2026-10-23 · B11 화장품 프롬프트
+
+- 프리셋3개·배치3개·누끼지시를 revision2에 연결. 기존revision1/hash 유지. 꽃의 기본 추가 요구만 제거하고 명시적 연출은 허용한다.
+- 전체866 tests·로컬60 tests와 설정 검사 PASS. [검증](../test/cosmetics-prompts-b11.md), [사용 가이드](../../docs/cosmeticsPromptGuide.md). 실제API0회, 실제품 품질과 서비스 연결은 미완료.
