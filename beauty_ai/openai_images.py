@@ -144,6 +144,8 @@ class OpenAIImagesAdapter:
 
     @staticmethod
     def _prompt(request: ExternalImageRequest) -> str:
+        if request.managed_prompt is not None:
+            return request.managed_prompt.rendered_text
         if request.pipeline_revision == "2":
             return render_cosmetics_provider_prompt(request)
         if request.operation == "cutout":

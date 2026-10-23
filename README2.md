@@ -1,5 +1,16 @@
 # 추가 사용 예제와 기존 안내
 
+## Langfuse 프롬프트 관리와 3종 비교
+
+`python -m pip install -e '.[test,observability]'`로 선택 의존성을 설치합니다. 로컬 `.env`에 `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`을 설정합니다. 환경 파일은 자동 로드하지 않습니다.
+
+- `beautyai/cosmetics/clean-studio`, `premium-minimal`, `vivid-pop`은 제품 설명·색상·연출·배치·참고 이미지 역할을 변수로 받는 텍스트 프롬프트입니다.
+- 관리 화면에서 새 버전을 만들고 production 라벨을 옮기면 다음 요청부터 사용합니다. 제출 전 `ManagedPromptSnapshot`에 이름·버전·최종 문장·해시를 고정합니다.
+- [비교 실행기](scripts/compare_cosmetics_presets.py)는 `--execute`가 있어야 실제 API를 호출합니다. 같은 원본으로 3회만 호출하고 재시도하지 않습니다. `--publish-prompts`는 프롬프트의 새 production 버전을 등록하므로 최초 설정이나 의도한 갱신에만 사용합니다.
+- Langfuse에는 프롬프트 연결·사용량·이미지 해시를 기록합니다. 비용 추정과 실제 청구는 구분하며, 기록 전송 후 서버 조회로 반영 여부를 확인합니다.
+
+자세한 예제는 [Langfuse 안내](docs/langfusePromptManagement.md), 검증 결과는 [B12 기록](fivecircles/test/cosmetics-langfuse-b12.md)에 있습니다.
+
 ## 현재 공개 저장소 운영
 
 **2026-10-23 현재 기준:** LLM은 김다혜, 이미지 생성·편집·누끼는 pi의 **OpenAI API 래퍼**입니다. 화장품 프리셋에서 꽃을 반드시 넣으라는 조건을 제거했습니다. 꽃 사용은 연출 요청이나 참고 이미지에 따라 가능합니다. B11은 [화장품 프롬프트](docs/cosmeticsPromptGuide.md)를 오프라인으로 적용합니다. 기본 모델은 `gpt-image-2.5-sunburst-2026-09-08`, 허용 대안은 `gpt-image-2-2026-04-21`입니다. B10의 오프라인 구현 이후 사용자 승인으로 MidProject 키를 사용한 실제3회 실행은 성공했으나, 누끼 경계·제품 재구성 때문에 시각 품질은 `NOT_APPROVED`입니다. 현재 팀 지급 키 여부·실제 청구액은 미확인입니다. 아래 BiRefNetLite·SDXL 예제는 보존한 로컬 실험이며 MVP 필수 순서가 아닙니다.

@@ -145,3 +145,16 @@
 - 전체866 tests(13.90s), 로컬beautyAi 신규60 tests(0.38s), 설정/링크/diff 검사 PASS. [검증](../test/cosmetics-prompts-b11.md). 실제 API호출0회·생성이미지0장.
 - 문서/TODO의 B10과 후속실호출 상태를 구분하고, 활성예제를 화장품으로 교체했다. 과거 꽃 예제는 legacy로 동일바이트 보존.
 - 배포/LLM구현/팀인수는 이번 범위가 아니다. 게시 대상plan/models, PR/협업일지 변경 없음.
+
+
+## 2026-10-23 · B12 착수
+
+- 사용자 요청: 새 프리셋3종을 각1장 실제 생성하고 Langfuse로 관리한다. 기존 가상 세럼 원본을 공통 입력으로 사용한다.
+- 사전 계약: [Langfuse 프롬프트 관리](../architecture/contract/langfuse-prompts.md). 원격 텍스트버전을 요청에 고정하고 사용량·결과해시를 연결한다.
+- 실제 호출 한도3회, 자동재시도 없음. 기존 Langfuse 프로젝트에 beautyai/cosmetics 이름공간을 사용한다. 비밀값·생성이미지는 Git에서 제외한다.
+
+## 2026-10-23 · B12 검증 완료
+
+- Langfuse 3프리셋 production v1, 요청 전 고정 스냅샷, SDK5 generation 기록을 구현했다. 기존요청 직렬화·해시는 보존한다.
+- 동일 가상 세럼 원본으로 실제편집3회/PNG3장 성공. 추정비용 $0.079995, 실제청구 null. 원격 프롬프트버전·출력해시·사용량 3건 재조회 일치.
+- 전체934 tests PASS19.88s. 신규Langfuse57, 실행기11. 사람이 최종검토한 상태는 아니며 실제브랜드 라벨과 팀연동 인수는 미완료. [근거](../test/cosmetics-langfuse-b12.md).

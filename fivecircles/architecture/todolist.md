@@ -37,3 +37,5 @@
 - [ ] 실사진 품질·외부 API 실제 실행·서비스/렌더러·팀 인수: 실제 환경/공동 확인 근거 필요. CUDA/GCP GPU 이전은 현재 필수 제외.
 
 - [x] B11 화장품 프롬프트3종·배치·revision2 제공자 지시·오프라인 프리뷰. 기본 꽃 요구만 제거, 꽃 금지 없음. 전체866 tests·로컬60 tests PASS. [검증](../test/cosmetics-prompts-b11.md). 실제품 품질/팀인수는 원본imageTodo의 API-06·SSOT 항목에서 계속 관리한다.
+
+- B12: Langfuse 관리 프롬프트·고정 스냅샷·실행 관찰과 화장품 3종 실비교. [계약](contract/langfuse-prompts.md), [검증](../test/cosmetics-langfuse-b12.md). 서비스 인수와 구분한다.

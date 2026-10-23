@@ -86,6 +86,41 @@
       ],
       "title": "ImagePrompt",
       "type": "object"
+    },
+    "ManagedPromptSnapshot": {
+      "additionalProperties": false,
+      "description": "An immutable, fetched Langfuse text version resolved before queueing.",
+      "properties": {
+        "name": {
+          "pattern": "^beautyai/cosmetics/(clean-studio|premium-minimal|vivid-pop)$",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "rendered_text": {
+          "maxLength": 16000,
+          "minLength": 1,
+          "title": "Rendered Text",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "rendered_text",
+        "sha256"
+      ],
+      "title": "ManagedPromptSnapshot",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -150,6 +185,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/ImagePrompt"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "managed_prompt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ManagedPromptSnapshot"
         },
         {
           "type": "null"

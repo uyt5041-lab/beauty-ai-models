@@ -257,6 +257,23 @@ ImageProviderModel = Literal[
 ImageOperation = Literal["generate", "edit", "cutout"]
 
 
+class ManagedPromptSnapshot(Contract):
+    """An immutable, fetched Langfuse text version resolved before queueing."""
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    name: str = Field(pattern=r"^beautyai/cosmetics/(clean-studio|premium-minimal|vivid-pop)$")
+    version: int = Field(ge=1, strict=True)
+    rendered_text: str = Field(min_length=1, max_length=16000)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def valid_digest(self):
+        if (not self.rendered_text.strip()
+                or any(ord(c) < 32 and c not in "\n\t\r" for c in self.rendered_text)
+                or hashlib.sha256(self.rendered_text.encode("utf-8")).hexdigest() != self.sha256):
+            raise ValueError("Invalid managed prompt integrity")
+        return self
+
+
 class ExternalImageRequest(Contract):
     """One external image operation; input order is part of the snapshot hash."""
     kind: Literal["api_image"] = "api_image"
@@ -267,12 +284,29 @@ class ExternalImageRequest(Contract):
     product_images: list[AssetRef] = Field(default_factory=list, max_length=5)
     reference_images: list[AssetRef] = Field(default_factory=list, max_length=5)
     prompt: ImagePrompt | None = None
+    managed_prompt: ManagedPromptSnapshot | None = None
     width: int = Field(default=1152, ge=16, le=3840, strict=True)
     height: int = Field(default=1440, ge=16, le=3840, strict=True)
     quality: Literal["low", "medium", "high"] = "medium"
 
+    @model_serializer(mode="wrap")
+    def serialize_without_unused_managed_prompt(self, handler: SerializerFunctionWrapHandler):
+        serialized = handler(self)
+        if self.managed_prompt is None:
+            serialized.pop("managed_prompt", None)
+        return serialized
+
     @model_validator(mode="after")
     def valid_operation(self):
+        if self.managed_prompt is not None:
+            if self.pipeline_revision != "2" or self.operation == "cutout":
+                raise ValueError("Managed prompts require cosmetics generation or editing")
+            # Revalidate nested snapshots created with model_copy/model_construct.
+            ManagedPromptSnapshot.model_validate(self.managed_prompt.model_dump())
+            parts = self.prompt.prompt_version.split("/") if self.prompt else []
+            if (len(parts) != 3 or parts[0] != "cosmetics-v1"
+                    or self.managed_prompt.name != "beautyai/cosmetics/" + parts[1].replace("_", "-")):
+                raise ValueError("Managed prompt must match the cosmetics preset")
         if (self.pipeline_revision == "2" and self.operation != "cutout"
                 and self.width * 5 != self.height * 4):
             raise ValueError("Cosmetics generation and editing require a 4:5 canvas")

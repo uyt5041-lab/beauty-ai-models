@@ -103,3 +103,8 @@
 
 - 프리셋3개·배치3개·누끼지시를 revision2에 연결. 기존revision1/hash 유지. 꽃의 기본 추가 요구만 제거하고 명시적 연출은 허용한다.
 - 전체866 tests·로컬60 tests와 설정 검사 PASS. [검증](../test/cosmetics-prompts-b11.md), [사용 가이드](../../docs/cosmeticsPromptGuide.md). 실제API0회, 실제품 품질과 서비스 연결은 미완료.
+
+## 2026-10-23 · B12 Langfuse와 프리셋 비교
+
+- 관리 템플릿3개, 고정버전/최종본문/해시, SDKgeneration 관찰을 연결했다. 실제편집3회 성공, 원격저장 readback3건 일치.
+- 전체934tests PASS. 밝은컬러는 광고주목도, 클린은 제품재질 표현에 우선추천. 실제품라벨/팀인수 미검증. [실행·비용·시각 비교](../test/cosmetics-langfuse-b12.md).

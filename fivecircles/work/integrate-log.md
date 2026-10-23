@@ -91,3 +91,10 @@
 - 전체866 tests(13.90s), 로컬beautyAi 신규60 tests(0.38s), 설정/링크/diff 검사 PASS. [검증](../test/cosmetics-prompts-b11.md).
 - 로컬beautyAi에 같은 파일을 동기화했다. 프리뷰CLI는 프롬프트/요청템플릿만 출력했고 실제API0회·생성이미지0이다. 꽃은 필수연출에서 제거했으며 금지하지 않는다.
 - CI/CD: NOT_RUN. 이 전달은 Python라이브러리·프리셋·문서와 로컬 오프라인CLI 범위이며 서비스배포/팀인수가 아니다. 실제품 품질과 서비스 연결은 남아 있다.
+
+
+## 2026-10-23 · B12 전달 전 검증
+
+- plan/models에서 Langfuse 관리프롬프트3개·고정스냅샷·SDK관찰·실비교실행기를 구현했다. 일반push 대상이며 PR/협업일지/배포 변경은 없다.
+- 원격기준 25d9e69와 HEAD 0/0에서 작업했다. 전체934 tests19.88s, 로컬신규68 tests7.04s, pip check·설정/링크·README5절·diff 검사PASS.
+- 실제OpenAI편집3회 성공. Langfuse3종production v1과 실행관찰의 프롬프트/버전/결과해시/사용량을 원격재조회해 일치 확인. 실제청구/사람최종인수는 미확인. [검증](../test/cosmetics-langfuse-b12.md).
