@@ -31,11 +31,38 @@ python -m pytest -q -W error
 python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 ```
 
-화장품 프리셋3개의 프롬프트만 확인하려면 아래 명령을 사용합니다. 키 조회·네트워크·이미지 생성 없이 파일을 내보냅니다.
+### 고정 프롬프트 위치와 사용법
+
+공통 지시는 제품 형태·재질·라벨 보존, 새 광고 문구 생성 제한, 제품 사진과 참고 사진의 역할을 정합니다. 제품별 설명과 연출 입력을 이 지시에 붙여 최종 프롬프트를 만듭니다.
+
+| 파일 | 용도 |
+| --- | --- |
+| [beauty_ai/cosmetics_prompts.py](beauty_ai/cosmetics_prompts.py) | 로컬 고정 지시와 조립 코드. `PRESETS`는 배경·조명, `_LAYOUTS`는 배치, `_PRESERVE`는 제품 보존, `CUTOUT_PROMPT_V2`는 누끼 지시입니다. |
+| [examples/cosmetics_brief.json](examples/cosmetics_brief.json) | 제품별 입력 예시. 제품 설명·프리셋·배치·색·추가 연출을 바꿉니다. |
+| [beauty_ai/langfuse_prompts.py](beauty_ai/langfuse_prompts.py) | Langfuse 프롬프트 템플릿과 버전 관리 연결입니다. |
+| [vivid-pop-v2.json](prompts/cosmetics/vivid-pop-v2.json) · [vivid-pop-v3.json](prompts/cosmetics/vivid-pop-v3.json) | 밝은 컬러 프롬프트의 버전 저장본입니다. v2는 원본 재질, v3는 제품 폭·길이·캡 비율 보존을 보강했습니다. |
+
+제품마다 고정 코드부터 수정하지 마세요. 입력 JSON의 `product_description`에 확인한 제품 특징을 영어로 적고, `creative_direction`에 추가 연출을 적습니다. `preset_id`는 `clean_studio`, `premium_minimal`, `vivid_pop` 중 하나이며, `layout_id`는 `product_right`, `product_left`, `product_center_bottom` 중 하나입니다. `brand_colors`는 배경 강조색입니다. 원본 제품 색을 바꾸는 값이 아닙니다.
+
+화장품 프리셋 3개의 로컬 프롬프트를 확인하려면 아래 명령을 사용합니다. 키 조회·네트워크·이미지 생성 없이 파일을 내보냅니다.
 
 ```bash
 python -m beauty_ai.cosmetics_prompt_demo --output outputs/cosmetics-prompts
 ```
+
+입력 JSON을 수정한 뒤 비교하려면 다음과 같이 실행합니다. 이 데모는 입력의 제품 설명과 연출을 바탕으로 **세 프리셋을 모두** 내보냅니다.
+
+```bash
+python -m beauty_ai.cosmetics_prompt_demo \
+  --brief examples/cosmetics_brief.json \
+  --output outputs/cosmetics-prompts
+```
+
+새 run 폴더의 각 프리셋 아래에서 `provider-prompt.txt`를 열면 제공자에게 전달할 전체 문장을 볼 수 있습니다. `brief.json`은 입력, `image-prompt.json`은 조립 결과, `request-template.json`은 요청 예시입니다. 요청 예시의 사진 자산은 가짜 값이므로 실제 제품 광고에는 업로드한 제품 사진과 `edit` 요청을 사용합니다.
+
+**로컬 `cosmetics-v1`과 Langfuse의 숫자 버전은 별개입니다.** 위 데모는 로컬 빌더를 확인합니다. 실제 요청에 Langfuse 스냅샷(`managed_prompt`)이 있으면 고정된 `rendered_text`를 사용하므로 로컬 파일 수정만으로 그 요청이 바뀌지 않습니다. 공통 지시를 바꿀 때는 기존 버전을 덮어쓰지 말고 새 버전을 만든 뒤, 실험 준비 단계에서 해당 버전을 선택하고 호출 전 미리보기를 확인하세요. v3 파일이 있다는 이유만으로 모든 요청에 v3가 자동 적용되지는 않습니다.
+
+자세한 조립 예시는 [프롬프트 사용 안내](docs/cosmeticsPromptGuide.md), 버전 관리는 [Langfuse 관리 안내](docs/langfusePromptManagement.md), 사진·프리셋·버전 선택과 호출 전 미리보기는 [실험 실행기 안내](docs/experimentRunner.md)를 따릅니다.
 
 설정 예시는 [.env.example](.env.example)에 있습니다. 파일에는 비밀값을 넣지 마세요. 실제 값은 로컬 환경변수나 별도의 비밀 관리 수단으로 주입합니다. **패키지는 `.env`를 자동으로 읽지 않습니다.**
 
