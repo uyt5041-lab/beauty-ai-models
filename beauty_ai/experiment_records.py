@@ -449,6 +449,16 @@ def collect_experiments(project_root: Path) -> list[dict]:
                     if row["request"].get("kind") != "api_image" or row["job_id"] not in by_id:
                         continue
                     records.append(_record(root, run, row, report_path, report, by_id[row["job_id"]], "api"))
+        trials = outputs / "experiment-trials"
+        if trials.exists():
+            if trials.is_symlink() or not trials.is_dir():
+                _fail("EXPERIMENT_UNSAFE_PATH")
+            from .experiment_trial_records import collect_trial
+            for run in sorted(trials.iterdir()):
+                if run.is_symlink():
+                    _fail("EXPERIMENT_UNSAFE_PATH")
+                if run.is_dir() and (run / "plan.json").exists() and (run / "report.json").exists():
+                    records.extend(collect_trial(run / "plan.json"))
         for run in sorted(outputs.iterdir()):
             if not _LOCAL.fullmatch(run.name):
                 continue

@@ -1,5 +1,7 @@
 # Langfuse 이미지 프롬프트 관리
 
+현재 실제품 실험은 [새 실행기 안내](experimentRunner.md)를 따른다. 아래 B12의 3종 비교 명령과 production 자동 조회·게시 설명은 과거 실행 기록이다. 새 실행기는 로컬에 저장한 정확한 버전으로 계획을 고정한다.
+
 화장품 광고 프리셋 3개의 영어 이미지 지시문을 Langfuse의 `text` 프롬프트로 관리한다.
 사용하는 파이썬 패키지는 선택 의존성 `langfuse==5.0.4`다. LLM 상품 분석과 광고 문구 작성은 김다혜 담당으로 유지한다.
 
@@ -93,3 +95,10 @@ SDK의 자동 비용 계산이 보이더라도 팀 예산 잔액이나 실제 �
 [프롬프트와 실행 연결](https://langfuse.com/docs/prompt-management/features/link-to-traces),
 [현재 SDK](https://langfuse.com/docs/observability/sdk/overview),
 [추적 검수 기준](https://langfuse.com/docs/observability/best-practices).
+
+### 2026-10-23 추가 비교 — 비율 보존 프롬프트 v3
+
+- `beautyai/cosmetics/vivid-pop` v1과 v3를 비교했다. 같은 입력 3장·모델·설정에서 제품 폭·길이·캡 비율 보존 문구만 추가했다. 정면 사진의 시점과 형태를 기준으로 위치 이동·등방 확대/축소를 요구한다.
+- v3 프롬프트와 [새 trace](https://jp.cloud.langfuse.com/project/cmt966agt0007ad0jn1c3s4up/traces/debacc2ea0d95ae326fde1ec3168aff4)를 원격 조회했다. 두 실행의 평가 점수 16개(각 8개)는 trace·observation 연결과 값도 확인했다. 배포용 프롬프트 원본은 `prompts/cosmetics/vivid-pop-v3.json`이다. [W&B 비교](https://forge.coreweave.com/wandb/uyt5041-alphaflower/beautyai-image-experiments/runs/cmp-86cd9d87740e2962079b)는 `READBACK_VERIFIED`이며 파일 12개 해시·표 2행·관련 실행 3개의 현재 정책 링크를 확인했다.
+- v3 실제 생성 1회: 25.674823초·추정 $0.050838. 이전은 27.393523초·추정 $0.050008. 두 AI 점수는 81/100이며 개선은 미확정이다.
+- 비율 차이는 **사용자선택**으로 표시한다. 자동 탈락·자동 재생성은 하지 않는다. 과거 형태 3/5 기록을 보존하며 사람 검수·출시 승인·청구 검증은 별도로 남긴다.

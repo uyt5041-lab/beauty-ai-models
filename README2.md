@@ -1,5 +1,15 @@
 # 추가 사용 예제와 기존 안내
 
+## 이미지 파트 통합 기준 브랜치
+
+**2026-10-26: `codex/image-main`**에 이미지 API·프롬프트·실험 실행기·W&B·평가·문서·테스트를 모았습니다. 기존 `plan/models` 이력에서 이어진 브랜치입니다. [폴더 트리·실행 그래프·팀원 실행 순서](docs/imageArchitecture.md)와 [전체 파일 트리](docs/repositoryTree.txt)를 먼저 보세요. 저장된 Graft 그래프를 우선 사용하며 로컬 캐시는 Git에 포함하지 않습니다.
+
+현재 통합 소스의 자동 테스트는 **1,321개 PASS**입니다. 팀 UI·텍스트·최종 렌더러의 실제 E2E 인수는 [LINK-01~05](docs/imageTodo.md)에 남아 있습니다.
+
+## 실제품 실험 실행기
+
+제품 사진 2~5장과 참고 사진 0~5장을 받습니다. 프리셋·버전·호출 상한을 정한 뒤 호출 전 한글 HTML을 확인합니다. 실제 실행은 저장한 계획과 해시를 사용합니다. 실패·미확인 결과 뒤에는 다음 호출을 멈춥니다. [실행 방법](docs/experimentRunner.md) · [단계별 판정](fivecircles/work/experiment-runner-stages.md).
+
 ## W&B 실험 비교와 비용 관리
 
 Langfuse는 프롬프트 버전을 관리한다. W&B는 이미지 실험을 비교한다. 기존 실행 20건을 W&B에 올렸고, 저장된 내용이 원본과 같은지 확인했다. 비용 관리 작업을 FinOps라고 부른다. 추정 비용과 실제 청구액은 따로 기록한다.
@@ -13,8 +23,8 @@ Langfuse는 프롬프트 버전을 관리한다. W&B는 이미지 실험을 비�
 `python -m pip install -e '.[test,observability]'`로 선택 의존성을 설치합니다. 로컬 `.env`에 `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`을 설정합니다. 환경 파일은 자동 로드하지 않습니다.
 
 - `beautyai/cosmetics/clean-studio`, `premium-minimal`, `vivid-pop`은 제품 설명·색상·연출·배치·참고 이미지 역할을 변수로 받는 텍스트 프롬프트입니다.
-- 관리 화면에서 새 버전을 만들고 production 라벨을 옮기면 다음 요청부터 사용합니다. 제출 전 `ManagedPromptSnapshot`에 이름·버전·최종 문장·해시를 고정합니다.
-- [비교 실행기](scripts/compare_cosmetics_presets.py)는 `--execute`가 있어야 실제 API를 호출합니다. 같은 원본으로 3회만 호출하고 재시도하지 않습니다. `--publish-prompts`는 프롬프트의 새 production 버전을 등록하므로 최초 설정이나 의도한 갱신에만 사용합니다.
+- 관리 화면의 버전과 실행할 버전을 구분합니다. 현재 실험 실행기는 저장한 숫자 버전을 명시적으로 선택합니다. `production` 변경은 준비한 계획을 바꾸지 않습니다.
+- [비교 실행기](scripts/compare_cosmetics_presets.py)는 현재 `prepare`/`execute` 명령으로 동작합니다. 선택한 건수만 계획하고 상한을 고정합니다. 프롬프트 게시와 원격 버전 조회는 별도 작업입니다. 과거 3회 비교 결과는 B12 기록에 보존합니다.
 - Langfuse에는 프롬프트 연결·사용량·이미지 해시를 기록합니다. 비용 추정과 실제 청구는 구분하며, 기록 전송 후 서버 조회로 반영 여부를 확인합니다.
 
 자세한 예제는 [Langfuse 안내](docs/langfusePromptManagement.md), 검증 결과는 [B12 기록](fivecircles/test/cosmetics-langfuse-b12.md)에 있습니다.

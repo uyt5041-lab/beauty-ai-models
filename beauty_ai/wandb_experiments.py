@@ -49,6 +49,8 @@ HISTORICAL_RATE_BASIS = {
 def historical_estimate(record: dict) -> tuple[float | None, str, dict | None]:
     if record.get("estimated_cost_usd") is not None:
         return record["estimated_cost_usd"], "RECORDED_IN_SOURCE", None
+    if (record.get("data_provenance") or {}).get("execution_schema") == "beautyai-experiment-execution-v1":
+        return None, "NOT_CALCULATED_NO_RATE_BASIS", None
     usage = record.get("usage") or {}
     fields = ("input_text_tokens", "input_image_tokens", "output_tokens")
     if (record.get("family") == "api" and record.get("model") == HISTORICAL_RATE_BASIS["model"]
@@ -176,7 +178,7 @@ def finops_summary(packages: list[dict]) -> dict:
     known_estimates = [r["estimated_cost_usd"] for r in api if r["estimated_cost_usd"] is not None]
     known_bills = [r["actual_cost_usd"] for r in api if r["actual_cost_usd"] is not None]
     fully_billed = bool(api) and len(known_bills) == len(api)
-    return {
+    result = {
         "policy_status": "PROVISIONAL_NOT_TEAM_APPROVED",
         "release_weight_finops_pct": 40, "release_weight_image_quality_pct": 40,
         "release_weight_service_pct": 20,
@@ -206,6 +208,13 @@ def finops_summary(packages: list[dict]) -> dict:
         "finops_gate": "BLOCKED_MISSING_ACCOUNT_BILLING_AND_FINAL_AD_EVIDENCE",
         "cost_scope": "recorded_image_experiments_only_not_team_total_or_full_ad_pipeline",
     }
+    # Preserve historical overview bytes; add the new semantics only for v1 trials.
+    if any((r.get("data_provenance") or {}).get("execution_schema") == "beautyai-experiment-execution-v1"
+           for r in records):
+        result.update(api_call_count=None, api_attempt_record_count=len(api),
+            api_call_count_basis="UNKNOWN_FOR_NEW_RUNNER_SUBMISSION_ATTEMPTS",
+            unresolved_execution_count=sum(r["status"] in {"unknown", "timed_out", "runner_error"} for r in records))
+    return result
 
 
 def validate_staged_package(package: dict) -> list[str]:

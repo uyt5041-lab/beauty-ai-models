@@ -1,0 +1,296 @@
+2026-10-26 · codex/image-main · Git 게시 파일 트리
+로컬 .env / outputs / uploads / DB / graft 캐시는 제외
+파일 수: 257
+
+beauty-ai-models/
+
+├── .agents/
+│   └── skills/
+│       └── fivecircles/
+│           └── SKILL.md
+├── beauty_ai/
+│   ├── __init__.py
+│   ├── ad_evaluation.py
+│   ├── api_image_processor.py
+│   ├── assets.py
+│   ├── birefnet_processor.py
+│   ├── contracts.py
+│   ├── cosmetics_prompt_demo.py
+│   ├── cosmetics_prompts.py
+│   ├── errors.py
+│   ├── evaluation.py
+│   ├── evaluation_metrics.py
+│   ├── execution_trace.py
+│   ├── experiment_execution.py
+│   ├── experiment_inputs.py
+│   ├── experiment_plan.py
+│   ├── experiment_records.py
+│   ├── experiment_runner.py
+│   ├── experiment_trial_records.py
+│   ├── experiment_wandb.py
+│   ├── image_edits.py
+│   ├── image_gateway.py
+│   ├── image_integrity.py
+│   ├── image_preparation.py
+│   ├── image_worker.py
+│   ├── inference_api.py
+│   ├── inference_runtime.py
+│   ├── job_ledger.py
+│   ├── langfuse_prompts.py
+│   ├── local_processor.py
+│   ├── model_store.py
+│   ├── openai_images.py
+│   ├── openai_images_demo.py
+│   ├── ports.py
+│   ├── product_approval.py
+│   ├── provider_attempts.py
+│   ├── review_service.py
+│   ├── sdxl_model_store.py
+│   ├── sdxl_processor.py
+│   ├── text_gateway.py
+│   └── wandb_experiments.py
+├── docs/
+│   ├── modelManifests/
+│   │   └── sdxl-base-fp16.json
+│   ├── schema-draft-2026-10-22/
+│   │   ├── current/
+│   │   │   ├── AdOptions.schema.json
+│   │   │   ├── AssetRef.schema.json
+│   │   │   ├── BackgroundRequest.schema.json
+│   │   │   ├── CampaignDraft.schema.json
+│   │   │   ├── CopyBundle.schema.json
+│   │   │   ├── CutoutRequest.schema.json
+│   │   │   ├── ImageJob.schema.json
+│   │   │   ├── ImagePrompt.schema.json
+│   │   │   ├── LLMReview.schema.json
+│   │   │   ├── ProductFacts.schema.json
+│   │   │   ├── ProductObservation.schema.json
+│   │   │   ├── ReviewReport.schema.json
+│   │   │   └── VisualBrief.schema.json
+│   │   ├── examples/
+│   │   │   ├── copy-bundle.json
+│   │   │   ├── image-handoff.json
+│   │   │   ├── image-prompt.json
+│   │   │   └── service-intake.json
+│   │   ├── proposed/
+│   │   │   ├── ImageHandoffDraft.schema.json
+│   │   │   └── ServiceIntakeDraft.schema.json
+│   │   ├── README.md
+│   │   ├── publication-validation.json
+│   │   └── source-snapshot.json
+│   ├── TEST_REPORT.original.md
+│   ├── cosmeticsPromptGuide.md
+│   ├── experimentRunner.md
+│   ├── imageArchitecture.md
+│   ├── imageEvaluationPlan.md
+│   ├── imageExperiment-20261023-avene.md
+│   ├── imageTodo.md
+│   ├── integrationRequests-20261025.md
+│   ├── langfusePromptManagement.md
+│   ├── llmTodo.md
+│   ├── localModelSetup.md
+│   ├── modelIntegrationReview.md
+│   ├── repositoryTree.txt
+│   ├── schemaDraft.md
+│   ├── ssotAlignment.md
+│   ├── wandbExperiments.md
+│   └── wandbFinopsWorkExamples.md
+├── examples/
+│   ├── evaluation/
+│   │   ├── image-eval-v0.1.json
+│   │   ├── real-product-manifest.template.json
+│   │   ├── run_worked_examples.py
+│   │   └── worked-examples.json
+│   ├── legacy/
+│   │   ├── README.md
+│   │   └── bright_flower_prompt.json
+│   ├── bright_cosmetics_prompt.json
+│   ├── bright_visual.json
+│   ├── cosmetics_brief.json
+│   ├── evaluation_manifest.json
+│   ├── prepare_product.py
+│   ├── run_image.py
+│   └── wiring.py
+├── fivecircles/
+│   ├── agent/
+│   │   ├── skills/
+│   │   │   ├── fivecircles/
+│   │   │   │   └── SKILL.md
+│   │   │   ├── README.md
+│   │   │   ├── protocol_logging_summary.md
+│   │   │   └── protocol_quick_debug.md
+│   │   ├── README.md
+│   │   ├── agent-guidelines.md
+│   │   ├── authority.md
+│   │   ├── collaboration-protocol.md
+│   │   ├── debate.md
+│   │   ├── git.md
+│   │   ├── methodology.md
+│   │   ├── mistakes-arrest.md
+│   │   ├── operational-guidance.md
+│   │   ├── policies.md
+│   │   ├── queue.json
+│   │   ├── sync.md
+│   │   └── workflow.md
+│   ├── architecture/
+│   │   ├── contract/
+│   │   │   ├── cosmetics-prompts.md
+│   │   │   ├── experiment-runner.md
+│   │   │   ├── experiment-wandb-bridge.md
+│   │   │   ├── framework-setup.md
+│   │   │   ├── image-runtime.md
+│   │   │   ├── langfuse-prompts.md
+│   │   │   ├── openai-images.md
+│   │   │   └── wandb-experiments.md
+│   │   ├── spec/
+│   │   │   ├── README.md
+│   │   │   ├── image-runtime-current-flow.mmd
+│   │   │   ├── image-runtime-current-flow.png
+│   │   │   ├── image-runtime-flow.html
+│   │   │   ├── image-runtime-flow.md
+│   │   │   ├── image-runtime-target-flow.mmd
+│   │   │   └── image-runtime-target-flow.png
+│   │   └── todolist.md
+│   ├── maintenance/
+│   │   └── maintenance.md
+│   ├── requirements/
+│   │   ├── debates/
+│   │   │   └── README.md
+│   │   ├── README.md
+│   │   ├── current.md
+│   │   └── decisions.md
+│   ├── scoring/
+│   │   ├── agent-scoring-policy.md
+│   │   ├── log-score.md
+│   │   └── optimization.md
+│   ├── test/
+│   │   ├── errorlogs/
+│   │   │   ├── 2026-10-22-relay-b1.md
+│   │   │   ├── 2026-10-22-relay-b10.md
+│   │   │   ├── 2026-10-22-relay-b2.md
+│   │   │   ├── 2026-10-22-relay-b3.md
+│   │   │   ├── 2026-10-22-relay-b4.md
+│   │   │   ├── 2026-10-23-cosmetics-prompts-b11.md
+│   │   │   ├── 2026-10-23-experiment-wandb-icloud.md
+│   │   │   ├── 2026-10-23-langfuse-b12.md
+│   │   │   └── README.md
+│   │   ├── playwright-screenshots/
+│   │   │   ├── image-runtime-flow-b1.png
+│   │   │   ├── image-runtime-flow-b2.png
+│   │   │   ├── image-runtime-flow-b3.png
+│   │   │   ├── image-runtime-flow-b4.png
+│   │   │   ├── image-runtime-flow-b5.png
+│   │   │   ├── image-runtime-flow-b6.png
+│   │   │   ├── image-runtime-flow-b7.png
+│   │   │   ├── image-runtime-flow-b8.png
+│   │   │   └── image-runtime-flow-b9.png
+│   │   ├── cosmetics-langfuse-b12.md
+│   │   ├── cosmetics-matte-b13.md
+│   │   ├── cosmetics-prompts-b11.md
+│   │   ├── image-main-20261026.md
+│   │   ├── learn-from-log.md
+│   │   ├── openai-live-smoke-2026-10-22.md
+│   │   ├── relay-b1.md
+│   │   ├── relay-b10.md
+│   │   ├── relay-b2.md
+│   │   ├── relay-b3.md
+│   │   ├── relay-b4.md
+│   │   ├── relay-b5.md
+│   │   ├── relay-b6.md
+│   │   ├── relay-b7.md
+│   │   ├── relay-b8.md
+│   │   ├── relay-b9.md
+│   │   ├── setup-validation.md
+│   │   ├── testpolicy.md
+│   │   └── wandb-finops-b14.md
+│   ├── work/
+│   │   ├── experiment-runner-stages.md
+│   │   ├── experiment-wandb-bridge-stages.md
+│   │   ├── integrate-log.md
+│   │   ├── relay.md
+│   │   ├── update.md
+│   │   ├── worklog.md
+│   │   └── workpolicy.md
+│   ├── LICENSE
+│   ├── README.md
+│   ├── UPSTREAM.md
+│   ├── agent-guidelines.md
+│   ├── project.json
+│   └── upstream-manifest.json
+├── prompts/
+│   └── cosmetics/
+│       ├── vivid-pop-v2.json
+│       └── vivid-pop-v3.json
+├── schemas/
+│   ├── BackgroundRequest.schema.json
+│   ├── CampaignDraft.schema.json
+│   ├── CopyBundle.schema.json
+│   ├── CosmeticsPromptBrief.schema.json
+│   ├── CutoutRequest.schema.json
+│   ├── ExternalImageRequest.schema.json
+│   ├── ExternalImageResult.schema.json
+│   ├── ImageJob.schema.json
+│   ├── ImagePrompt.schema.json
+│   ├── ImageProviderUsage.schema.json
+│   ├── LLMReview.schema.json
+│   ├── ManagedPromptSnapshot.schema.json
+│   ├── ProductObservation.schema.json
+│   └── ReviewReport.schema.json
+├── scripts/
+│   ├── check_fivecircles.py
+│   └── compare_cosmetics_presets.py
+├── tests/
+│   ├── test_ad_evaluation.py
+│   ├── test_api_image_processor.py
+│   ├── test_assets.py
+│   ├── test_birefnet_processor.py
+│   ├── test_cosmetics_comparison.py
+│   ├── test_cosmetics_prompt_demo.py
+│   ├── test_cosmetics_prompts.py
+│   ├── test_evaluation.py
+│   ├── test_evaluation_metrics.py
+│   ├── test_execution_api.py
+│   ├── test_execution_ledger.py
+│   ├── test_execution_trace.py
+│   ├── test_experiment_execution.py
+│   ├── test_experiment_inputs.py
+│   ├── test_experiment_limits.py
+│   ├── test_experiment_plan.py
+│   ├── test_experiment_records.py
+│   ├── test_experiment_runner.py
+│   ├── test_experiment_trial_records.py
+│   ├── test_experiment_wandb.py
+│   ├── test_external_image_contracts.py
+│   ├── test_external_job_integration.py
+│   ├── test_image_cli.py
+│   ├── test_image_edits.py
+│   ├── test_image_preparation.py
+│   ├── test_image_prompt.py
+│   ├── test_image_reconciliation.py
+│   ├── test_image_reconciliation_integration.py
+│   ├── test_image_worker.py
+│   ├── test_inference_api.py
+│   ├── test_inference_runtime.py
+│   ├── test_job_ledger.py
+│   ├── test_langfuse_prompts.py
+│   ├── test_local_processor.py
+│   ├── test_model_store.py
+│   ├── test_openai_images.py
+│   ├── test_openai_images_demo.py
+│   ├── test_openai_runtime.py
+│   ├── test_product_approval.py
+│   ├── test_provider_attempts.py
+│   ├── test_sdxl_model_store.py
+│   ├── test_sdxl_processor.py
+│   ├── test_wandb_experiments.py
+│   └── test_wrappers.py
+├── .env.example
+├── .gitignore
+├── .ignore
+├── AGENTS.md
+├── CONTRIBUTING.md
+├── DESIGN.md
+├── README.md
+├── README2.md
+├── TEST_REPORT.md
+└── pyproject.toml

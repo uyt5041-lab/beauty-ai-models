@@ -1,0 +1,30 @@
+{
+  "name": "beautyai/cosmetics/vivid-pop",
+  "type": "text",
+  "prompt": "COSMETICS PRODUCT BRIEF\n{{product_description}}\n\nPRODUCT PRESERVATION\nKeep the supplied cosmetic product's shape, proportions, color, material, cap or pump, logo, printed label and original packaging artwork intact. Show one complete product, without cropping small parts. Do not invent ingredients, efficacy claims, certification marks or packaging details.\n\nPRODUCT GEOMETRY LOCK\nUse product image 1 as the authoritative camera view and projected silhouette. Treat the complete product as one fixed photographic object: move it and scale it uniformly only. Preserve the original width-to-height relationship, sealed top width and tilt, body taper and curvature, cap width and height, cap-to-body proportions and cap seam position. Retain small source dents and folds. Do not lengthen, slim, widen, symmetrize or reshape the product, enlarge its cap, or reconstruct an idealized front view. Product images 2 and 3 confirm material and printed identity only; do not combine their viewpoints into new geometry. Build the bright environment around the unchanged product. If the layout needs more room, reduce the entire product uniformly. Geometry preservation takes priority over making the product taller in the composition.\n\nART DIRECTION\nA bright cobalt-blue and coral color-block studio with high-key light, clean geometric background planes and a controlled contact shadow. Vivid contemporary cosmetics advertising; the product remains the focal point.{{palette_section}}{{creative_direction_section}}\n\nCOMPOSITION\nPortrait 4:5. {{composition}}\n\nOUTPUT RULES\nPreserve any artwork already printed on the real packaging. Do not add advertising copy, prices, badges or watermarks. Preserve existing product label and logo text.\n\nAvoid: invented ingredients or efficacy claims; duplicate products; extra caps or pumps; changed product colors; distorted packaging or label characters; cropped product parts; new advertising text; objects in the reserved copy area\n\nREQUIRED COSMETICS CONSTRAINTS\nKeep the supplied cosmetic product's shape, proportions, color, material, cap or pump, logo, printed label and original packaging artwork intact. Show one complete product, without cropping small parts. Do not invent ingredients, efficacy claims, certification marks or packaging details. Preserve any artwork already printed on the real packaging. Do not add advertising copy, prices, badges or watermarks. Preserve existing product label and logo text. Keep palette changes in the scene, never on the product. Reserve the requested copy area for a separate typography renderer.{{reference_instructions}}",
+  "labels": [
+    "experiment-proportions-20261023"
+  ],
+  "tags": [
+    "beautyai",
+    "cosmetics",
+    "geometry-preservation",
+    "image-edit",
+    "matte-reference"
+  ],
+  "config": {
+    "pipeline_revision": "2",
+    "source_prompt_version": "cosmetics-v1",
+    "variables": [
+      "composition",
+      "creative_direction_section",
+      "palette_section",
+      "product_description",
+      "reference_instructions"
+    ],
+    "experiment_base_version": 1,
+    "change": "geometry_lock_only",
+    "human_approval": "PENDING"
+  },
+  "commitMessage": "원본 첫 사진의 투영 형태·폭/길이·캡 비율 고정. 밝은 컬러와 기존 옵션 유지. 연구용 1회 비교."
+}

@@ -1,7 +1,7 @@
-"""Explicitly authorized three-image comparison; no automatic provider retries.
+"""Compatibility entry point for the frozen experiment prepare/execute CLI.
 
-Requires the test and observability extras. Without --execute no files or calls
-are made. --publish-prompts creates new production versions (use intentionally).
+The historical B12 helper below is retained for existing offline regressions.
+CLI users must prepare inputs and an explicit preset/version before execution.
 """
 from __future__ import annotations
 
@@ -234,23 +234,10 @@ def run(args: argparse.Namespace) -> Path:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--execute", action="store_true", help="Explicit approval for exactly three paid image edits")
-    parser.add_argument("--publish-prompts", action="store_true", help="Create new production Langfuse prompt versions")
-    parser.add_argument("--source", type=Path, required=True)
-    parser.add_argument("--env-file", type=Path, required=True)
-    parser.add_argument("--output", type=Path, default=Path("outputs/cosmetics-comparison"))
-    parser.add_argument("--product-description", default="One fictional unbranded lavender skincare serum bottle with a coral pump and a blank cream label. No efficacy claims.")
-    args = parser.parse_args()
-    if not args.execute:
-        parser.error("No calls made. Add --execute only after authorizing three live image edits.")
-    try:
-        run_dir = run(args)
-        if json.loads((run_dir / "report.json").read_text()).get("status") != "SUCCEEDED":
-            raise SystemExit(1)
-    except Exception as error:
-        print(json.dumps({"status": "PREPARATION_FAILED", "error_type": type(error).__name__}))
-        raise SystemExit(1) from None
+    # Historical helper functions above remain for saved B12 mock regressions.
+    # All command-line use now requires the frozen prepare/execute workflow.
+    from beauty_ai.experiment_runner import main as experiment_main
+    raise SystemExit(experiment_main())
 
 
 if __name__ == "__main__":

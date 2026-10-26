@@ -72,13 +72,13 @@ def test_cli_timeout_sanitizes_exception(monkeypatch):
         runner.langfuse_cli(["prompts", "get", "x"], {})
 
 
-def test_main_fails_when_report_is_incomplete(monkeypatch, tmp_path):
+def test_legacy_cli_flags_require_migration_before_any_calls(monkeypatch, tmp_path):
     (tmp_path / "report.json").write_text('{"status":"RUNNER_ERROR"}')
     monkeypatch.setattr(runner, "run", lambda args: tmp_path)
     monkeypatch.setattr(sys, "argv", ["compare", "--execute", "--source", "unused", "--env-file", "unused"])
     with pytest.raises(SystemExit) as caught:
         runner.main()
-    assert caught.value.code == 1
+    assert caught.value.code == 2
 
 
 @pytest.mark.parametrize("trace_failure", ["begin", "finish"])

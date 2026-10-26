@@ -9,6 +9,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
+import json
 from pathlib import Path
 import re
 import sqlite3
@@ -50,6 +51,12 @@ class ProviderAttemptStore:
                     error_code TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
                 )""")
                 db.execute("CREATE INDEX IF NOT EXISTS provider_project ON provider_attempts(project_id)")
+                db.execute("""CREATE TABLE IF NOT EXISTS experiment_limits (
+                    singleton INTEGER PRIMARY KEY CHECK(singleton=1),
+                    plan_sha256 TEXT NOT NULL, project_id TEXT NOT NULL,
+                    max_attempts INTEGER NOT NULL, jobs_json TEXT NOT NULL,
+                    state TEXT NOT NULL CHECK(state IN ('ready','running','halted','succeeded'))
+                )""")
         except (OSError, sqlite3.Error):
             raise self._storage_error() from None
 
@@ -95,6 +102,7 @@ class ProviderAttemptStore:
         now = datetime.now(timezone.utc).isoformat()
         try:
             with self._connection(write=True) as db:
+                self._check_experiment_slot(db, job_id, project_id, request_hash)
                 if db.execute("SELECT 1 FROM provider_attempts WHERE job_id=?", (str(job_id),)).fetchone():
                     raise self._conflict()
                 held = db.execute("SELECT COALESCE(SUM(reservation_units),0) FROM provider_attempts WHERE project_id=?",
@@ -134,6 +142,102 @@ class ProviderAttemptStore:
                                     datetime.now(timezone.utc).isoformat(), str(job_id), str(project_id), str(attempt_id))).rowcount
                 if count != 1:
                     raise self._conflict()
+                if state in {"failed", "unknown"}:
+                    db.execute("UPDATE experiment_limits SET state='halted' WHERE singleton=1")
+        except sqlite3.Error:
+            raise self._storage_error() from None
+
+    @staticmethod
+    def _experiment_error(code: str):
+        return GatewayError(code, "Experiment execution stopped; do not retry this plan.")
+
+    def configure_experiment(self, *, plan_sha256: str, project_id: UUID,
+                             jobs: dict[UUID, str], max_attempts: int) -> None:
+        """Bind this dedicated ledger to an immutable plan before any attempt.
+
+        Counts are reserved submission slots, not proof of HTTP delivery or
+        confirmed charges. Failed and uncertain slots are never refunded.
+        Ordinary service ledgers without this configuration remain unchanged.
+        """
+        if (type(plan_sha256) is not str or not re.fullmatch(r"[a-f0-9]{64}", plan_sha256)
+                or not isinstance(project_id, UUID) or type(max_attempts) is not int
+                or not 1 <= max_attempts <= 30 or type(jobs) is not dict or not 1 <= len(jobs) <= 30
+                or any(not isinstance(job, UUID) or type(digest) is not str
+                       or not re.fullmatch(r"[a-f0-9]{64}", digest) for job, digest in jobs.items())):
+            raise ValueError("EXPERIMENT_LIMIT_CONFIG_INVALID")
+        encoded = json.dumps({str(job): digest for job, digest in jobs.items()}, sort_keys=True)
+        wanted = (plan_sha256, str(project_id), max_attempts, encoded)
+        try:
+            with self._connection(write=True) as db:
+                row = db.execute("SELECT * FROM experiment_limits WHERE singleton=1").fetchone()
+                if row is not None:
+                    found = (row['plan_sha256'], row['project_id'], row['max_attempts'], row['jobs_json'])
+                    if found != wanted:
+                        raise self._experiment_error("EXPERIMENT_PLAN_CONFLICT")
+                    return
+                if db.execute("SELECT 1 FROM provider_attempts LIMIT 1").fetchone():
+                    raise self._experiment_error("EXPERIMENT_PLAN_CONFLICT")
+                db.execute("""INSERT INTO experiment_limits
+                    (singleton,plan_sha256,project_id,max_attempts,jobs_json,state)
+                    VALUES (1,?,?,?,?, 'ready')""", wanted)
+        except sqlite3.Error:
+            raise self._storage_error() from None
+
+    def claim_experiment(self, plan_sha256: str) -> None:
+        """Claim once, atomically. A crash consumes the claim, even before POST."""
+        try:
+            with self._connection(write=True) as db:
+                changed = db.execute("""UPDATE experiment_limits SET state='running'
+                    WHERE singleton=1 AND plan_sha256=? AND state='ready'""", (plan_sha256,)).rowcount
+                if changed != 1:
+                    raise self._experiment_error("EXPERIMENT_ALREADY_CLAIMED_OR_MISMATCH")
+        except sqlite3.Error:
+            raise self._storage_error() from None
+
+    def _check_experiment_slot(self, db, job_id: UUID, project_id: UUID, request_hash: str) -> None:
+        row = db.execute("SELECT * FROM experiment_limits WHERE singleton=1").fetchone()
+        if row is None:
+            return
+        if row['state'] != 'running':
+            raise self._experiment_error("EXPERIMENT_NOT_RUNNING")
+        if (row['project_id'] != str(project_id)
+                or json.loads(row['jobs_json']).get(str(job_id)) != request_hash):
+            raise self._experiment_error("EXPERIMENT_REQUEST_NOT_IN_PLAN")
+        if db.execute("SELECT COUNT(*) FROM provider_attempts").fetchone()[0] >= row['max_attempts']:
+            raise self._experiment_error("EXPERIMENT_CALL_LIMIT")
+        # A pending attempt may already have reached the provider. Never pass it
+        # by starting a later case, even after process restart.
+        if db.execute("SELECT 1 FROM provider_attempts WHERE state!='succeeded' LIMIT 1").fetchone():
+            raise self._experiment_error("EXPERIMENT_PREVIOUS_ATTEMPT_UNRESOLVED")
+
+    def finish_experiment(self, plan_sha256: str, *, succeeded: bool) -> None:
+        if type(succeeded) is not bool:
+            raise ValueError("EXPERIMENT_FINISH_INVALID")
+        try:
+            with self._connection(write=True) as db:
+                row = db.execute("SELECT * FROM experiment_limits WHERE singleton=1").fetchone()
+                if row is None or row['plan_sha256'] != plan_sha256 or row['state'] == 'ready':
+                    raise self._experiment_error("EXPERIMENT_PLAN_CONFLICT")
+                if succeeded:
+                    expected = len(json.loads(row['jobs_json']))
+                    completed = db.execute("SELECT COUNT(*) FROM provider_attempts WHERE state='succeeded'").fetchone()[0]
+                    if row['state'] not in {'running', 'succeeded'} or completed != expected:
+                        raise self._experiment_error("EXPERIMENT_INCOMPLETE")
+                elif row['state'] == 'succeeded':
+                    raise self._experiment_error("EXPERIMENT_PLAN_CONFLICT")
+                db.execute("UPDATE experiment_limits SET state=? WHERE singleton=1",
+                           ('succeeded' if succeeded else 'halted',))
+        except sqlite3.Error:
+            raise self._storage_error() from None
+
+    def experiment_status(self) -> dict | None:
+        try:
+            with self._connection() as db:
+                row = db.execute("SELECT * FROM experiment_limits WHERE singleton=1").fetchone()
+                if row is None:
+                    return None
+                return {key: row[key] for key in ('plan_sha256', 'project_id', 'max_attempts', 'state')} | {
+                    'attempt_slots': db.execute("SELECT COUNT(*) FROM provider_attempts").fetchone()[0]}
         except sqlite3.Error:
             raise self._storage_error() from None
 
