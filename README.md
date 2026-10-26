@@ -12,7 +12,7 @@ B12는 Langfuse의 프리셋별 텍스트 버전을 읽어 최종 문장과 해�
 
 ## 1. 쓰는 법
 
-이미지 파트 전체 구현의 통합 기준 브랜치는 **`codex/image-main`**입니다. [폴더 트리·실행 그래프·빠른 시작](docs/imageArchitecture.md)에서 코드 구조와 실험 실행 순서를 확인하세요. 기존 `plan/models`는 계획·문서 이력을 보존합니다.
+이미지 파트 전체 구현의 통합 기준 브랜치는 **`feature/image-model`**입니다. [폴더 트리·실행 그래프·빠른 시작](docs/imageArchitecture.md)에서 코드 구조와 실험 실행 순서를 확인하세요. 기존 `plan/models`는 계획·문서 이력을 보존합니다.
 
 OpenAI 경로는 [B10 이미지 계약](fivecircles/architecture/contract/openai-images.md)과 [B11 프롬프트 계약](fivecircles/architecture/contract/cosmetics-prompts.md)을 따릅니다. 기본 설정은 **`live_calls=False`·이미지 예산 `0`**입니다. B11은 실제 API 추가 호출 없이 검증합니다. 로컬 모델 설명은 보존한 선택 경로의 사용법입니다.
 

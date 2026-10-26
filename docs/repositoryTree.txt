@@ -1,4 +1,4 @@
-2026-10-26 · codex/image-main · Git 게시 파일 트리
+2026-10-26 · feature/image-model · Git 게시 파일 트리
 로컬 .env / outputs / uploads / DB / graft 캐시는 제외
 파일 수: 257
 

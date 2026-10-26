@@ -1,6 +1,6 @@
 # 이미지 파트 통합 기준: 구조와 실행 흐름
 
-기준일: 2026-10-26 · 통합 브랜치: **`codex/image-main`**
+기준일: 2026-10-26 · 통합 브랜치: **`feature/image-model`**
 
 이 브랜치는 이미지 API 래퍼, 프롬프트, 다중 사진 실험 실행기, 결과·비용 기록, 평가, 문서와 테스트를 한곳에 모은다. `plan/models`에서 이어진 이력을 보존한다. 저장소의 기본 브랜치 변경이나 팀 서비스 배포 완료를 뜻하지 않는다. 협업일지는 `박지수_협업일지`에서 별도로 관리한다.
 
@@ -139,7 +139,7 @@ flowchart LR
 Python 3.11 이상에서 저장소 루트 기준으로 실행한다. 첫 준비에는 API 키가 필요하지 않다.
 
 ```bash
-git clone --branch codex/image-main --single-branch https://github.com/uyt5041-lab/beauty-ai-models.git
+git clone --branch feature/image-model --single-branch https://github.com/uyt5041-lab/beauty-ai-models.git
 cd beauty-ai-models
 python3 -m venv .venv
 source .venv/bin/activate

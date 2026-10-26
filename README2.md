@@ -2,7 +2,7 @@
 
 ## 이미지 파트 통합 기준 브랜치
 
-**2026-10-26: `codex/image-main`**에 이미지 API·프롬프트·실험 실행기·W&B·평가·문서·테스트를 모았습니다. 기존 `plan/models` 이력에서 이어진 브랜치입니다. [폴더 트리·실행 그래프·팀원 실행 순서](docs/imageArchitecture.md)와 [전체 파일 트리](docs/repositoryTree.txt)를 먼저 보세요. 저장된 Graft 그래프를 우선 사용하며 로컬 캐시는 Git에 포함하지 않습니다.
+**2026-10-26: `feature/image-model`**에 이미지 API·프롬프트·실험 실행기·W&B·평가·문서·테스트를 모았습니다. 기존 `plan/models` 이력에서 이어진 브랜치입니다. [폴더 트리·실행 그래프·팀원 실행 순서](docs/imageArchitecture.md)와 [전체 파일 트리](docs/repositoryTree.txt)를 먼저 보세요. 저장된 Graft 그래프를 우선 사용하며 로컬 캐시는 Git에 포함하지 않습니다.
 
 현재 통합 소스의 자동 테스트는 **1,321개 PASS**입니다. 팀 UI·텍스트·최종 렌더러의 실제 E2E 인수는 [LINK-01~05](docs/imageTodo.md)에 남아 있습니다.
 
