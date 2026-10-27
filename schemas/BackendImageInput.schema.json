@@ -1,0 +1,203 @@
+{
+  "$defs": {
+    "BackendCopy": {
+      "additionalProperties": false,
+      "properties": {
+        "headline": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Headline",
+          "type": "string"
+        },
+        "subline": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subline"
+        },
+        "cta": {
+          "anyOf": [
+            {
+              "maxLength": 600,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cta"
+        }
+      },
+      "required": [
+        "headline"
+      ],
+      "title": "BackendCopy",
+      "type": "object"
+    },
+    "BackendImagePrompt": {
+      "additionalProperties": false,
+      "properties": {
+        "concept": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Concept",
+          "type": "string"
+        },
+        "prompt": {
+          "maxLength": 3000,
+          "minLength": 1,
+          "title": "Prompt",
+          "type": "string"
+        },
+        "mood": {
+          "items": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Mood",
+          "type": "array"
+        }
+      },
+      "required": [
+        "concept",
+        "prompt"
+      ],
+      "title": "BackendImagePrompt",
+      "type": "object"
+    },
+    "BackendSafeZone": {
+      "additionalProperties": false,
+      "properties": {
+        "coordinate_system": {
+          "const": "final_canvas_normalized",
+          "default": "final_canvas_normalized",
+          "title": "Coordinate System",
+          "type": "string"
+        },
+        "left": {
+          "maximum": 0.95,
+          "minimum": 0.05,
+          "title": "Left",
+          "type": "number"
+        },
+        "top": {
+          "maximum": 0.95,
+          "minimum": 0.05,
+          "title": "Top",
+          "type": "number"
+        },
+        "right": {
+          "maximum": 0.95,
+          "minimum": 0.05,
+          "title": "Right",
+          "type": "number"
+        },
+        "bottom": {
+          "maximum": 0.95,
+          "minimum": 0.05,
+          "title": "Bottom",
+          "type": "number"
+        }
+      },
+      "required": [
+        "left",
+        "top",
+        "right",
+        "bottom"
+      ],
+      "title": "BackendSafeZone",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+      "title": "Job Id",
+      "type": "string"
+    },
+    "copy_revision": {
+      "minimum": 1,
+      "title": "Copy Revision",
+      "type": "integer"
+    },
+    "copy_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Copy Hash",
+      "type": "string"
+    },
+    "image_prompt": {
+      "$ref": "#/$defs/BackendImagePrompt"
+    },
+    "ad_copy": {
+      "$ref": "#/$defs/BackendCopy"
+    },
+    "safe_zone": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BackendSafeZone"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "caption": {
+      "default": "",
+      "maxLength": 10000,
+      "title": "Caption",
+      "type": "string"
+    },
+    "hashtags": {
+      "items": {
+        "maxLength": 200,
+        "type": "string"
+      },
+      "maxItems": 50,
+      "title": "Hashtags",
+      "type": "array"
+    },
+    "product_images": {
+      "items": {
+        "format": "binary",
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 5,
+      "minItems": 2,
+      "title": "Product Images",
+      "type": "array"
+    },
+    "reference_images": {
+      "items": {
+        "format": "binary",
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 5,
+      "title": "Reference Images",
+      "type": "array"
+    }
+  },
+  "required": [
+    "job_id",
+    "copy_revision",
+    "copy_hash",
+    "image_prompt",
+    "ad_copy",
+    "product_images"
+  ],
+  "title": "BackendImageInput",
+  "type": "object"
+}

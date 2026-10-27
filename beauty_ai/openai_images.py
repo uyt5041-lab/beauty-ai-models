@@ -65,6 +65,11 @@ def _safe_request_id(value: object) -> str | None:
 
 
 class OpenAIImagesAdapter:
+    @property
+    def offline(self) -> bool:
+        """Whether this instance uses the explicit in-process test transport."""
+        return isinstance(self._transport, httpx.MockTransport)
+
     def __init__(self, config: OpenAIImagesConfig,
                  transport: httpx.MockTransport | None = None):
         self.config = config

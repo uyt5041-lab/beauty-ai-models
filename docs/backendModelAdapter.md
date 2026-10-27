@@ -29,3 +29,40 @@ Langfuse/W&B, 모델·품질·프롬프트 버전은 모델 내부 설정이다.
 ## 검증
 
 한국어 multipart 원문, 과거 영어 해시, 정상 2+0/5+5, 사진 수·순서·손상, 재시작/동시 중복 호출, 변경 입력 충돌, timeout 재호출 방지, 기본 live 차단, 원본 보존·비율·색상·투명도·PNG·잘못된 프로파일·잘못된 크기를 오프라인에서 확인한다. 유료 호출과 외부 관측 업로드는 하지 않는다.
+
+
+## K2 Python 사용 예
+
+```python
+from uuid import UUID
+from beauty_ai.backend_adapter import BackendImageAdapter, BackendImageInput
+from beauty_ai.assets import LocalAssetStore
+from beauty_ai.api_image_processor import ExternalImageProcessor
+from beauty_ai.openai_images import OpenAIImagesAdapter, OpenAIImagesConfig
+from beauty_ai.provider_attempts import ProviderAttemptStore
+
+# 실 호출은 기본 차단. 서버가 팀 예산/승인을 확인한 뒤 별도 설정한다.
+assets = LocalAssetStore("outputs/backend/assets")
+processor = ExternalImageProcessor(
+    assets, OpenAIImagesAdapter(OpenAIImagesConfig(timeout_seconds=300)),
+    ProviderAttemptStore("outputs/backend/attempts.sqlite3"),
+    budget_limit_usd="0", reservation_usd="1",
+)
+adapter = BackendImageAdapter(processor, "outputs/backend/bindings.sqlite3")
+request = BackendImageInput(
+    job_id="service-job-001", copy_revision=1, copy_hash=approved_copy_hash,
+    image_prompt={"concept": "간결한 루틴", "prompt": "밝은 배경에 원본 제품을 배치한다.", "mood": ["청량"]},
+    ad_copy={"headline": "오늘의 루틴", "subline": "나를 위한 시간", "cta": "제품 살펴보기"},
+    product_images=[front_bytes, side_bytes], reference_images=[],
+)
+result = adapter.generate(request, project_id=server_project_uuid)
+# result.image_bytes / width / height / sha256 / receipt
+# 실패 후 조회는 호출하지 않는다.
+receipt = adapter.get_receipt(request.job_id, project_id=server_project_uuid)
+```
+
+함수 인자는 Python bytes다. 이 스키마를 HTTP JSON의 확정 형식으로 쓰지 않는다. 옵션 `safe_zone`은 final_canvas_normalized의 left/top/right/bottom이며 5% 여백 안의 양수 영역이어야 한다. 이미지가 실제로 이 영역을 지켰는지는 사람 검토가 필요하다.
+
+`elapsed_ms`는 영속 모델 시도 기록의 시작/종료 시각 차이다. 재호출 시 캐시 조회 시간을 생성 시간으로 덮어쓰지 않는다. 불명확/진행 중은 null이다. `reservation_usd`는 비용 예약이며 청구액이 아니다. 모델 사용량이 없으면 usage=null이다.
+
+적용 제한: 기본 AssetStore는 20MiB/사진·16MP, 제공자 전송은 기본 100MiB 합계다. 백엔드가 큰 사진을 줄여 보내야 한다. project UUID는 인증된 서버가 결정한다. 같은 job을 바꿔 보내면 BACKEND_INPUT_CONFLICT, 이미 호출 중/실패한 시도는 PROVIDER_ATTEMPT_CONFLICT로 종료하며 자동 재전송하지 않는다.

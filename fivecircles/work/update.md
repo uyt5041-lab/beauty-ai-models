@@ -195,3 +195,7 @@ Langfuse production은 clean-studio v2, premium-minimal v2, vivid-pop v4로 새�
 
 ## 2026-10-27 · K1 한국어 프롬프트
 ko/en 선언을 지원하고 과거 en 기본값·해시는 유지했다. 한국어 실제 multipart 전송과 관련 회귀 268 PASS. 외부 호출0. [릴레이](relay-korean-adapter-resize.md).
+
+
+## 2026-10-27 · K2 백엔드 Python 연결
+한국어 prompt/concept/mood·카피·승인 메타데이터·2~5/0~5 사진 bytes를 받아 기존 영속 래퍼로 연결한다. 같은 project/job의 입력과 자산을 SQLite에 고정해 재시작·동시 중복 호출을 차단한다. 기본 결과/시간/사용량/비용 미확인 상태를 반환한다. 123 tests PASS, 외부 호출0. 서버 승인·팀 예산·HTTP 통합은 미완료. [사용법](../../docs/backendModelAdapter.md).
