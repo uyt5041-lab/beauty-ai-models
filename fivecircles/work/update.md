@@ -191,3 +191,7 @@
 Langfuse production은 clean-studio v2, premium-minimal v2, vivid-pop v4로 새로 게시하고 문장·버전·정책을 재조회했다. 밝은 컬러는 직전 production v2를 기준으로 워터마크 조건만 보강했다. v3 실험은 그대로 보존한다. 전체 회귀 1,326 passed / 23.40초, 이미지 API 호출 0회. [검증](../test/watermark-policy-20261027.md). 실물 제거 품질은 미검증이다.
 
 2026-10-26 협업일지는 별도 일지 브랜치에서 작성하며 오늘 변경을 어제 성과에 포함하지 않는다.
+
+
+## 2026-10-27 · K1 한국어 프롬프트
+ko/en 선언을 지원하고 과거 en 기본값·해시는 유지했다. 한국어 실제 multipart 전송과 관련 회귀 268 PASS. 외부 호출0. [릴레이](relay-korean-adapter-resize.md).

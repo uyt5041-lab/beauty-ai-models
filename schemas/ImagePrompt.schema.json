@@ -26,8 +26,11 @@
       "type": "integer"
     },
     "language": {
-      "const": "en",
       "default": "en",
+      "enum": [
+        "en",
+        "ko"
+      ],
       "title": "Language",
       "type": "string"
     }

@@ -124,7 +124,7 @@ def test_prompt_is_durable_in_job_snapshot(tmp_path):
 @pytest.mark.parametrize("change", [
     {"positive": ""}, {"positive": "x" * 4001},
     {"negative": "x" * 2001}, {"prompt_version": ""}, {"prompt_version": "v" * 81},
-    {"source_revision": 0}, {"source_revision": -1}, {"language": "ko"},
+    {"source_revision": 0}, {"source_revision": -1}, {"language": "fr"},
     {"positive": " \t\n"}, {"prompt_version": " \u3000"},
     {"source_revision": True}, {"source_revision": "1"}, {"source_revision": 1.0},
     {"provider_model_path": "/arbitrary/model"},

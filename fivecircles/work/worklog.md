@@ -191,3 +191,11 @@
 - 요청: W&B 결과 저장 연결, iCloud 실제품 사진 검토, 새 미리보기.
 - 계약: [저장 연결](../architecture/contract/experiment-wandb-bridge.md). 로컬 보고서 불변·별도 업로드 상태·생성 재호출 없음.
 - 순서: [단계 판정](experiment-wandb-bridge-stages.md). 실패 시 재시도 없이 멈춘다. 이미지 생성은 하지 않는다.
+
+
+## 2026-10-27 · K1~K3 릴레이 시작
+Intent: 한국어 입력 → 서비스 연결 어댑터 → 원본 보존 리사이즈. 단계별 검증 후 진행.
+Conflict: 과거 영어/렌더러 미확정 문서. Winner: 사용자 지시와 10/26 회의 v0.2.
+Resolution: docs/imageTodo.md의 K1~K3가 현재 실행 원본이다.
+방식: native 직접 수행. 코드 브랜치 feature/image-model, PR/팀원 전송/유료 호출 없음.
+CD: NOT_APPLICABLE — Python 라이브러리 배포용 소스이며 서비스 VM 배포는 범위 밖.

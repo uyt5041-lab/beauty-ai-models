@@ -214,7 +214,9 @@ class ImagePrompt(Contract):
     negative: str = Field(default="", max_length=2000)
     prompt_version: str = Field(min_length=1, max_length=80)
     source_revision: int = Field(ge=1, strict=True)
-    language: Literal["en"] = "en"
+    # Keep the historical default so stored English request hashes stay stable.
+    # The service adapter explicitly declares Korean for the v0.2 team contract.
+    language: Literal["en", "ko"] = "en"
 
     @field_validator("positive", "prompt_version")
     @classmethod
