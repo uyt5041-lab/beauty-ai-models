@@ -66,3 +66,20 @@ receipt = adapter.get_receipt(request.job_id, project_id=server_project_uuid)
 `elapsed_ms`는 영속 모델 시도 기록의 시작/종료 시각 차이다. 재호출 시 캐시 조회 시간을 생성 시간으로 덮어쓰지 않는다. 불명확/진행 중은 null이다. `reservation_usd`는 비용 예약이며 청구액이 아니다. 모델 사용량이 없으면 usage=null이다.
 
 적용 제한: 기본 AssetStore는 20MiB/사진·16MP, 제공자 전송은 기본 100MiB 합계다. 백엔드가 큰 사진을 줄여 보내야 한다. project UUID는 인증된 서버가 결정한다. 같은 job을 바꿔 보내면 BACKEND_INPUT_CONFLICT, 이미 호출 중/실패한 시도는 PROVIDER_ATTEMPT_CONFLICT로 종료하며 자동 재전송하지 않는다.
+
+
+## K3 최종 PNG 크기 변환
+
+```python
+from beauty_ai.ad_resize import resize_ad_png
+final = resize_ad_png(result.image_bytes)
+# 원본 result.image_bytes는 유지된다.
+# final.image_bytes: 1080×1350 PNG, final.sha256: 최종 파일 해시
+# final.source_sha256: 원본 해시, final.resized/method: 변환 여부/방법
+```
+
+최대 32MiB·16MP, 단일 PNG/JPEG/WEBP 프레임을 처리한다. EXIF 방향을 적용한 뒤 4:5인지 확인한다. 작은 입력은 확대하지 않고 거절한다. LANCZOS 축소와 premultiplied alpha로 투명 경계의 검은 테두리를 방지한다. 태그가 있는 이미지는 ICC를 검증하고 축소 시 sRGB로 변환한다. 태그 없는 RGB는 sRGB로 간주한다. 태그 없는 CMYK/LAB와 지원하지 않는 비트 깊이는 거절한다. 같은 크기의 정상 RGB/RGBA PNG는 원본 바이트를 반환한다.
+
+PNG 저장은 무손실 압축이지만 축소 자체는 픽셀 정보를 줄인다. 원본 보존과 재인코딩 손실 방지를 제공하며, 모든 사진의 지각 품질 무손실을 보장하지 않는다. 이 함수는 글자를 그리지 않는다. 글자 레이어 방식이면 최종 크기를 만든 뒤 한글을 넣어야 한다.
+
+모의 연결과 원본/축소 파일 생성: `python -m examples.backend_handoff --output outputs/backend-demo`. 새 출력 폴더만 허용하며, MockTransport로만 실행한다. 승인 해시는 모의 값이다. 실제 승인 검증으로 사용하지 않는다.

@@ -199,3 +199,7 @@ ko/en 선언을 지원하고 과거 en 기본값·해시는 유지했다. 한국
 
 ## 2026-10-27 · K2 백엔드 Python 연결
 한국어 prompt/concept/mood·카피·승인 메타데이터·2~5/0~5 사진 bytes를 받아 기존 영속 래퍼로 연결한다. 같은 project/job의 입력과 자산을 SQLite에 고정해 재시작·동시 중복 호출을 차단한다. 기본 결과/시간/사용량/비용 미확인 상태를 반환한다. 123 tests PASS, 외부 호출0. 서버 승인·팀 예산·HTTP 통합은 미완료. [사용법](../../docs/backendModelAdapter.md).
+
+
+## 2026-10-27 · K3 고품질 최종 크기 변환
+원본을 보존하는 resize_ad_png를 추가했다. 4:5 유지·크롭/자동 확대 금지·LANCZOS·PNG·투명 경계·ICC·EXIF 처리를 검증했다. 동일 크기 PNG는 바이트 그대로 반환한다. 축소 자체는 정보 무손실이 아니며 광고 품질은 별도 검토다. 오프라인 예제는 fake1회/paid0, 최종 파일/메타데이터1080×1350 일치. 전체1363 tests PASS(23.80초, -W error). [계약](../../docs/backendModelAdapter.md), [릴레이](relay-korean-adapter-resize.md).

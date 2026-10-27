@@ -135,6 +135,22 @@ def test_uncertain_submission_does_not_retry_after_restart(tmp_path):
     assert calls == [1]
     receipt = setup(tmp_path, handler).get_receipt("service-001", project_id=project)
     assert receipt["actual_cost_usd"] is None and receipt["error_code"] is not None
+    assert receipt["model"] == "gpt-image-2.5-sunburst-2026-09-08"
+
+
+def test_handoff_to_final_resize_keeps_source_and_real_dimensions(tmp_path):
+    from beauty_ai.ad_resize import resize_ad_png
+    calls = []
+    def handler(req):
+        calls.append(1)
+        return response()
+    generated = setup(tmp_path, handler).generate(body(), project_id=uuid4())
+    final = resize_ad_png(generated.image_bytes)
+    assert final.source_sha256 == generated.sha256
+    assert (generated.width, generated.height) == (1152, 1440)
+    with Image.open(BytesIO(final.image_bytes)) as image:
+        assert image.size == (final.width, final.height) == (1080, 1350)
+    assert calls == [1]
 
 
 def test_safe_zone_is_validated_and_preserved_in_prompt(tmp_path):

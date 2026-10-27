@@ -405,3 +405,8 @@ MPS allocated/driver 및 CUDA allocated/reserved는 작업 후 프로세스 메�
 전체 대기 기한까지 접수된 작업을 확인하지 못하면 `SUBMISSION_UNCERTAIN`, 접수된 작업은 확인했지만 완료를 확인하지 못하면 `JOB_STILL_PENDING`입니다. 둘 다 GPU 실패나 취소를 뜻하지 않습니다. 조회404 하나만 보고 새 생성을 제출하지 마세요. 출력된 ID를 보관하고 `get-job`으로 이어서 확인합니다. 같은 ID의 단순 조회는 이미지 생성 비용을 추가하는 명령이 아닙니다.
 
 입력 hash나 결과 종류가 다르면 프로토콜 오류로 종료합니다. 인증 오류와 서버가 기록한 실제 작업 실패도 그대로 구분합니다. 오류 메시지에는 토큰·프롬프트·서버 응답 원문을 넣지 않습니다. 사용자가 수동으로 다른 작업 ID를 발급하면 별도 작업이므로, 이 조회 조정이 별도 요청까지 자동으로 합쳐 주지는 않습니다.
+
+
+## 2026-10-27 · 백엔드 연결과 리사이즈
+
+[모델팀 Python 경계](docs/backendModelAdapter.md)를 따른다. 오프라인 예제: `python -m examples.backend_handoff --output outputs/backend-demo` (새 폴더). 실제 API 호출0, 원본 source.png와 최종 final.png를 따로 보존한다.

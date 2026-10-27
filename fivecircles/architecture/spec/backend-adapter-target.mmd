@@ -1,0 +1,16 @@
+flowchart TD
+S["서버: 승인·권한·팀 예산 확인 / 별도 담당"]:::gray
+S --> K["K1 한국어 prompt/concept/mood 수신"]:::green
+K --> A["K2 bytes·카피·작업 ID 변환"]:::green
+A --> B["영속 입력 고정 / 동일 후보 재사용"]:::green
+B --> P["기존 이미지 래퍼 / 1회 호출 보호"]:::blue
+P --> R["원본 PNG + 실제 크기·SHA·영수증"]:::green
+R --> Z["K3 원본 보존 / 4:5 LANCZOS 축소"]:::amber
+Z --> F["1080×1350 PNG + 확인한 크기·SHA"]:::green
+F -.-> T["한글 합성·서버 다운로드 / 후속"]:::gray
+
+classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933
+classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933
+classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933
+classDef red fill:#fde9e6,stroke:#e8bab5,color:#1f2933
+classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933

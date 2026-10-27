@@ -1,5 +1,6 @@
 # BeautyAI FiveCircles
 
+> **현재 기준 2026-10-27:** 10/26 회의 v0.2를 우선한다. 한국어 prompt/concept/mood, 이미지·합성 pi, 서빙 이형기, UI 권혁상. 모델 내부 Langfuse/W&B. MVP 베이스라인 팀 $10·자동 재시도0. 아래 과거 영어 전제는 현행 계약이 아니다. 실행 원본: docs/imageTodo.md K1~K3.
 FiveCircles의 6단계 개발 흐름을 beautyAi에 적용한 프로젝트 설정이다.
 원본은 [uyt5041-lab/fivecircles](https://github.com/uyt5041-lab/fivecircles)이며 © 2026 Pio, [CC BY 4.0](LICENSE)로 제공된다. 변경 내역과 고정 버전은 [UPSTREAM.md](UPSTREAM.md)를 참고한다.
 

@@ -1,5 +1,6 @@
 # 현재 요구사항
 
+> **현재 기준 2026-10-27:** 10/26 회의 v0.2를 우선한다. 한국어 prompt/concept/mood, 이미지·합성 pi, 서빙 이형기, UI 권혁상. 모델 내부 Langfuse/W&B. MVP 베이스라인 팀 $10·자동 재시도0. 아래 과거 영어 전제는 현행 계약이 아니다. 실행 원본: docs/imageTodo.md K1~K3.
 ## 2026-10-23 B14 · 실험 기록과 FinOps
 
 Langfuse 프롬프트·실행 관찰을 유지하고 W&B에 기존 이미지 실험을 명시적으로 업로드하여 원본/결과·프롬프트 버전·시간·추정/실제 비용을 비교한다. 이번 작업은 새로운 이미지 모델 호출을 포함하지 않는다. [계약](../architecture/contract/wandb-experiments.md)과 [사용법](../../docs/wandbExperiments.md)을 따른다.

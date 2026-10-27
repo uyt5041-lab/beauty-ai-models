@@ -12,3 +12,9 @@ Doc: 작성. Validation/Push: 아직 안 함. CD: NOT_APPLICABLE (라이브러�
 
 K1 delivery: 2c0a4846618bc51636d721269dea19975bdab4b8 — 원격 동일 SHA 확인.
 K2: PASS — 123 tests (-W error), 실제 multipart Fake transport·SQLite 재시작/동시 요청/변경 입력/불명확 응답 시험. CD NOT_APPLICABLE (라이브러리, 서버 미배포). CONTINUE_WITH_NEXT_FORM: K3 원본 보존 리사이즈.
+
+K2 delivery: 9b36dc5cb007bb947deb43250c82937004e10e1e — 원격 동일 SHA 확인.
+K3: PASS — 연결/리사이즈 35 tests. 예제 fake1회·재전송1회 결과 재사용, paid0, 최종1080×1350. 전체 1363 passed / 23.80초 / -W error.
+Repair: K2 조회 전용 영수증에도 성공·실패의 model/request SHA가 들어가도록 보완. 동시 재전송 경과 시간을 덮어쓰지 않고 원장의 시각 차이를 사용.
+CD: NOT_APPLICABLE — 모델 라이브러리이며 팀 서버 배포 권한/작업은 범위 밖.
+STOP_WITH_REASON: 사용자 지정 K1~K3 구현 완료. 다음 전체 한글 합성·10장 유료 실험·백엔드 HTTP/팀 예산 연결은 별도 범위. 실제 서비스 전체 도달은 PARTIAL.

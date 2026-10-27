@@ -199,3 +199,9 @@ Conflict: 과거 영어/렌더러 미확정 문서. Winner: 사용자 지시와 
 Resolution: docs/imageTodo.md의 K1~K3가 현재 실행 원본이다.
 방식: native 직접 수행. 코드 브랜치 feature/image-model, PR/팀원 전송/유료 호출 없음.
 CD: NOT_APPLICABLE — Python 라이브러리 배포용 소스이며 서비스 VM 배포는 범위 밖.
+
+K1→K2→K3 단계 통과 후 진행 완료. 한국어268 / 어댑터123 / 리사이즈 연결35 / 전체1363 PASS.
+원본10/23 화장품 PNG 재사용·원본 SHA 유지·1080×1350 최종 파일 및 metadata 확인. 유료0.
+브라우저 보고서: 4개 이미지 로드·범례/판정/점수 표와 원본/축소 비교 스크린샷 확인.
+범위 내 경로 MATCHED, 서비스 HTTP·승인·팀 예산 및 전체 한글 합성 GAP은 후속으로 유지.
+STOP_WITH_REASON: 요청된 모델 라이브러리3단계 완료. 서비스 배포 NOT_APPLICABLE, 실제 API 품질 미검증.

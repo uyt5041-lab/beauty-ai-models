@@ -1,0 +1,16 @@
+flowchart TD
+S["팀 서버 HTTP·승인·팀 예산 연결: GAP / 서빙"]:::red
+S -.-> K["K1 ko/en 수신·과거 해시 보존: PASS"]:::green
+K --> A["K2 BackendImageInput → 내부 자산: PASS"]:::green
+A --> B["SQLite 바인딩 / 재시작·동시 중복 보호: PASS"]:::green
+B --> P["기존 OpenAI 래퍼 / Mock 전송 PASS / Live 미실행"]:::blue
+P --> R["원본 bytes + 실행 기록: PASS"]:::green
+R --> Z["K3 색상·EXIF·알파·원본 보존: PASS"]:::amber
+Z --> F["파일과 메타데이터 1080×1350 일치: PASS"]:::green
+F -.-> T["전체 한글 합성·서비스 E2E: GAP / 후속"]:::red
+
+classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933
+classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933
+classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933
+classDef red fill:#fde9e6,stroke:#e8bab5,color:#1f2933
+classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933

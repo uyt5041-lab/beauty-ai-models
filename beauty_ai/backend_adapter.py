@@ -187,7 +187,6 @@ class BackendImageAdapter:
         receipt = self.get_receipt(body.job_id, project_id=project_id)
         if receipt is None:
             raise GatewayError("BACKEND_RECEIPT_MISSING", "Result needs receipt reconciliation.")
-        receipt.update(model=result.model, request_sha256=content_hash(request))
         return BackendGeneratedImage(data, result.image.mime_type, result.image.width,
             result.image.height, result.image.sha256, body.job_id, body.copy_revision,
             body.copy_hash, self.processor.adapter.offline, receipt)
@@ -198,13 +197,25 @@ class BackendImageAdapter:
         record = self.processor.attempts.get(internal_job, project_id)
         if record is None:
             return None
+        try:
+            with self._connect() as db:
+                row = db.execute("SELECT request_json,request_hash FROM backend_image_bindings "
+                                 "WHERE project_id=? AND service_job_id=?", (str(project_id), job_id)).fetchone()
+            if row is None:
+                raise ValueError("Missing binding")
+            stored = ExternalImageRequest.model_validate_json(row[0])
+            if content_hash(stored) != row[1] or record["request_hash"] != row[1]:
+                raise ValueError("Receipt binding mismatch")
+        except (sqlite3.Error, ValueError):
+            raise GatewayError("BACKEND_BINDING_INVALID", "Receipt binding is unavailable or invalid.") from None
         elapsed = None
         if record["state"] in {"succeeded", "failed"}:
             seconds = (datetime.fromisoformat(record["updated_at"])
                        - datetime.fromisoformat(record["created_at"])).total_seconds()
             if seconds >= 0:
                 elapsed = round(seconds * 1000)
-        return {"provider": record["provider"], "attempt_id": record["attempt_id"],
+        return {"provider": record["provider"], "model": stored.model, "request_sha256": row[1],
+                "attempt_id": record["attempt_id"],
                 "provider_request_id": record["provider_request_id"],
                 "model_job_id": str(internal_job), "state": record["state"],
                 "elapsed_ms": elapsed, "elapsed_source": "model_attempt_ledger_wall_clock",
