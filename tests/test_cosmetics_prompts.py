@@ -209,7 +209,8 @@ def test_v2_advertising_canvas_must_match_prompt_portrait_layout(operation):
     with pytest.raises(ValidationError, match="4:5"):
         ExternalImageRequest.model_validate({**request.model_dump(), "width": 1024, "height": 1024})
     # Prior profile and product cutouts retain their independent supported canvases.
-    ExternalImageRequest.model_validate({**request.model_dump(), "pipeline_revision": "1", "width": 1024, "height": 1024})
+    ExternalImageRequest.model_validate({**request.model_dump(), "pipeline_revision": "1",
+                                        "watermark_policy": None, "width": 1024, "height": 1024})
     cutout = build_cosmetics_cutout_request(asset())
     ExternalImageRequest.model_validate({**cutout.model_dump(), "width": 1024, "height": 1024})
 

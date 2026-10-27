@@ -13,6 +13,7 @@ from pydantic import Field, ValidationError, field_validator
 
 from .contracts import (AssetRef, Contract, ExternalImageRequest, ImagePrompt,
                         ImageProviderModel)
+from .prompt_policy import WATERMARK_POLICY_ID, apply_watermark_policy
 
 PROMPT_VERSION = "cosmetics-v1"
 PIPELINE_REVISION = "2"
@@ -151,6 +152,7 @@ def build_cosmetics_request(brief: CosmeticsPromptBrief, *,
     if operation not in ("edit", "generate"):
         raise ValueError("Cosmetics prompt requests support edit or generate")
     return ExternalImageRequest(operation=operation, pipeline_revision=PIPELINE_REVISION,
+        watermark_policy=WATERMARK_POLICY_ID,
         product_images=product_images, reference_images=reference_images or [],
         prompt=build_cosmetics_prompt(brief), model=model, quality=quality)
 
@@ -159,6 +161,7 @@ def build_cosmetics_cutout_request(product_image: AssetRef, *,
         model: ImageProviderModel = "gpt-image-2.5-sunburst-2026-09-08",
         quality: Literal["low", "medium", "high"] = "medium") -> ExternalImageRequest:
     return ExternalImageRequest(operation="cutout", pipeline_revision=PIPELINE_REVISION,
+        watermark_policy=WATERMARK_POLICY_ID,
         product_images=[product_image], model=model, quality=quality)
 
 
@@ -168,7 +171,7 @@ def render_cosmetics_provider_prompt(request: ExternalImageRequest) -> str:
     if request.pipeline_revision != PIPELINE_REVISION:
         raise ValueError("Cosmetics provider policy requires pipeline revision 2")
     if request.operation == "cutout":
-        return CUTOUT_PROMPT_V2
+        return apply_watermark_policy(CUTOUT_PROMPT_V2, request.watermark_policy)
     assert request.prompt is not None
     parts = [request.prompt.positive]
     if request.prompt.negative:
@@ -176,6 +179,8 @@ def render_cosmetics_provider_prompt(request: ExternalImageRequest) -> str:
     parts.append("REQUIRED COSMETICS CONSTRAINTS\n" + _PRESERVE + " " + _NO_ADDITIONS
                  + " Keep palette changes in the scene, never on the product. "
                  "Reserve the requested copy area for a separate typography renderer.")
+    # Keep reference variables separate from the versioned output policy.
+    parts[-1] = apply_watermark_policy(parts[-1], request.watermark_policy)
     products, references = len(request.product_images), len(request.reference_images)
     if products:
         parts.append("PRODUCT REFERENCES\nImage 1 is the primary product and viewpoint. "

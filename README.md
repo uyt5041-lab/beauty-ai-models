@@ -35,6 +35,8 @@ python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 
 공통 지시는 제품 형태·재질·라벨 보존, 새 광고 문구 생성 제한, 제품 사진과 참고 사진의 역할을 정합니다. 제품별 설명과 연출 입력을 이 지시에 붙여 최종 프롬프트를 만듭니다.
 
+**워터마크 제외 기본값(2026-10-27):** 새 화장품 생성·편집·누끼 요청은 `watermark_policy="exclude-v1"`을 고정합니다. 사진 위의 워터마크는 제거하고 새 워터마크·서명·플랫폼 표시를 넣지 않도록 지시합니다. 실제 제품의 인쇄 로고·라벨은 보존합니다. 규칙 원문은 [prompt_policy.py](beauty_ai/prompt_policy.py)에 있으며, Langfuse 문장에도 작업 제출 전에 반영해 해시로 고정합니다. 과거 저장 요청은 소급 변경하지 않습니다. 제거 지시는 실제 결과의 제거 성공을 보장하지 않으므로 결과 검토가 필요합니다.
+
 | 파일 | 용도 |
 | --- | --- |
 | [beauty_ai/cosmetics_prompts.py](beauty_ai/cosmetics_prompts.py) | 로컬 고정 지시와 조립 코드. `PRESETS`는 배경·조명, `_LAYOUTS`는 배치, `_PRESERVE`는 제품 보존, `CUTOUT_PROMPT_V2`는 누끼 지시입니다. |

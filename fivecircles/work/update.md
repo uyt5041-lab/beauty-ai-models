@@ -182,3 +182,12 @@
 - Langfuse 프롬프트 v3·[새 trace](https://jp.cloud.langfuse.com/project/cmt966agt0007ad0jn1c3s4up/traces/debacc2ea0d95ae326fde1ec3168aff4)와 평가 점수 16개(각 8개)의 trace·observation 연결·값을 원격 조회했다. [W&B 비교](https://forge.coreweave.com/wandb/uyt5041-alphaflower/beautyai-image-experiments/runs/cmp-86cd9d87740e2962079b)는 `READBACK_VERIFIED`: 파일 12개 해시·표 2행·관련 실행 3개의 현재 정책 링크를 확인했다.
 - 사용자 의견에 따라 현재 판정은 **사용자선택**이다. 비율 차이만으로 자동 탈락·추가 생성하지 않는다. 그대로 사용·보정·재생성 선택을 제공한다. 과거 점수와 당시 판정 이력은 보존한다.
 - 사람 검수·정식 출시·실제 청구 확인은 별도다. 근거는 `docs/imageExperiment-20261023-avene.md`와 실행 폴더의 `comparison/comparison-review.json`이다. 이번 문서 갱신은 기존 내용을 유지한 덧붙이기이며 푸시·PR은 하지 않았다.
+
+
+## 2026-10-27 · 기본 워터마크 제외 정책
+
+새 화장품 생성·편집·누끼 요청에 `watermark_policy=exclude-v1`을 고정했다. 사진 위의 워터마크 제거와 신규 워터마크 제외를 요청하되 실제 제품의 인쇄 로고·라벨은 보존한다. 과거 요청의 본문·해시는 유지한다.
+
+Langfuse production은 clean-studio v2, premium-minimal v2, vivid-pop v4로 새로 게시하고 문장·버전·정책을 재조회했다. 밝은 컬러는 직전 production v2를 기준으로 워터마크 조건만 보강했다. v3 실험은 그대로 보존한다. 전체 회귀 1,326 passed / 23.40초, 이미지 API 호출 0회. [검증](../test/watermark-policy-20261027.md). 실물 제거 품질은 미검증이다.
+
+2026-10-26 협업일지는 별도 일지 브랜치에서 작성하며 오늘 변경을 어제 성과에 포함하지 않는다.

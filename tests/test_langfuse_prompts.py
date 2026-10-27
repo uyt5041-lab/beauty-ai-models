@@ -167,7 +167,8 @@ def test_edit_transport_sends_exact_pinned_text_once():
         envelope = b"Content-Type: " + wire.headers["content-type"].encode() + b"\r\n\r\n" + wire.content
         fields = {part.get_param("name", header="content-disposition"): part.get_payload(decode=True)
                   for part in BytesParser(policy=policy.default).parsebytes(envelope).iter_parts()}
-        assert fields["prompt"].decode() == "A reviewed remote art direction."
+        assert fields["prompt"].decode() == request.managed_prompt.rendered_text
+        assert fields["prompt"].decode().startswith("A reviewed remote art direction.")
         assert "managed_prompt" not in fields
         return httpx.Response(200, json={"data": [{"b64_json": base64.b64encode(png()).decode()}]})
     adapter = OpenAIImagesAdapter(OpenAIImagesConfig(), httpx.MockTransport(handle))

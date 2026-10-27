@@ -8,6 +8,8 @@ from uuid import UUID
 from pydantic import (BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler,
                       field_validator, model_serializer, model_validator)
 
+from .prompt_policy import WATERMARK_POLICY_TEXT
+
 
 class Contract(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -285,6 +287,7 @@ class ExternalImageRequest(Contract):
     reference_images: list[AssetRef] = Field(default_factory=list, max_length=5)
     prompt: ImagePrompt | None = None
     managed_prompt: ManagedPromptSnapshot | None = None
+    watermark_policy: Literal["exclude-v1"] | None = None
     width: int = Field(default=1152, ge=16, le=3840, strict=True)
     height: int = Field(default=1440, ge=16, le=3840, strict=True)
     quality: Literal["low", "medium", "high"] = "medium"
@@ -294,10 +297,17 @@ class ExternalImageRequest(Contract):
         serialized = handler(self)
         if self.managed_prompt is None:
             serialized.pop("managed_prompt", None)
+        if self.watermark_policy is None:
+            serialized.pop("watermark_policy", None)
         return serialized
 
     @model_validator(mode="after")
     def valid_operation(self):
+        if self.watermark_policy is not None:
+            if self.pipeline_revision != "2":
+                raise ValueError("Watermark policy requires cosmetics pipeline revision 2")
+            if self.managed_prompt is not None and WATERMARK_POLICY_TEXT not in self.managed_prompt.rendered_text:
+                raise ValueError("Managed prompt must contain its pinned watermark policy")
         if self.managed_prompt is not None:
             if self.pipeline_revision != "2" or self.operation == "cutout":
                 raise ValueError("Managed prompts require cosmetics generation or editing")

@@ -1,0 +1,29 @@
+[
+  {
+    "name": "beautyai/cosmetics/clean-studio",
+    "base_version": 1,
+    "version": 2,
+    "label": "production",
+    "sha256": "5787fde9bdc67da097997aa7a1a17417ee5bde115f63149482acf52158d20798",
+    "readback_verified": true,
+    "file": "prompts/cosmetics/clean-studio-v2-watermark.json"
+  },
+  {
+    "name": "beautyai/cosmetics/premium-minimal",
+    "base_version": 1,
+    "version": 2,
+    "label": "production",
+    "sha256": "3ed1d70f49ef66ad1fc15d3040bab4fdb7131053fc4ce9452b9cbd4013b5f74d",
+    "readback_verified": true,
+    "file": "prompts/cosmetics/premium-minimal-v2-watermark.json"
+  },
+  {
+    "name": "beautyai/cosmetics/vivid-pop",
+    "base_version": 2,
+    "version": 4,
+    "label": "production",
+    "sha256": "f5012749d0839d4800f9640c88cd2c03e1e95fe600a700389cc2cb5afd04cc59",
+    "readback_verified": true,
+    "file": "prompts/cosmetics/vivid-pop-v4-watermark.json"
+  }
+]

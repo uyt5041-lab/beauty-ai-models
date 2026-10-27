@@ -17,6 +17,7 @@ from uuid import UUID
 
 from .contracts import (AssetRef, ExternalImageRequest, ImageProviderUsage,
                         ManagedPromptSnapshot, content_hash)
+from .prompt_policy import WATERMARK_POLICY_ID, apply_watermark_policy
 from .cosmetics_prompts import (CosmeticsPromptBrief, PRESETS, _LAYOUTS, _snapshot,
                                build_cosmetics_prompt, build_cosmetics_request,
                                render_cosmetics_provider_prompt)
@@ -76,8 +77,9 @@ def cosmetics_prompt_definition(preset_id: str) -> dict:
     return {"name": name, "type": "text", "prompt": template,
             "labels": ["production"], "tags": ["beautyai", "cosmetics", "image-edit"],
             "config": {"pipeline_revision": "2", "source_prompt_version": "cosmetics-v1",
+                       "watermark_policy": WATERMARK_POLICY_ID,
                        "variables": sorted(_VARIABLES)},
-            "commitMessage": "Migrate existing cosmetics preset without changing rendered instructions"}
+            "commitMessage": "Add exclude-v1 watermark policy; preserve product logo and label"}
 
 
 def cosmetics_prompt_variables(brief: CosmeticsPromptBrief,
@@ -131,6 +133,7 @@ def pin_cosmetics_prompt(request: ExternalImageRequest, remote_prompt: Mapping,
         if any(match.group(1) not in _VARIABLES for match in _PLACEHOLDER.finditer(template)):
             raise ValueError
         rendered = _PLACEHOLDER.sub(lambda match: variables[match.group(1)], template)
+        rendered = apply_watermark_policy(rendered, snapshot.watermark_policy)
         pinned = ManagedPromptSnapshot(name=remote_prompt["name"],
             version=remote_prompt["version"], rendered_text=rendered,
             sha256=hashlib.sha256(rendered.encode("utf-8")).hexdigest())
