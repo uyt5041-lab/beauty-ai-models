@@ -9,6 +9,7 @@
 | 2026-10-20 | [작업일지](worklogs/2026-10-20/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-20/park-jisoo-worklog.html) |
 | 2026-10-22 | [모델 작업·완료 체크·스키마 일지](worklogs/2026-10-22/schema-draft-worklog.md) | [HTML 파일](worklogs/2026-10-22/schema-draft-worklog.html) |
 | 2026-10-23 | [프롬프트·W&B·FinOps 협업일지](worklogs/2026-10-23/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-23/park-jisoo-worklog.html) |
+| 2026-10-26 | [브랜치·프롬프트 안내·백엔드 연동 리뷰](worklogs/2026-10-26/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-26/park-jisoo-worklog.html) |
 
 HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
@@ -47,3 +48,13 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 - 진행률은 공유용 일지 체크 기준이며 제품 완성률·당일 자기평가와 다르다. 현재 API 실행 항목은 0/12, SSOT 연결은 0/12다. 전체 분모에 다시 더하지 않는다.
 
 [10/22 전체 TODO·당시 진행률](worklogs/2026-10-22/full-todo.md) · [반복 작성 스킬](skills/beauty-ilji/SKILL.md)
+
+## 전체 TODO 진행률 · 2026-10-26
+
+**공유용 일지 체크: 44/186개 · 23.7%**
+
+![진행률](worklogs/2026-10-26/progress.svg)
+
+[전체 TODO 186개](worklogs/2026-10-26/full-todo.md) · [HTML 목록](worklogs/2026-10-26/full-todo.html) · [협업일지](worklogs/2026-10-26/park-jisoo-worklog.md) · [검증 근거](worklogs/2026-10-26/evidence.md)
+
+기준은 이미지 통합 브랜치 `feature/image-model`의 고정 커밋 `a8d464a`다. 기존 `plan/models`는 계획 이력으로 보존한다. TODO가 150개에서 186개로 재구성되어 이전 퍼센트와 직접 비교하지 않는다. 원본의 구현 체크를 되돌리지 않았고, 보고일까지 계획된 항목만 일지 분자로 센다. 과거 날짜의 기록과 수치는 그대로 보존한다.

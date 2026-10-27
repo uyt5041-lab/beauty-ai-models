@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-26",
+  "source_sha": "a8d464a906407f5875b171d99778c2d70f3beeaa",
+  "total": 186,
+  "completed": 44,
+  "percent": 23.7,
+  "sections": 8,
+  "markdown_html_counts_match": true,
+  "local_links_valid": true,
+  "no_local_paths_or_key_patterns": true,
+  "progress_policy_tests": 7
+}
