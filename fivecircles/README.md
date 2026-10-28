@@ -31,7 +31,7 @@ FiveCircles의 6단계 개발 흐름을 beautyAi에 적용한 프로젝트 설�
 
 - B10은 실제 호출 없이 어댑터·영속 제출/예약·내부 연결을 구현한다. 기본 live 차단·예산0이며 고정 job당 POST 1회다. 단일 PNG와 생성형 누끼는 기존 세 레이어·제품 픽셀 보존·승인/cache와 구분한다. 예제는 `python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo`이며 항상 mock이다. 실 API·품질·계정 권한은 검증하지 않았다.
 - **B1~B9 역사 기록:** B4까지 로컬 자산·작업 API·worker·승인·template·프롬프트 수신·편집 revision/캐시를 검증했다. B5 로컬 평가 manifest·지표·작업 경과 시간 도구는 280 tests·CLI로 검증했다. B6 고정 BiRefNetLite는 실제 MPS/TCP 합성 fixture와 339 tests로 검증했다. B7 고정 SDXL은 실제 MPS 512 fixture와 433 tests로 기술 검증했다. B8 동일 ID 제출 조정은 521 tests와 실제 TCP 응답 유실 시험으로 검증했다. B9는624 tests·실제 MPS6 jobs의 단계/환경/snapshot과 동일512 재현을 확인했다. 별도 사용자 요청의 SSOT 대조·실행 TODO 문서도 작성했다. 신규 SSOT 12개 기능과 실패 뒤 후속 job 복구·부분 결과 자산 처리, GCP 이전은 미완료다. 광고 품질·실사진·CUDA·서비스 사용자 인증·렌더러 통합도 미검증이다. 최신 근거는 [릴레이 기록](work/relay.md)을 따른다.
-- 이미지: pi. 텍스트·영어 프롬프트: 김다혜. API/렌더러 담당은 별도 확인 대상이다.
+- 이미지·합성: pi. 텍스트·한국어 프롬프트·검수: 김다혜. 서빙: 이형기, UI: 권혁상. 영어 변환은 고도화 범위다.
 - M1: **2026-10-30 통합**, M2: **2026-11-06 이미지 디테일·고도화 완료**. 텍스트 최종 고정 11/10과 구분한다.
 - 일정과 체크 상태의 원본은 [이미지 TODO](../docs/imageTodo.md)다. [LLM 참고 TODO](../docs/llmTodo.md)는 기존 초안이며 실제 팀 배정을 덮어쓰지 않는다.
 - 검증: 저장소 루트에서 `python3 scripts/check_fivecircles.py`. 모델 변경 시 [테스트 정책](test/testpolicy.md)을 따른다.

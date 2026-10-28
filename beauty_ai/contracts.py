@@ -290,6 +290,8 @@ class ExternalImageRequest(Contract):
     prompt: ImagePrompt | None = None
     managed_prompt: ManagedPromptSnapshot | None = None
     watermark_policy: Literal["exclude-v1"] | None = None
+    # Missing on historical requests: do not change their hashes or wording.
+    cosmetics_policy_version: Literal["ko-v1"] | None = None
     width: int = Field(default=1152, ge=16, le=3840, strict=True)
     height: int = Field(default=1440, ge=16, le=3840, strict=True)
     quality: Literal["low", "medium", "high"] = "medium"
@@ -301,10 +303,19 @@ class ExternalImageRequest(Contract):
             serialized.pop("managed_prompt", None)
         if self.watermark_policy is None:
             serialized.pop("watermark_policy", None)
+        if self.cosmetics_policy_version is None:
+            serialized.pop("cosmetics_policy_version", None)
         return serialized
 
     @model_validator(mode="after")
     def valid_operation(self):
+        if self.cosmetics_policy_version is not None:
+            if self.pipeline_revision != "2" or self.watermark_policy != "exclude-v1":
+                raise ValueError("Korean policy requires revision 2 and watermark exclusion")
+            if self.managed_prompt is not None:
+                raise ValueError("Korean policy cannot reuse an English managed template")
+            if self.prompt is not None and self.prompt.language != "ko":
+                raise ValueError("Korean policy requires a declared Korean prompt")
         if self.watermark_policy is not None:
             if self.pipeline_revision != "2":
                 raise ValueError("Watermark policy requires cosmetics pipeline revision 2")

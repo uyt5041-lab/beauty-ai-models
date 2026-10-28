@@ -1,5 +1,8 @@
 # 추가 사용 예제와 기존 안내
 
+> 현재 팀 연결은 [ProductAnalysisResult·한국어 입력 계약](docs/textImageHandoff.md)을 따릅니다. 이 문서의 OpenAITextGateway·ReviewService·영어 SDXL 예제는 과거 참고 구현이며 이미지 서비스에서 텍스트 생성기를 별도로 연결하라는 뜻이 아닙니다.
+
+
 ## 이미지 파트 통합 기준 브랜치
 
 **2026-10-26: `feature/image-model`**에 이미지 API·프롬프트·실험 실행기·W&B·평가·문서·테스트를 모았습니다. 기존 `plan/models` 이력에서 이어진 브랜치입니다. [폴더 트리·실행 그래프·팀원 실행 순서](docs/imageArchitecture.md)와 [전체 파일 트리](docs/repositoryTree.txt)를 먼저 보세요. 저장된 Graft 그래프를 우선 사용하며 로컬 캐시는 Git에 포함하지 않습니다.

@@ -219,6 +219,19 @@
       "default": null,
       "title": "Watermark Policy"
     },
+    "cosmetics_policy_version": {
+      "anyOf": [
+        {
+          "const": "ko-v1",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cosmetics Policy Version"
+    },
     "width": {
       "default": 1152,
       "maximum": 3840,

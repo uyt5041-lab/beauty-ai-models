@@ -44,6 +44,7 @@
     },
     "BackendImagePrompt": {
       "additionalProperties": false,
+      "description": "Text-team output reflecting user input: concept, prompt and ad mood.\n\nDo not reselect a preset or replace this mood with VLM product observations.",
       "properties": {
         "concept": {
           "maxLength": 600,

@@ -1,0 +1,21 @@
+flowchart TD
+ A["팀 입력 모의 fixture / Python 수신 스키마"] --> C{"성공 여부 우선 / 화장품 검사"}
+ C -->|실패| D["검증됨: 자산·예약·API 0회"]
+ C -->|통과| E["검증됨: 한국어 원문·광고 무드 유지"]
+ E --> F["검증됨: ko-v1 공통 지침 / job 결속"]
+ F --> G["실제 multipart 경계 / MockTransport"]
+ G --> H["검증됨: bytes·치수·해시·실행 기록"]
+ H --> I["검증됨: 원본 보존·4:5 PNG 축소"]
+ B["GAP: 서빙 실제 경로·승인·팀 예산"] -.-> A
+ I -.-> J["GAP: 한글 합성·공동 서비스 E2E"]
+ class A amber
+ class C gray
+ class D,B,J red
+ class E,F,H,I green
+ class G blue
+
+classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933
+classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933
+classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933
+classDef red fill:#fde9e6,stroke:#e8bab5,color:#1f2933
+classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933

@@ -1,0 +1,84 @@
+[
+  {
+    "request": {
+      "kind": "api_image",
+      "operation": "edit",
+      "pipeline_profile_id": "openai-images",
+      "pipeline_revision": "2",
+      "model": "gpt-image-2.5-sunburst-2026-09-08",
+      "product_images": [
+        {
+          "asset_id": "00000000-0000-0000-0000-000000000001",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "width": 64,
+          "height": 80,
+          "mime_type": "image/png"
+        }
+      ],
+      "reference_images": [],
+      "prompt": {
+        "positive": "Keep original product.",
+        "negative": "",
+        "prompt_version": "saved-v1",
+        "source_revision": 1,
+        "language": "en"
+      },
+      "watermark_policy": "exclude-v1",
+      "width": 1152,
+      "height": 1440,
+      "quality": "medium"
+    },
+    "request_sha256": "894bd65db78fb354733335045250a5a7f41248253cfc2b4117a56eded67bfbba",
+    "effective_prompt": "Keep original product.\n\nREQUIRED COSMETICS CONSTRAINTS\nKeep the supplied cosmetic product's shape, proportions, color, material, cap or pump, logo, printed label and original packaging artwork intact. Show one complete product, without cropping small parts. Do not invent ingredients, efficacy claims, certification marks or packaging details. Preserve any artwork already printed on the real packaging. Do not add advertising copy, prices, badges or watermarks. Preserve existing product label and logo text. Keep palette changes in the scene, never on the product. Reserve the requested copy area for a separate typography renderer.\n\nWATERMARK POLICY — exclude-v1\nAlways output an image without visible watermarks. Do not add watermarks, stock-photo overlays, creator signatures, platform marks or attribution badges. Remove any watermark overlay from the input photographs rather than copying it into the result. Preserve the real product's printed brand logo, label text and packaging artwork; these are not watermark overlays.\n\nPRODUCT REFERENCES\nImage 1 is the primary product and viewpoint. Preserve that view and identity; any additional product images up to image 1 show the same product's details, not extra objects to include. Show exactly one product."
+  },
+  {
+    "request": {
+      "kind": "api_image",
+      "operation": "generate",
+      "pipeline_profile_id": "openai-images",
+      "pipeline_revision": "2",
+      "model": "gpt-image-2.5-sunburst-2026-09-08",
+      "product_images": [],
+      "reference_images": [],
+      "prompt": {
+        "positive": "Keep original product.",
+        "negative": "",
+        "prompt_version": "saved-v1",
+        "source_revision": 1,
+        "language": "en"
+      },
+      "watermark_policy": "exclude-v1",
+      "width": 1152,
+      "height": 1440,
+      "quality": "medium"
+    },
+    "request_sha256": "b2fb073e5562cc1bc630f3e2b15595a3596bfdf7f272752f77ed88cefc4d923e",
+    "effective_prompt": "Keep original product.\n\nREQUIRED COSMETICS CONSTRAINTS\nKeep the supplied cosmetic product's shape, proportions, color, material, cap or pump, logo, printed label and original packaging artwork intact. Show one complete product, without cropping small parts. Do not invent ingredients, efficacy claims, certification marks or packaging details. Preserve any artwork already printed on the real packaging. Do not add advertising copy, prices, badges or watermarks. Preserve existing product label and logo text. Keep palette changes in the scene, never on the product. Reserve the requested copy area for a separate typography renderer.\n\nWATERMARK POLICY — exclude-v1\nAlways output an image without visible watermarks. Do not add watermarks, stock-photo overlays, creator signatures, platform marks or attribution badges. Remove any watermark overlay from the input photographs rather than copying it into the result. Preserve the real product's printed brand logo, label text and packaging artwork; these are not watermark overlays.\n\nCONCEPT ONLY\nNo real product photo was supplied. Produce an unbranded illustrative cosmetics concept, without invented label copy or any claim of fidelity to a real product."
+  },
+  {
+    "request": {
+      "kind": "api_image",
+      "operation": "cutout",
+      "pipeline_profile_id": "openai-images",
+      "pipeline_revision": "2",
+      "model": "gpt-image-2.5-sunburst-2026-09-08",
+      "product_images": [
+        {
+          "asset_id": "00000000-0000-0000-0000-000000000001",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "width": 64,
+          "height": 80,
+          "mime_type": "image/png"
+        }
+      ],
+      "reference_images": [],
+      "prompt": null,
+      "watermark_policy": "exclude-v1",
+      "width": 1152,
+      "height": 1440,
+      "quality": "medium"
+    },
+    "request_sha256": "64ee07d3a09e33860e206133d2ee9b7f3d16e4143c2956875c854045227e0b6d",
+    "effective_prompt": "Remove only the background from the first cosmetic product photograph. Keep its original viewing angle and all visible parts, including fine pump edges, transparent or reflective materials, original colors, label characters, logo and packaging artwork. Fit the whole product without cropping or stretching. Return a PNG with a genuinely transparent alpha channel and clean, natural edges: no background residue, halos, fringing or invented holes. Do not repaint, polish, retouch or redesign the product. Do not draw a checkerboard, solid background, cast shadow or new props. Preserve any artwork already printed on the real packaging. Do not add advertising copy, prices, badges or watermarks. Preserve existing product label and logo text.\n\nWATERMARK POLICY — exclude-v1\nAlways output an image without visible watermarks. Do not add watermarks, stock-photo overlays, creator signatures, platform marks or attribution badges. Remove any watermark overlay from the input photographs rather than copying it into the result. Preserve the real product's printed brand logo, label text and packaging artwork; these are not watermark overlays."
+  }
+]

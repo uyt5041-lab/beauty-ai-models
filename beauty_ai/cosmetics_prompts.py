@@ -1,6 +1,6 @@
 """Deterministic cosmetics templates; no LLM, credentials, network or approval.
 
-English facts/direction come from the text service. These instructions request
+English presets are historical experiments, not the current team boundary. These instructions request
 product fidelity; only review of the returned image can establish its quality.
 Published version strings and their text must remain immutable.
 """
@@ -14,6 +14,7 @@ from pydantic import Field, ValidationError, field_validator
 from .contracts import (AssetRef, Contract, ExternalImageRequest, ImagePrompt,
                         ImageProviderModel)
 from .prompt_policy import WATERMARK_POLICY_ID, apply_watermark_policy
+from .korean_image_policy import render_korean_image_policy
 
 PROMPT_VERSION = "cosmetics-v1"
 PIPELINE_REVISION = "2"
@@ -170,6 +171,8 @@ def render_cosmetics_provider_prompt(request: ExternalImageRequest) -> str:
     request = ExternalImageRequest.model_validate(request.model_dump(warnings=False))
     if request.pipeline_revision != PIPELINE_REVISION:
         raise ValueError("Cosmetics provider policy requires pipeline revision 2")
+    if request.cosmetics_policy_version == "ko-v1":
+        return render_korean_image_policy(request)
     if request.operation == "cutout":
         return apply_watermark_policy(CUTOUT_PROMPT_V2, request.watermark_policy)
     assert request.prompt is not None

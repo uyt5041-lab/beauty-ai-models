@@ -16,3 +16,5 @@ A1 PASS: tests/test_product_analysis.py 13 passed / 0.06초. 설정 검사 PASS.
 정정: 노션 본문/링크는 수정하지 않는다. 연결된 plan/models/docs/imageTodo.md를 마일스톤 10/27 기준으로 갱신한다.
 
 A1 delivery: 74004b3d12601f3da58338be0dc05b6bcf6c5b80 원격 일치. A2 59 PASS. 원시 오류 비공개·분석 변경 충돌·재시작 재사용 확인. A3 CONTINUE.
+
+A2 delivery: 43bd7b598984cd66f70caca4a5948fedbe82e808 원격 일치. A3: 원문 번역 없음·수신 광고 mood 유지·ko-v1 공통 규칙·과거 snapshot 보존. 52 focused / 1394 full PASS. 기존 10/27 W0~W6와 MVP/고도화 분석을 재사용했고 서빙 소스는 새로 검토/수정하지 않았다. 다음은 게시·원격 확인 및 plan/models TODO만 별도 게시. 전체 서비스 GAP/PARTIAL, A1~A3 MATCHED. STOP_WITH_REASON: 한글 합성·실제 서빙/유료 시험은 이번 범위 밖.

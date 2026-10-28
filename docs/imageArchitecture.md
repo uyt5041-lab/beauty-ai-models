@@ -1,10 +1,13 @@
 # 이미지 파트 통합 기준: 구조와 실행 흐름
 
-기준일: 2026-10-26 · 통합 브랜치: **`feature/image-model`**
+기준일: 2026-10-28 · 통합 브랜치: **`feature/image-model`**
 
 이 브랜치는 이미지 API 래퍼, 프롬프트, 다중 사진 실험 실행기, 결과·비용 기록, 평가, 문서와 테스트를 한곳에 모은다. `plan/models`에서 이어진 이력을 보존한다. 저장소의 기본 브랜치 변경이나 팀 서비스 배포 완료를 뜻하지 않는다. 협업일지는 `박지수_협업일지`에서 별도로 관리한다.
 
 ## 1. 지금 제공하는 것
+
+현재 팀 경로: **다혜 ProductAnalysisResult + 한국어 concept/prompt/mood + 정면 우선 사진 → 분석 실패/비화장품 차단 → 분석과 사진 지문 결속 → 한국어 공통 보존 정책 → 영속 이미지 호출 → 원본 보존·1080×1350 PNG**. 프리셋 선택은 필요 없다. [입력·실패·담당 계약](textImageHandoff.md)을 기준으로 한다. 아래 실험 실행기의 프리셋 경로와 구분한다.
+
 
 이미지 생성의 중심은 **사진과 조합한 프롬프트를 OpenAI에 보내고 결과를 받는 API 래퍼**다. 앞뒤에 입력 검증, 호출 전 미리보기, 프롬프트 버전 고정, 호출·예산 제한, 자산 저장, 실험 기록을 붙였다. 자체 이미지 모델을 학습하는 프로젝트가 아니다.
 
@@ -32,7 +35,11 @@ beauty-ai-models/
 │   ├── experiment_plan.py      # 프리셋·버전별 요청 구성
 │   ├── experiment_runner.py    # prepare / execute / sync-wandb CLI
 │   ├── experiment_execution.py # 고정 계획 실행·호출 제한·중단
-│   ├── cosmetics_prompts.py    # 공통 규칙·3개 프리셋·레이아웃
+│   ├── product_analysis.py     # 다혜 VLM 수신 계약 (분석 호출 없음)
+│   ├── backend_adapter.py      # 필수 분석·실패 차단·입력 결속
+│   ├── korean_image_policy.py  # 현재 한국어 공통 정책 ko-v1
+│   ├── ad_resize.py            # 원본 보존·최종 크기 변환
+│   ├── cosmetics_prompts.py    # 이전 영어 실험·프리셋/현재 정책 분기
 │   ├── langfuse_prompts.py     # 버전 스냅샷·프롬프트·trace
 │   ├── openai_images.py        # OpenAI 생성·편집·누끼 요청
 │   ├── api_image_processor.py  # 요청 처리·결과 검증·자산 저장
@@ -62,7 +69,7 @@ beauty-ai-models/
 
 텍스트 참고 코드가 남아 있다는 사실은 다혜의 모듈과 이미 연동됐다는 뜻이 아니다. pi의 현재 책임은 이미지 API와 이미지 실험·평가·사용량 관리다.
 
-## 3. 사진을 받아 이미지가 나오는 경로
+## 3. 프리셋 실험 실행기 경로 (팀 입력 어댑터와 구분)
 
 ```mermaid
 flowchart TD
@@ -217,3 +224,5 @@ graft skeleton beauty_ai/experiment_execution.py
 - 팀 스키마·사진 장수·제품 유형 시점·상태·합성·FinOps 공동 인수는 [원본 TODO](imageTodo.md)의 LINK-01~05를 따른다.
 - 실제 실험 근거: [아벤느 결과·비율 비교](imageExperiment-20261023-avene.md). 생성 이미지·개인 사진·로컬 DB는 Git에 포함하지 않는다.
 - 공유할 변경 요청: [다혜·혁상 요청문](integrationRequests-20261025.md). 담당자 수락과 메시지 전달은 별도 사실이다.
+
+**무드 출처:** 사용자 입력을 반영한 다혜님의 `concept·prompt·mood`를 받습니다. 이미지 쪽은 전달된 광고 무드를 그대로 사용하며 원본 사용자 무드를 별도로 요구하지 않습니다. `ProductAnalysis.mood`는 제품 관찰 참고값이며 광고 무드를 덮어쓰거나 빈 값을 자동 보완하지 않습니다.

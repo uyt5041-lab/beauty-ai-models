@@ -18,7 +18,7 @@ from beauty_ai.backend_adapter import BackendImageAdapter, BackendImageInput
 from beauty_ai.errors import GatewayError
 from beauty_ai.openai_images import OpenAIImagesAdapter, OpenAIImagesConfig
 from beauty_ai.provider_attempts import ProviderAttemptStore
-from beauty_ai.prompt_policy import WATERMARK_POLICY_TEXT
+from beauty_ai.korean_image_policy import WATERMARK_POLICY_KO
 
 
 def png(color="coral", size=(32, 40)):
@@ -88,8 +88,10 @@ def test_real_boundary_order_metadata_and_restart_replay(tmp_path, counts):
     assert files == photos
     prompt = next(part.get_payload(decode=True).decode() for part in calls[0]
                   if part.get_param("name", header="content-disposition") == "prompt")
-    assert payload.image_prompt.prompt in prompt and "청량, 선명" in prompt
-    assert WATERMARK_POLICY_TEXT in prompt
+    assert prompt.startswith(payload.image_prompt.prompt + "\n\n콘셉트: ")
+    assert "전달받은 광고 무드: 청량, 선명" in prompt
+    assert "PRODUCT REFERENCES" not in prompt and "WATERMARK POLICY" not in prompt
+    assert WATERMARK_POLICY_KO in prompt
     assert "오늘의 루틴" not in prompt  # Copy is kept for later composition, not drawn accidentally.
 
 
@@ -284,3 +286,15 @@ def test_provider_error_detail_is_never_saved_or_sent(tmp_path):
     adapter.generate(body(product_analysis=analysis_result(error=marker)), project_id=uuid4())
     assert marker.encode() not in calls[0]
     assert marker.encode() not in adapter.path.read_bytes()
+
+
+def test_received_ad_mood_is_not_inferred_from_vlm_when_missing(tmp_path):
+    sent=[]
+    adapter=setup(tmp_path,lambda req:(sent.append(req.read()),response())[1])
+    payload=body(image_prompt={'concept':'간결한 루틴','prompt':'제품 원본 보존','mood':[]})
+    adapter.generate(payload,project_id=uuid4())
+    text=sent[0].decode('utf-8',errors='ignore')
+    assert '전달받은 광고 무드: 지정 없음' in text
+    assert '제품 분석의 분위기로 임의 선택하지 않는다' in text
+    assert '제품 디자인 분위기로 덮어쓰지 않는다' in text
+    assert payload.image_prompt.mood==[]

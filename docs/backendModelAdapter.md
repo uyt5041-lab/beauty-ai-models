@@ -88,3 +88,13 @@ PNG 저장은 무손실 압축이지만 축소 자체는 픽셀 정보를 줄인
 모의 연결과 원본/축소 파일 생성: `python -m examples.backend_handoff --output outputs/backend-demo`. 새 출력 폴더만 허용하며, MockTransport로만 실행한다. 승인 해시는 모의 값이다. 실제 승인 검증으로 사용하지 않는다.
 
 분석 실패는 PRODUCT_ANALYSIS_FAILED, 비화장품은 PRODUCT_NOT_COSMETIC으로 자산 저장·비용 예약·호출 전에 거절합니다. 분석 누락/잘못된 타입은 입력 검증 오류입니다. 원시 error는 전달·직렬화하지 않으며 label_text는 생성 지시에 넣지 않습니다. 같은 job의 분석 변경도 입력 충돌입니다. 수정 전 job은 get_receipt로 조회하고 새 실행에 재사용하지 않습니다.
+
+**내부 변환은 영어 번역이 아닙니다.** 한국어 `prompt` 원문과 개행을 유지한 채 `ImagePrompt` 형식으로 조립합니다. `positive`는 원문으로 시작하며 전달받은 `concept·mood`와 참고 조건을 뒤에 붙입니다. `negative=""`, `language="ko"`이고, 제공자 공통 지침도 한국어입니다. 별도 번역 호출이나 프리셋 선택은 없습니다.
+
+## 한국어 공통 지시
+
+새 서비스 요청에는 `cosmetics_policy_version="ko-v1"`, 내부 `prompt_version="backend-v02-ko-v1"`을 고정합니다. 텍스트 팀의 한국어 원문은 유지하고 AI 관찰 참고값·제품 보존·사진 역할·광고 여백·워터마크 제외 조건을 한국어로 덧붙입니다. 프리셋은 사용하지 않습니다. 영어 고정 문자열이 붙던 과거 snapshot은 그대로 조회합니다.
+
+누끼의 새 진입점은 `from beauty_ai.korean_image_policy import build_korean_cutout_request`입니다. 이것은 요청만 생성하며 자동 API 호출을 하지 않습니다. 기존 `build_cosmetics_cutout_request`는 과거 영어 실험 재현용으로 보존합니다. 기존 영어 Langfuse 템플릿을 ko-v1에 섞으면 거절합니다.
+
+**무드 출처:** 사용자 입력을 반영한 다혜님의 `concept·prompt·mood`를 받습니다. 이미지 쪽은 전달된 광고 무드를 그대로 사용하며 원본 사용자 무드를 별도로 요구하지 않습니다. `ProductAnalysis.mood`는 제품 관찰 참고값이며 광고 무드를 덮어쓰거나 빈 값을 자동 보완하지 않습니다.

@@ -1,0 +1,20 @@
+flowchart TD
+ A["다혜 결과: 제품 분석·한국어 prompt/concept/mood"] --> B["서빙: 소유권·승인·사진 결속·팀 예산"]
+ B --> C{"분석 성공 후 화장품 여부 확인"}
+ C -->|실패 또는 비화장품| D["저장·예약·호출 전에 중단"]
+ C -->|통과| E["원문·광고 무드 유지 / 한국어 공통 규칙"]
+ E --> F["같은 job 입력 결속 / 영속 시도 제한"]
+ F --> G["OpenAI 이미지 API"]
+ G --> H["원본·실행 기록 반환 / 사용자 이미지 검토"]
+ H --> I["4:5 축소·최종 한글 합성·다운로드"]
+ class A amber
+ class B,E,F,H,I green
+ class C gray
+ class D red
+ class G blue
+
+classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933
+classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933
+classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933
+classDef red fill:#fde9e6,stroke:#e8bab5,color:#1f2933
+classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933

@@ -10,7 +10,16 @@ B12는 Langfuse의 프리셋별 텍스트 버전을 읽어 최종 문장과 해�
 
 확정 MVP는 **동일 제품 사진2~5장·선택 배경 참고0~5장으로 인스타그램4:5 광고1개**를 만드는 흐름입니다. 사전 조사→카피1개와 사용자 검토→이미지1개와 사용자 검토→최종 한글 합성·캡션·해시태그·다운로드가 목표입니다. 이 서비스 흐름 전체가 구현된 것은 아닙니다. 현재 코드와 목표의 차이·담당·완료 기준은 [SSOT 대조](docs/ssotAlignment.md), 실행 항목은 [이미지 TODO](docs/imageTodo.md)에 있습니다.
 
-**백엔드 연결(2026-10-27):** [한국어 입력·Python 어댑터·리사이즈 사용법](docs/backendModelAdapter.md). `BackendImageAdapter.generate()`는 백엔드 입력을 기존 영속 래퍼로 연결합니다. `resize_ad_png()`는 원본을 보존하고 고품질 축소 PNG를 만듭니다. 서버 승인·HTTP 통합과 한글 최종 합성은 별도 남은 작업입니다.
+**백엔드 연결(2026-10-28 갱신):** [한국어 입력·Python 어댑터·리사이즈 사용법](docs/backendModelAdapter.md). `BackendImageAdapter.generate()`는 백엔드 입력을 기존 영속 래퍼로 연결합니다. `resize_ad_png()`는 원본을 보존하고 고품질 축소 PNG를 만듭니다. 서버 승인·HTTP 통합과 한글 최종 합성은 별도 남은 작업입니다.
+
+
+**현재 팀 연결 규격 · 2026-10-28:** 김다혜의 `ProductAnalysisResult`와 한국어 `concept·prompt·mood`를 받습니다. `product_analysis`는 필수입니다. 분석 실패·비화장품은 이미지 호출 전에 차단합니다. 프리셋 선택이나 `product_description`·`creative_direction` 분리를 요구하지 않습니다. 새 공통 지시도 한국어입니다. [텍스트→이미지 계약](docs/textImageHandoff.md) · [실행 예제](examples/backend_handoff.py).
+
+**내부 변환은 영어 번역이 아닙니다.** 한국어 `prompt` 원문과 개행을 유지한 채 `ImagePrompt` 형식으로 조립합니다. `positive`는 원문으로 시작하며 전달받은 `concept·mood`와 참고 조건을 뒤에 붙입니다. `negative=""`, `language="ko"`이고, 제공자 공통 지침도 한국어입니다. 별도 번역 호출이나 프리셋 선택은 없습니다.
+
+현재 고정 프롬프트는 [`beauty_ai/korean_image_policy.py`](beauty_ai/korean_image_policy.py)의 `PRESERVE_KO`, `WATERMARK_POLICY_KO`, `CUTOUT_KO`입니다. `BackendImageAdapter`가 `ko-v1`을 선택합니다. 누끼는 `build_korean_cutout_request()`를 사용합니다. 이미 저장한 요청이나 기존 영어 Langfuse 버전은 덮어쓰지 않습니다. 정책 문장을 바꿀 때에는 버전도 올려야 합니다.
+
+[서빙과 맞출 부분: MVP·고도화·현재 차이·담당별 요청](docs/backendAlignment.md)을 함께 확인하세요.
 
 ## 1. 쓰는 법
 
@@ -46,7 +55,7 @@ python -m beauty_ai.openai_images_demo --output outputs/openai-wrapper-demo
 | [beauty_ai/langfuse_prompts.py](beauty_ai/langfuse_prompts.py) | Langfuse 프롬프트 템플릿과 버전 관리 연결입니다. |
 | [vivid-pop-v2.json](prompts/cosmetics/vivid-pop-v2.json) · [vivid-pop-v3.json](prompts/cosmetics/vivid-pop-v3.json) | 밝은 컬러 프롬프트의 버전 저장본입니다. v2는 원본 재질, v3는 제품 폭·길이·캡 비율 보존을 보강했습니다. |
 
-제품마다 고정 코드부터 수정하지 마세요. 입력 JSON의 `product_description`에 확인한 제품 특징을 영어로 적고, `creative_direction`에 추가 연출을 적습니다. `preset_id`는 `clean_studio`, `premium_minimal`, `vivid_pop` 중 하나이며, `layout_id`는 `product_right`, `product_left`, `product_center_bottom` 중 하나입니다. `brand_colors`는 배경 강조색입니다. 원본 제품 색을 바꾸는 값이 아닙니다.
+**아래는 과거 영어 프리셋 실험 방법입니다. 현재 팀 연결은 위 한국어 수신 계약을 사용합니다.** 실험 입력 JSON의 `product_description`에 확인한 제품 특징을 영어로 적고, `creative_direction`에 추가 연출을 적습니다. `preset_id`는 `clean_studio`, `premium_minimal`, `vivid_pop` 중 하나이며, `layout_id`는 `product_right`, `product_left`, `product_center_bottom` 중 하나입니다. `brand_colors`는 배경 강조색입니다. 원본 제품 색을 바꾸는 값이 아닙니다.
 
 화장품 프리셋 3개의 로컬 프롬프트를 확인하려면 아래 명령을 사용합니다. 키 조회·네트워크·이미지 생성 없이 파일을 내보냅니다.
 
@@ -88,7 +97,7 @@ python -m beauty_ai.cosmetics_prompt_demo \
 
 모델은 계정에서 사용할 수 있고 해당 입력·구조화 출력을 지원하는지 확인한 뒤 설정합니다. 동시성·시간 제한의 초기값은 `.env.example`과 [클라이언트 조립 예제](examples/wiring.py)를 참고하세요.
 
-호스트 애플리케이션에서 `OpenAITextGateway`와 `HTTPImageGateway`를 한 번 생성해 재사용하고 종료 시 SDK·HTTP 클라이언트를 닫습니다. 실행 순서는 **검증된 제품 이미지 관찰 → 사용자가 제품 사실 확인 → 카피 후보 생성 → 후보 전체 검수 → 선택·수정 시 새 revision으로 재검수 → 이미지 작업 제출·상태 조회**입니다. `examples/wiring.py`는 이 연결을 위한 예시이며 `uvicorn`으로 실행하는 API 서버가 아닙니다.
+**과거 참고 연결:** `examples/wiring.py`와 `OpenAITextGateway`·`ReviewService`는 보존한 참고 코드입니다. 현재 팀의 텍스트 생성·검수는 김다혜 모듈을 사용하며 이미지 어댑터에서 이 클래스를 호출하지 않습니다. 실행 순서는 **검증된 제품 이미지 관찰 → 사용자가 제품 사실 확인 → 카피 후보 생성 → 후보 전체 검수 → 선택·수정 시 새 revision으로 재검수 → 이미지 작업 제출·상태 조회**입니다. `examples/wiring.py`는 이 연결을 위한 예시이며 `uvicorn`으로 실행하는 API 서버가 아닙니다.
 
 내부 이미지 API는 `python -m pip install -e '.[inference]'`로 의존성을 설치한 뒤 호스트에서 `create_app(ledger, assets, credentials, processor=None)`로 조립합니다. `ledger`는 `JobLedger`, `assets`는 `LocalAssetStore`, `credentials`는 **서버 소유 32자 이상 Bearer 토큰 → 프로젝트 UUID** 매핑입니다. 사용자가 보낸 project 헤더를 권한으로 사용하지 않습니다. 토큰은 환경변수나 비밀 저장소에서 주입합니다.
 
@@ -114,9 +123,9 @@ B10은 **806 tests PASS**이며 로컬 beautyAi에서도 신규182개와 mock CL
 | `ExternalImageProcessor` / `ProviderAttemptStore` | 자산 검증, 작업당 1회 POST를 위한 영속 예약·제출 기록, 결과 저장과 요청 ID·nullable usage 관찰 |
 | `openai_images_demo` | 네트워크·키 없는 mock 전용 예제. 합성 fixture만 생성 |
 | 화장품 프롬프트 빌더 / `cosmetics_prompt_demo` | 영어 입력을 프리셋3개·제품 보존·문구 여백 조건으로 조립하고 버전2 요청/프롬프트를 준비. LLM 호출 없이 예제 내보내기 |
-| `OpenAITextGateway` | 제품 이미지 관찰, 광고 기획·카피 후보 생성, 문맥 검수, 수정안 생성 |
+| `OpenAITextGateway` (과거 참고, 서비스 연결에서 미사용) | 제품 이미지 관찰, 광고 기획·카피 후보 생성, 문맥 검수, 수정안 생성 |
 | 구조화 계약 | Pydantic 입력·출력 검증과 [JSON Schema](schemas/) 제공 |
-| `ReviewService` | 전체 카피의 규칙 검사와 LLM 검사 병합, 검토된 규칙집 확인, revision·해시로 검수 대상 식별 |
+| `ReviewService` (과거 참고, 서비스 연결에서 미사용) | 전체 카피의 규칙 검사와 LLM 검사 병합, 검토된 규칙집 확인, revision·해시로 검수 대상 식별 |
 | `HTTPImageGateway` | 기존 제출·조회·폴링과 submit_and_wait 조정. PUT 1회·동일 ID 조회·단일 deadline, ID/hash 검사와 접수 미확인·대기 종료 구분 |
 | `inference_api.create_app` | Bearer 인증과 프로젝트 범위의 job PUT/GET·자산 업로드/조회·인증된 health 응답 |
 | `JobLedger` | SQLite WAL 기반 atomic ID/hash 등록, owner·terminal 보호, durable queued 조회, 접수→종료 wall-clock 기록 |
@@ -140,6 +149,8 @@ B10은 **806 tests PASS**이며 로컬 beautyAi에서도 신규182개와 mock CL
 ## 3. 아키텍처
 
 목표는 `다혜의 제품 정보·프롬프트 → pi의 OpenAI 이미지 래퍼 → 결과 검증·저장 → 사용자 검토·최종 렌더`입니다. `api_image` 요청은 별도 processor로 연결됩니다. 내부 자산·job 기반은 재사용하지만 새 결과는 **PNG 1장**이므로 기존 세 레이어 결과의 승인·캐시를 자동 통과하지 않습니다. API 누끼는 생성형 편집이며 제품 픽셀·라벨 보존을 보장하지 않습니다. 아래 연결 코드의 존재는 실제 계정 호출·사용자 인수 완료를 뜻하지 않습니다.
+
+아래는 보존한 내부 서버·참고 코드 구조입니다. 현재 서비스 어댑터 흐름은 `ProductAnalysisResult → 실패/비화장품 차단 → 한국어 프롬프트·원본 사진 → OpenAI 이미지 래퍼 → 원본 보존·resize_ad_png`입니다.
 
 ```text
 [호스트 구현 필요: UI / 사용자 인증 / CampaignService / SSE / Export]
@@ -187,6 +198,8 @@ B10은 **806 tests PASS**이며 로컬 beautyAi에서도 신규182개와 mock CL
 
 ## 4. 미완성으로서 보완해야 할 점
 
+- **새 연결의 실제 인수:** 분석 수신·실패 차단·공통 한국어 정책은 로컬 모의 시험 대상입니다. 팀 서버의 요청 매핑·분석 결과와 사진 결속·승인·예산 연결, 새 정책의 실사진 품질 평가와 최종 한글 합성은 별도입니다.
+
 - **서비스 통합:** 사용자 로그인·CampaignService·SSE·내보내기·렌더러와 실제 UI 연결이 필요합니다. 내부 API 인증·job 복구·이미지 selection revision·프로젝트 캐시는 로컬 구현했습니다.
 - **OpenAI 실제 검증:** 승인된3회 기술 실행과 실제 서비스 인수를 구분합니다. 팀 키·잔액·예산을 확인하고 같은 실제 제품 사진으로 새 프롬프트의 품질·처리 시간·성공한 최종 광고당 비용을 측정해야 합니다. seed·마스크 옵션은 현재 계약에 없고 생성형 누끼·복수 참조의 제품 보존 성능은 미검증입니다. 로컬 MPS 6건은 기존 실험 증거이며 외부 API 검증이 아닙니다. GPU 메모리/OOM·CUDA 검증은 자체 호스팅을 다시 선택할 때만 적용합니다.
 - **제품 승인·편집:** 정확한 snapshot 승인과 늦은 result attach 차단을 구현했습니다. 실제 사용자 신원·승인 UI·편집 서비스와 최종 품질 승인은 별도로 연결해야 합니다.
@@ -195,6 +208,8 @@ B10은 **806 tests PASS**이며 로컬 beautyAi에서도 신규182개와 mock CL
 - **운영:** 실제 429/쿼터·권한·응답 유실·청구 정산과 사용자 대기 UI를 검증해야 합니다. OpenAI 응답은 base64 PNG만 수신하며 URL-only 응답은 거절합니다. 서버 예약 예산은 LLM과 공유하는 팀 계정의 실제 잔액을 알거나 제한하지 못합니다. 현재 잔액·실제 청구는 미확인입니다.
 
 ## 5. 하지 말 것
+
+- 다혜님에게 프리셋 선택이나 영어 변환을 요구하지 않습니다. 실패 기본 분석값을 성공으로 쓰거나, 라벨 OCR을 확인된 사실로 복사하거나, VLM용 축소본으로 원본을 덮어쓰지 않습니다.
 
 - B11 오프라인 작업에서 실제 이미지 API를 추가 호출하거나 live 설정·예산을 올리지 않습니다. 실제 실행은 승인된 범위와 계정·운영 한도에 맞춰 수행합니다. mock 성공을 모델 품질·비용·실제 호출 성공으로 설명하지 않습니다.
 - 제품에 원래 인쇄된 그림·라벨·로고는 보존하며 배경색을 제품색으로 적용하지 않습니다.
@@ -209,3 +224,5 @@ B10은 **806 tests PASS**이며 로컬 beautyAi에서도 신규182개와 mock CL
 - 로컬 템플릿을 AI 모델 결과로 표시하거나 `TEMPLATE_NOT_AI_GENERATION`·`MANUAL_QUALITY_REVIEW_REQUIRED` 경고를 숨기지 않습니다.
 - SDK 재시도 위에 무제한 재시도를 덧씌우지 않습니다. 카피 수정 때문에 배경을 재생성하거나, 참고 문서의 속도·메모리·보존율 수치를 실측 결과처럼 쓰지 않습니다.
 - 공개 저장소는 `plan/models`에서 모델 코드를, `박지수_협업일지`에서 날짜별 작업 기록을 관리합니다. 협업일지는 PR·병합 없이 별도로 관리합니다. 자세한 운영 방식은 [README2.md](README2.md)를 따릅니다.
+
+**무드 출처:** 사용자 입력을 반영한 다혜님의 `concept·prompt·mood`를 받습니다. 이미지 쪽은 전달된 광고 무드를 그대로 사용하며 원본 사용자 무드를 별도로 요구하지 않습니다. `ProductAnalysis.mood`는 제품 관찰 참고값이며 광고 무드를 덮어쓰거나 빈 값을 자동 보완하지 않습니다.
