@@ -6,12 +6,25 @@ text-generation, review, experiment presets, Langfuse or local GPU models.
 from __future__ import annotations
 import hashlib
 import json
+import unicodedata
 from typing import Annotated, Literal
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 class Contract(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+def _revision_identity(value: str) -> str:
+    if not value.strip() or any(unicodedata.category(c).startswith("C") for c in value):
+        raise ValueError("Revision must be nonblank and contain no control characters")
+    return value  # Opaque identity: never strip, parse or cast server revisions.
+
+
+CopyRevision = (
+    Annotated[str, Field(strict=True, min_length=1, max_length=128), AfterValidator(_revision_identity)]
+    | Annotated[int, Field(strict=True, ge=1)]
+)
 
 
 def content_hash(value: BaseModel | dict) -> str:
@@ -39,7 +52,7 @@ class ImagePrompt(Contract):
     positive: str = Field(min_length=1, max_length=4000)
     negative: str = Field(default="", max_length=2000)
     prompt_version: str = Field(min_length=1, max_length=80)
-    source_revision: int = Field(ge=1, strict=True)
+    source_revision: CopyRevision
     language: Literal["ko"] = "ko"
 
     @field_validator("positive", "prompt_version")

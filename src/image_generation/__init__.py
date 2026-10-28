@@ -13,6 +13,13 @@ BackendImageAdapter. Live calls are disabled by default; inject credentials
 and an approved budget explicitly. Never store runtime files inside src/.
 
 Call generate(BackendImageInput(...), project_id=server_resolved_uuid).
+image_prompt accepts a Korean string, {"prompt": "..."}, or
+{"concept": "...", "prompt": "...", "mood": ["..."]}. Optional concept/mood
+are not invented. Korean input is preserved and fixed image policies appended.
+copy_revision accepts an opaque nonblank string (up to 128 characters, no
+control characters) or a legacy positive integer, without type coercion.
+Use the SAME type/value for generation, approval snapshot and composition;
+integer 1 and string "1" are different identities. Never cast revision labels.
 The result is a generated image candidate for user review, not a final ad.
 resize_ad_png creates a separate 1080x1350 PNG; it does not compose Korean copy.
 After serving verifies approval, call compose_ad_png(CompositionInput(...),

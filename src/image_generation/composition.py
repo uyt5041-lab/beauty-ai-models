@@ -24,7 +24,7 @@ from PIL import Image, ImageDraw, ImageFont, __version__ as pillow_version
 from pydantic import ConfigDict, Field, JsonValue, model_validator
 
 from .ad_resize import FINAL_SIZE, resize_ad_png
-from .contracts import Contract, content_hash
+from .contracts import Contract, CopyRevision, content_hash
 from .errors import GatewayError
 
 VERSION = "korean-composition-v1"
@@ -93,7 +93,7 @@ class CompositionInput(Contract):
     job_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
     image_bytes: bytes = Field(min_length=1, max_length=32*1024*1024, repr=False)
     image_sha256: Digest
-    copy_revision: int = Field(ge=1)
+    copy_revision: CopyRevision
     copy_hash: Digest
     # Preserve the WHOLE owner output, including plan. Do not hash only ad_copy.
     copy_output: dict[str, JsonValue] = Field(repr=False)
@@ -112,7 +112,7 @@ class ComposedAd:
     sha256: str
     source_image_sha256: str
     copy_hash: str
-    copy_revision: int
+    copy_revision: CopyRevision
     job_id: str
     receipt: dict
 

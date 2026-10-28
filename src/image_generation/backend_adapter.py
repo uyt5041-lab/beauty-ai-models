@@ -19,13 +19,14 @@ from uuid import UUID, uuid5
 from pydantic import Field, field_validator, model_validator
 
 from .api_image_processor import ExternalImageProcessor
-from .contracts import Contract, ExternalImageRequest, ImagePrompt, content_hash
+from .contracts import Contract, CopyRevision, ExternalImageRequest, ImagePrompt, content_hash
 from .errors import GatewayError
 from .product_analysis import ProductAnalysisResult
 
 
 Text = Annotated[str, Field(strict=True, min_length=1, max_length=600)]
 Photo = Annotated[bytes, Field(strict=True, min_length=1)]
+PromptText = Annotated[str, Field(strict=True, min_length=1, max_length=3000)]
 
 
 class BackendImagePrompt(Contract):
@@ -33,14 +34,16 @@ class BackendImagePrompt(Contract):
 
     Do not reselect a preset or replace this mood with VLM product observations.
     """
-    concept: Text
-    prompt: Annotated[str, Field(strict=True, min_length=1, max_length=3000)]
+    concept: Text | None = None
+    prompt: PromptText
     mood: list[Annotated[str, Field(strict=True, min_length=1, max_length=80)]] = Field(
         default_factory=list, max_length=8)
 
     @field_validator("concept", "prompt")
     @classmethod
-    def not_blank(cls, value: str) -> str:
+    def not_blank(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
         if not value.strip():
             raise ValueError("Image prompt must not be blank")
         return value
@@ -68,12 +71,12 @@ class BackendSafeZone(Contract):
 
 class BackendImageInput(Contract):
     job_id: Annotated[str, Field(strict=True, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")]
-    copy_revision: int = Field(ge=1, strict=True)
+    copy_revision: CopyRevision
     # Opaque server approval identity. This library does not authenticate it or
     # recompute the server's canonical Copy/ReviewRecord hash algorithm.
     copy_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
     product_analysis: ProductAnalysisResult
-    image_prompt: BackendImagePrompt
+    image_prompt: BackendImagePrompt | PromptText
     ad_copy: BackendCopy
     safe_zone: BackendSafeZone | None = None
     caption: Annotated[str, Field(strict=True, max_length=10000)] = ""
@@ -81,6 +84,12 @@ class BackendImageInput(Contract):
         default_factory=list, max_length=50)
     product_images: list[Photo] = Field(min_length=2, max_length=5, repr=False)
     reference_images: list[Photo] = Field(default_factory=list, max_length=5, repr=False)
+
+    @field_validator("image_prompt")
+    @classmethod
+    def normalize_prompt(cls, value: BackendImagePrompt | str) -> BackendImagePrompt:
+        # Normalize representation only. Do not translate or infer missing fields.
+        return BackendImagePrompt(prompt=value) if isinstance(value, str) else value
 
 
 @dataclass(frozen=True)
@@ -91,7 +100,7 @@ class BackendGeneratedImage:
     height: int
     sha256: str
     job_id: str
-    copy_revision: int
+    copy_revision: CopyRevision
     copy_hash: str
     mock: bool
     receipt: dict
@@ -137,17 +146,28 @@ class BackendImageAdapter:
         return uuid5(project_id, "beautyai/backend/image/v1/" + service_job_id)
 
     def _bind(self, body: BackendImageInput, project_id: UUID) -> ExternalImageRequest:
+        # Keep legacy structured/int request fingerprints and prompt bytes stable:
+        # an existing job must still replay its original paid-attempt record.
+        legacy = body.image_prompt.concept is not None and type(body.copy_revision) is int
+        version = "backend-v02-ko-v1" if legacy else "backend-v02-ko-v2"
         metadata = body.model_dump(mode="json", exclude={"product_images", "reference_images"})
-        metadata.update(model=self.model, quality=self.quality, adapter_version="backend-v02-ko-v1",
+        metadata.update(model=self.model, quality=self.quality, adapter_version=version,
                         mock=self.processor.adapter.offline)
         for role in ("product_images", "reference_images"):
             metadata[role] = [hashlib.sha256(data).hexdigest() for data in getattr(body, role)]
         fingerprint = content_hash(metadata)
         # Validation precedes any paid attempt. Do not truncate text silently.
-        positive = (body.image_prompt.prompt + "\n\n콘셉트: " + body.image_prompt.concept
-                    + "\n전달받은 광고 무드: "
-                    + (", ".join(body.image_prompt.mood) if body.image_prompt.mood else
-                       "지정 없음. 제품 분석의 분위기로 임의 선택하지 않는다."))
+        positive = body.image_prompt.prompt
+        if body.image_prompt.concept is not None:
+            positive += "\n\n콘셉트: " + body.image_prompt.concept
+        positive += ("\n" if body.image_prompt.concept is not None else "\n\n") + "전달받은 광고 무드: "
+        if body.image_prompt.mood:
+            positive += ", ".join(body.image_prompt.mood)
+        elif legacy:
+            positive += "지정 없음. 제품 분석의 분위기로 임의 선택하지 않는다."
+        else:
+            positive += ("별도 값 없음. 위 한국어 프롬프트의 분위기 지시를 따르고 "
+                         "제품 분석의 분위기로 임의 선택하지 않는다.")
         analysis = body.product_analysis.analysis
         # VLM observations are data, not instructions or verified product claims.
         # Never copy unverified OCR or raw provider errors into a paid request.
@@ -165,7 +185,7 @@ class BackendImageAdapter:
                          f"아래 {zone.bottom}. 0~1 정규화 좌표. 이 영역에 제품을 배치하지 않는다.")
         prompt = ImagePrompt(
             positive=positive,
-            language="ko", prompt_version="backend-v02-ko-v1", source_revision=body.copy_revision)
+            language="ko", prompt_version=version, source_revision=body.copy_revision)
         try:
             with self._connect() as db:
                 db.execute("BEGIN IMMEDIATE")
