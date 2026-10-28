@@ -68,3 +68,7 @@ Markdown에는 progress.svg를 넣고 HTML에는 실제 progress 요소 또는 �
 ## 2026-10-27 · 현재 구현 원본 경로
 
 현재 구현 체크의 원본은 `feature/image-model/docs/imageTodo.md`다. 위의 `plan/models` 표기는 과거 적용 이력이다. 신규 일지는 현재 브랜치의 고정 커밋을 사용하며 협업일지 브랜치는 계속 별도로 유지한다.
+
+## 2026-10-28 · 팀 MVP와 공유 계획 경로
+
+오늘부터 실제 구현 체크 원본은 개인 레포 `feat/image-generation/docs/imageTodo.md`의 고정 커밋을 사용한다. 팀원이 실행하는 코드는 잇템 `feat/image-generation`에 있다. 노션이 연결한 `plan/models/docs/imageTodo.md`는 날짜별 공유 마일스톤과 협업 현황을 관리한다. 날짜별 일지에는 실제 구현 원본 전체를 한 번만 집계하며 공유 계획의 수를 다시 더하지 않는다. `feature/image-model`과 이전 날짜의 출처·수치는 역사 기록으로 보존한다. 협업일지 게시 브랜치는 계속 `박지수_협업일지`다.

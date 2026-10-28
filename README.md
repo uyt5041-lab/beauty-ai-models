@@ -11,13 +11,15 @@
 | 2026-10-23 | [프롬프트·W&B·FinOps 협업일지](worklogs/2026-10-23/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-23/park-jisoo-worklog.html) |
 | 2026-10-26 | [브랜치·프롬프트 안내·백엔드 연동 리뷰](worklogs/2026-10-26/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-26/park-jisoo-worklog.html) |
 | 2026-10-27 | [한국어·연결 어댑터·리사이즈 완료 기록](worklogs/2026-10-27/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-27/park-jisoo-worklog.html) |
+| 2026-10-28 | [이미지 MVP·한글 합성·301개 테스트 전달](worklogs/2026-10-28/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-28/park-jisoo-worklog.html) |
 
 HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
 ## 브랜치 관리
 
 - `박지수_협업일지`: 날짜별 Markdown·HTML 작업 기록을 관리합니다.
-- [feature/image-model](https://github.com/uyt5041-lab/beauty-ai-models/tree/feature/image-model): 현재 이미지 코드·문서·테스트를 관리합니다. `plan/models`는 계획 이력입니다.
+- [잇템 feat/image-generation](https://github.com/taemin050-sys/project-it-tem/tree/feat/image-generation): 팀 MVP 코드·연동 문서·301개 테스트를 관리합니다.
+- 개인 레포 `feat/image-generation`은 실제 구현 체크 원본, `plan/models`는 노션 연결 공유 마일스톤, `feature/image-model`은 이전 전체 실험 이력입니다.
 - 협업일지는 PR·코드 브랜치 병합 없이 별도로 유지합니다.
 - 원본 Git 이력과 작업 당시 기록을 보존했습니다. 과거 PR 상태·브랜치 이름은 당시 기록이며, 본문의 이전 안내에 현재 위치를 표시했습니다.
 - `CONTRIBUTING.md`는 원본 저장소의 팀 규칙을 보존한 참고 자료입니다. 원본의 `dev`·PM·PR 절차를 이 협업일지 브랜치에 적용하지 않습니다.
@@ -44,7 +46,7 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 ## 공유용 목록과 실제 작업 체크
 
 - **공유용:** 이 브랜치의 날짜별 `full-todo.md`·HTML·진행률 바. 보고일에 맞춘 읽기용 기록이다.
-- **실제 작업:** [feature/image-model 원본 TODO](https://github.com/uyt5041-lab/beauty-ai-models/blob/feature/image-model/docs/imageTodo.md). 실제로 구현한 것은 그곳에서 체크하며, 앞당겨 끝낸 항목을 공유 날짜에 맞추려고 되돌리지 않는다.
+- **실제 작업:** [feat/image-generation 원본 TODO](https://github.com/uyt5041-lab/beauty-ai-models/blob/feat/image-generation/docs/imageTodo.md). 실제로 구현한 것은 그곳에서 체크하며, 앞당겨 끝낸 항목을 공유 날짜에 맞추려고 되돌리지 않는다.
 - 날짜별 일지는 원본을 읽어 새로 만든다. 일지 체크를 원본으로 역반영하거나 두 브랜치를 병합하지 않는다.
 - 진행률은 공유용 일지 체크 기준이며 제품 완성률·당일 자기평가와 다르다. 현재 API 실행 항목은 0/12, SSOT 연결은 0/12다. 전체 분모에 다시 더하지 않는다.
 
@@ -69,3 +71,13 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 [전체 TODO 193개](worklogs/2026-10-27/full-todo.md) · [HTML 목록](worklogs/2026-10-27/full-todo.html) · [오늘 협업일지](worklogs/2026-10-27/park-jisoo-worklog.md) · [검증 근거](worklogs/2026-10-27/evidence.md)
 
 기준 커밋은 `a062c19`다. 원본 항목 7개가 추가되어 193개가 됐다. 오늘 W0·K1·K2·K3 4개를 반영했다. 이 수치는 보고일 기준 일지 반영률이며 제품 완성률이 아니다. 이전 날짜는 그대로 보존한다.
+
+## 전체 TODO 진행률 · 2026-10-28
+
+**공유용 일지 체크: 63/202개 · 31.2%**
+
+![진행률](worklogs/2026-10-28/progress.svg)
+
+[전체 TODO 202개](worklogs/2026-10-28/full-todo.md) · [HTML 목록](worklogs/2026-10-28/full-todo.html) · [오늘 협업일지](worklogs/2026-10-28/park-jisoo-worklog.md) · [검증 근거](worklogs/2026-10-28/evidence.md)
+
+현재 구현 원본은 개인 레포 feat/image-generation의 `3480c34`다. 193개에서 A1~A3·C1~C6 9개가 추가됐다. 분자 증가에는 오늘 새 구현 외에 보고 범위에 들어온 기존 항목과 공유 마일스톤 체크 동기화가 포함된다. 제품 완성률이나 오늘 신규 완료 수로 해석하지 않는다. 오늘까지 마일스톤은 7개 중 완료 3개·부분 완료 4개이며, 10/28 서비스 연결 인수는 부분 완료다. 과거 날짜 기록은 보존한다.

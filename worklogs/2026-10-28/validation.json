@@ -1,0 +1,23 @@
+{
+  "report_date": "2026-10-28",
+  "status": "PASS",
+  "policy_tests": 7,
+  "source_checkboxes": 202,
+  "source_checked": 70,
+  "journal_checked": 63,
+  "journal_percent": 31.2,
+  "md_sections": 8,
+  "html_sections": 8,
+  "local_links_checked": 53,
+  "future_or_undated_checked": 0,
+  "browser": {
+    "engine": "Ego Lite",
+    "journal_sections": 8,
+    "progress_value": 63,
+    "progress_max": 202,
+    "full_todo_link": "PASS",
+    "full_todo_checkboxes": 202,
+    "full_todo_checked": 63
+  },
+  "scope": "Document integrity and browser rendering; not model quality or service E2E."
+}
