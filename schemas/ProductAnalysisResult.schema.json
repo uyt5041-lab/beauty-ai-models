@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "ProductAnalysis": {
+      "additionalProperties": false,
+      "properties": {
+        "is_cosmetic": {
+          "title": "Is Cosmetic",
+          "type": "boolean"
+        },
+        "product_type": {
+          "enum": [
+            "스킨케어",
+            "색조",
+            "바디",
+            "헤어",
+            "기타"
+          ],
+          "title": "Product Type",
+          "type": "string"
+        },
+        "container_type": {
+          "enum": [
+            "병",
+            "튜브",
+            "펌프",
+            "스포이드",
+            "자",
+            "콤팩트",
+            "스프레이",
+            "파우치",
+            "어플리케이터",
+            "스틱",
+            "기타"
+          ],
+          "title": "Container Type",
+          "type": "string"
+        },
+        "colors": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Colors",
+          "type": "array"
+        },
+        "label_text": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Label Text",
+          "type": "array"
+        },
+        "mood": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Mood",
+          "type": "array"
+        },
+        "is_transparent": {
+          "title": "Is Transparent",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "is_cosmetic",
+        "product_type",
+        "container_type",
+        "colors",
+        "label_text",
+        "mood",
+        "is_transparent"
+      ],
+      "title": "ProductAnalysis",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Failure defaults can say is_cosmetic=True: check success first.\n\nRaw provider errors must not be shown to users or sent to image providers.\nThis is a local receiving contract, not ownership of the text module.",
+  "properties": {
+    "analysis": {
+      "$ref": "#/$defs/ProductAnalysis"
+    },
+    "analysis_succeeded": {
+      "title": "Analysis Succeeded",
+      "type": "boolean"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    }
+  },
+  "required": [
+    "analysis",
+    "analysis_succeeded"
+  ],
+  "title": "ProductAnalysisResult",
+  "type": "object"
+}
