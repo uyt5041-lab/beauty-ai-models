@@ -29,12 +29,22 @@ def png(color="coral", size=(32, 40)):
 
 def body(**change):
     values = dict(job_id="service-001", copy_revision=1, copy_hash="a" * 64,
+        product_analysis=analysis_result(),
         image_prompt={"concept": "간결한 루틴", "prompt": "밝은 배경. 원본 제품은 그대로 둔다.",
                       "mood": ["청량", "선명"]},
         ad_copy={"headline": "오늘의 루틴", "subline": "나를 위한 시간", "cta": "제품 살펴보기"},
         caption="나의 루틴", hashtags=["#화장품"], product_images=[png(), png("blue")])
     values.update(change)
     return BackendImageInput(**values)
+
+
+def analysis_result(**updates):
+    result = dict(analysis=dict(is_cosmetic=True, product_type="색조",
+        container_type="어플리케이터", colors=["연분홍", "아이보리"],
+        label_text=["unverified-ocr-not-for-provider"], mood=["사랑스러운"], is_transparent=True),
+        analysis_succeeded=True, error=None)
+    result.update(updates)
+    return result
 
 
 def setup(tmp_path, handler, *, budget="10"):
@@ -205,3 +215,72 @@ def test_project_scope_does_not_share_job_or_assets(tmp_path):
     a = adapter.generate(body(), project_id=uuid4())
     b = adapter.generate(body(), project_id=uuid4())
     assert len(calls) == 2 and a.receipt["model_job_id"] != b.receipt["model_job_id"]
+
+
+@pytest.mark.parametrize('success, cosmetic, expected', [
+    (False, True, 'PRODUCT_ANALYSIS_FAILED'),
+    (False, False, 'PRODUCT_ANALYSIS_FAILED'),
+    (True, False, 'PRODUCT_NOT_COSMETIC'),
+])
+def test_analysis_guard_precedes_assets_binding_and_budget(tmp_path, monkeypatch, success, cosmetic, expected):
+    calls = []
+    adapter = setup(tmp_path, lambda req: calls.append(req))
+    value = analysis_result(analysis_succeeded=success, error='private provider detail')
+    value['analysis']['is_cosmetic'] = cosmetic
+    payload = body(product_analysis=value)
+    def forbidden(*args, **kwargs):
+        pytest.fail('blocked analysis must not write assets, bind or reserve')
+    monkeypatch.setattr(adapter, '_bind', forbidden)
+    monkeypatch.setattr(adapter.processor.assets, 'put_upload', forbidden)
+    monkeypatch.setattr(adapter.processor, 'process_job', forbidden)
+    with pytest.raises(GatewayError) as error:
+        adapter.generate(payload, project_id=uuid4())
+    assert error.value.code == expected
+    assert 'private provider detail' not in str(error.value)
+    assert calls == []
+    with sqlite3.connect(adapter.path) as db:
+        assert db.execute('SELECT COUNT(*) FROM backend_image_bindings').fetchone()[0] == 0
+
+
+def test_analysis_is_required_and_mutated_nested_values_are_rechecked(tmp_path):
+    payload = body().model_dump()
+    del payload['product_analysis']
+    with pytest.raises(ValidationError):
+        BackendImageInput.model_validate(payload)
+    adapter = setup(tmp_path, lambda req: pytest.fail('must not call provider'))
+    mutated = body()
+    mutated.product_analysis.analysis_succeeded = 'true'
+    with pytest.raises(ValidationError):
+        adapter.generate(mutated, project_id=uuid4())
+
+
+def test_observations_are_separate_from_ad_mood_and_ocr_is_not_sent(tmp_path):
+    sent = []
+    adapter = setup(tmp_path, lambda req: (sent.append(req.read()), response())[1])
+    adapter.generate(body(), project_id=uuid4())
+    text = sent[0].decode('utf-8', errors='ignore')
+    assert '청량, 선명' in text and '사랑스러운' in text
+    assert '어플리케이터' in text and '연분홍' in text
+    assert '확인되지 않은 AI 관찰' in text
+    assert 'unverified-ocr-not-for-provider' not in text
+
+
+def test_changed_analysis_rejects_same_job_after_restart(tmp_path):
+    calls = []
+    handler = lambda req: (calls.append(1), response())[1]
+    project = uuid4()
+    setup(tmp_path, handler).generate(body(), project_id=project)
+    modified = analysis_result()
+    modified['analysis']['colors'] = ['흰색']
+    with pytest.raises(GatewayError) as error:
+        setup(tmp_path, handler).generate(body(product_analysis=modified), project_id=project)
+    assert error.value.code == 'BACKEND_INPUT_CONFLICT' and len(calls) == 1
+
+
+def test_provider_error_detail_is_never_saved_or_sent(tmp_path):
+    marker = 'private-text-provider-error'
+    calls = []
+    adapter = setup(tmp_path, lambda req: (calls.append(req.read()), response())[1])
+    adapter.generate(body(product_analysis=analysis_result(error=marker)), project_id=uuid4())
+    assert marker.encode() not in calls[0]
+    assert marker.encode() not in adapter.path.read_bytes()

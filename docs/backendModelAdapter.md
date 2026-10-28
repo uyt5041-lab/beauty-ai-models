@@ -2,9 +2,11 @@
 
 2026-10-27. 기준: [10/26 회의](https://app.notion.com/p/2026-10-26-405b13f77dbd80eda3c8c2570a2cb82b), 본레포 계약 v0.2 / dev `0b5bb47`. 이 문서는 Python 연결 API다. 미확정 팀 HTTP를 대신 확정하지 않는다.
 
+현재 수신 계약은 [다혜 VLM 결과 연결](textImageHandoff.md)을 우선합니다. 제품 분석·텍스트 생성·검수는 김다혜 담당입니다.
+
 ## 범위와 순서
 
-1. 한국어 ImagePrompt 수신. 원문·개행·과거 영어 해시 보존.
+1. 필수 `product_analysis`(ProductAnalysisResult)와 한국어 ImagePrompt 수신. 원문·개행·과거 영어 해시 보존.
 2. BackendImageAdapter: 한국어 prompt/concept/mood, 구조화 카피, 승인 revision/hash, 사진 바이트 → 기존 ExternalImageProcessor → 이미지 바이트/실행 기록.
 3. resize_ad_png: 원본 바이트 → 비율을 보존한 1080×1350 PNG. 새 이미지 API 호출 없음.
 
@@ -51,6 +53,7 @@ processor = ExternalImageProcessor(
 adapter = BackendImageAdapter(processor, "outputs/backend/bindings.sqlite3")
 request = BackendImageInput(
     job_id="service-job-001", copy_revision=1, copy_hash=approved_copy_hash,
+    product_analysis=analysis_result.model_dump(),  # 다혜 VLM 결과. 성공 여부를 먼저 검사
     image_prompt={"concept": "간결한 루틴", "prompt": "밝은 배경에 원본 제품을 배치한다.", "mood": ["청량"]},
     ad_copy={"headline": "오늘의 루틴", "subline": "나를 위한 시간", "cta": "제품 살펴보기"},
     product_images=[front_bytes, side_bytes], reference_images=[],
@@ -83,3 +86,5 @@ final = resize_ad_png(result.image_bytes)
 PNG 저장은 무손실 압축이지만 축소 자체는 픽셀 정보를 줄인다. 원본 보존과 재인코딩 손실 방지를 제공하며, 모든 사진의 지각 품질 무손실을 보장하지 않는다. 이 함수는 글자를 그리지 않는다. 글자 레이어 방식이면 최종 크기를 만든 뒤 한글을 넣어야 한다.
 
 모의 연결과 원본/축소 파일 생성: `python -m examples.backend_handoff --output outputs/backend-demo`. 새 출력 폴더만 허용하며, MockTransport로만 실행한다. 승인 해시는 모의 값이다. 실제 승인 검증으로 사용하지 않는다.
+
+분석 실패는 PRODUCT_ANALYSIS_FAILED, 비화장품은 PRODUCT_NOT_COSMETIC으로 자산 저장·비용 예약·호출 전에 거절합니다. 분석 누락/잘못된 타입은 입력 검증 오류입니다. 원시 error는 전달·직렬화하지 않으며 label_text는 생성 지시에 넣지 않습니다. 같은 job의 분석 변경도 입력 충돌입니다. 수정 전 job은 get_receipt로 조회하고 새 실행에 재사용하지 않습니다.

@@ -47,6 +47,10 @@ def main():
         ProviderAttemptStore(output / "attempts.sqlite3"), budget_limit_usd="1", reservation_usd="1")
     adapter = BackendImageAdapter(processor, output / "bindings.sqlite3")
     body = BackendImageInput(job_id="demo-job-001", copy_revision=1, copy_hash="a" * 64,
+        product_analysis={"analysis_succeeded": True, "error": None,
+            "analysis": {"is_cosmetic": True, "product_type": "스킨케어",
+                "container_type": "병", "colors": ["코랄"], "label_text": [],
+                "mood": ["청량"], "is_transparent": False}},
         image_prompt={"concept": "밝은 화장품 광고", "prompt": "밝은 색감과 원본 제품 재질을 유지한다.", "mood": ["청량"]},
         ad_copy={"headline": "오늘의 루틴", "subline": "나를 위한 시간", "cta": "제품 살펴보기"},
         product_images=[source, source])

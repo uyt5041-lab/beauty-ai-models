@@ -14,3 +14,5 @@
 
 A1 PASS: tests/test_product_analysis.py 13 passed / 0.06초. 설정 검사 PASS. API 0회. 수신 타입만 추가하며 아직 실행 경로에 연결하지 않았다. A2로 이어간다.
 정정: 노션 본문/링크는 수정하지 않는다. 연결된 plan/models/docs/imageTodo.md를 마일스톤 10/27 기준으로 갱신한다.
+
+A1 delivery: 74004b3d12601f3da58338be0dc05b6bcf6c5b80 원격 일치. A2 59 PASS. 원시 오류 비공개·분석 변경 충돌·재시작 재사용 확인. A3 CONTINUE.
