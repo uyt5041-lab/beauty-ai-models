@@ -4,7 +4,7 @@ flowchart TD
  V --> G["기존 생성 어댑터 · 이번 실호출 0"]:::blue
  G --> R{"제품 보존 / 실제 카피 검토"}:::amber
  R -->|"자료 / 검토 필요"| X["실제 팀원 JSON · 서빙 인수 대기"]:::red
- R -->|"모듈 검증 경로"| A["A preset / safe_zone 연결 GAP"]:::red
+ R -->|"모듈 검증 경로"| A["A preset / safe_zone 연결 검증"]:::gray
  A --> C["로컬 합성 · 캡션 bytes / 수동 검토"]:::green
  C --> D["실제 승인 / 다운로드 UI NOT_RUN"]:::red
  N --> W["Windows 모의 PASS / 실제 NOT_RUN"]:::amber

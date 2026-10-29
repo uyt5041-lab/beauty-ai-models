@@ -141,3 +141,18 @@
 목표/현재 Mermaid PNG2개와 HTML을 만들고 ego-browser TaskSpace23에서 이미지·제목·표 렌더를 검증했다.
 318 tests / 실제 MPO2 / Linux10 PASS; Windows 실제 NOT_RUN. 실제 서비스 UI 검증 또는 새 이미지 생성은 하지 않았다.
 다음 릴레이는 R2 A 템플릿과 safe_zone 연결이다.
+
+## 2026-10-30 R2 A 템플릿 구현·검증
+
+기존 safe_zone과 합성 geometry를 make_a_template으로 함께 제공했다. 기존 binding fingerprint는 유지하고 신규 safe_zone 요청만 v3 지시를 쓴다.
+전체333 PASS; 과거 binding2건 재사용·새 요청·제품 침범/넘침 거절·한글 두 줄·PNG/캡션을 검증했다.
+합성 fixture 시각 검토 완료. 실제 팀 카피·서빙 UI는 별도 NOT_RUN. 생성 API0.
+코드 게시 전 logall 기록; 검증 영수증 fivecircles/test/image-mvp-relay-20261030-r2.md.
+
+## R2 Closeout → R3
+
+코드 86de3ece0b5fb14463ae787b8c4eb0e7a515a99d 원격 일치. 전체333 PASS(3.79s).
+현재 Mermaid/PNG/HTML과 ego-browser 렌더 검증 PASS. 제품 UI 인수는 NOT_RUN.
+R2: Doc/Implementation/Validation/Push/Report COMPLETED; 전체 서비스 흐름은 GAP/PARTIAL.
+R3 점수7: 기존 원장·재시도·이미지/캡션 전달 경계 감사, 보관된 실제 후보의 수동 제품/카피 영역 검토.
+신규 기능은 확인된 이미지 모듈 gap만 보완한다. 실제 청구액·실서비스 인수는 없는 증거를 만들지 않는다.

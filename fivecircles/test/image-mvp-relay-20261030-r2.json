@@ -1,0 +1,152 @@
+{
+  "kind": "synthetic_photo_and_test_copy_only",
+  "safe_zone": {
+    "coordinate_system": "final_canvas_normalized",
+    "left": 0.06,
+    "top": 0.05,
+    "right": 0.94,
+    "bottom": 0.25
+  },
+  "layout": {
+    "text_regions": {
+      "headline": {
+        "left": 0.08,
+        "top": 0.06,
+        "right": 0.92,
+        "bottom": 0.14,
+        "min_font_size": 48,
+        "max_font_size": 64,
+        "padding": 16,
+        "align": "center",
+        "color": "#151515",
+        "background": null
+      },
+      "subline": {
+        "left": 0.08,
+        "top": 0.15,
+        "right": 0.92,
+        "bottom": 0.25,
+        "min_font_size": 45,
+        "max_font_size": 48,
+        "padding": 16,
+        "align": "center",
+        "color": "#151515",
+        "background": null
+      },
+      "cta": {
+        "left": 0.08,
+        "top": 0.85,
+        "right": 0.92,
+        "bottom": 0.94,
+        "min_font_size": 48,
+        "max_font_size": 54,
+        "padding": 16,
+        "align": "center",
+        "color": "#151515",
+        "background": null
+      }
+    },
+    "protected_regions": [
+      {
+        "left": 0.34,
+        "top": 0.28,
+        "right": 0.7,
+        "bottom": 0.81
+      }
+    ]
+  },
+  "image_sha256": "cc52dcf46918d7d534973d3c2e3f3c72964ad4d737bb6a1eea5010092b1cd9da",
+  "copy_hash": "1de0b88f0874f96e6b6cf75e8b18c0500d9faf300dfe3b5d7a9f1c6bd56cf0a0",
+  "copy_revision": "approved-copy-r2",
+  "width": 1080,
+  "height": 1350,
+  "receipt": {
+    "renderer": "korean-composition-v1",
+    "pillow_version": "13.0.0",
+    "font_sha256": "76f45ef4a6bcff344c837c95a7dcc26e017e38b5846d5ae0cdcb5b86be2e2d31",
+    "font_index": 0,
+    "input_sha256": "27f402871768746badce81bff5d6e0697b0404176802558f030bcb6e18d0496c",
+    "baseline_sha256": "719dde417f52a4d52ca1180bc737f7a6185ed8a101d405047b4734ab914b28ba",
+    "resize_method": "lanczos",
+    "placements": {
+      "headline": {
+        "region": [
+          87,
+          81,
+          993,
+          189
+        ],
+        "font_size": 64,
+        "line_count": 1,
+        "ink_boxes": [
+          [
+            282,
+            97,
+            798,
+            158
+          ]
+        ],
+        "text_sha256": "85a67481e57c3b2fdac40a94a6172951a89c8751f43cd8d6f573812b00db4627"
+      },
+      "subline": {
+        "region": [
+          87,
+          203,
+          993,
+          337
+        ],
+        "font_size": 48,
+        "line_count": 1,
+        "ink_boxes": [
+          [
+            199,
+            219,
+            881,
+            265
+          ]
+        ],
+        "text_sha256": "be8c5c5e22cb70ec071b6c31274425202e39ebc0b4e7ee0af25ec6b06341189c"
+      },
+      "cta": {
+        "region": [
+          87,
+          1148,
+          993,
+          1269
+        ],
+        "font_size": 54,
+        "line_count": 1,
+        "ink_boxes": [
+          [
+            379,
+            1164,
+            700,
+            1215
+          ]
+        ],
+        "text_sha256": "5296caf7b80d249fa4328deaedc8bbe9709001e75a1c0a0eed51e4a69df7ae54"
+      }
+    },
+    "protected_region_check": true,
+    "needs_manual_check": true,
+    "provider_calls": 0,
+    "provider_cost_usd": "0",
+    "elapsed_ms": 60,
+    "warnings": []
+  },
+  "actual_provider_calls": 0,
+  "team_actual_json": "NOT_AVAILABLE",
+  "serving_ui": "NOT_RUN",
+  "full_suite": {
+    "result": "PASS",
+    "count": 333,
+    "output": "........................................................................ [ 21%]\n........................................................................ [ 43%]\n........................................................................ [ 64%]\n........................................................................ [ 86%]\n.............................................                            [100%]\n333 passed in 3.79s"
+  },
+  "targeted_before_final": {
+    "count": 81,
+    "result": "PASS"
+  },
+  "historical_fixture_commit": "b9d00152de352499ce7773ac398fe8efb5408e8e",
+  "visual_review": "synthetic A composition readable; no overflow; separate CTA; not real product acceptance",
+  "code_commit": "86de3ece0b5fb14463ae787b8c4eb0e7a515a99d"
+}

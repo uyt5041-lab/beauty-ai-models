@@ -82,3 +82,23 @@ R1 closeout 전 R2 코드를 변경하지 않는다. 완료 후 최고 우선의
 - R2 점수8: 기존 safe_zone과 A 중앙 고딕 레이아웃 연결, 새 바인딩만 지시 강화. 기존 요청 hash/재사용은 보존.
 - R2 계약: safe_zone top은 기존 최소값0.05를 따른다(이전 초안0.04 교정). CTA는 별도 내부 영역이며 상단 safe_zone 보장 범위로 표현하지 않는다.
 - R2 완료 기준: 과거 바인딩 재사용, 새 지시 version, 제품 침범 거부, 한글 합성·크기·캡션 오프라인 검증. 실제 제품 가독성 승인과 구분.
+
+## 2026-10-30 R2 A 템플릿 구현·검증
+
+기존 safe_zone과 합성 geometry를 make_a_template으로 함께 제공했다. 기존 binding fingerprint는 유지하고 신규 safe_zone 요청만 v3 지시를 쓴다.
+전체333 PASS; 과거 binding2건 재사용·새 요청·제품 침범/넘침 거절·한글 두 줄·PNG/캡션을 검증했다.
+합성 fixture 시각 검토 완료. 실제 팀 카피·서빙 UI는 별도 NOT_RUN. 생성 API0.
+코드 게시 전 logall 기록; 검증 영수증 fivecircles/test/image-mvp-relay-20261030-r2.md.
+
+R2 stage ledger: Doc COMPLETED / Implementation COMPLETED / Validation333 PASS / Repair none / Push pending / Report pending.
+다음 R3는 기존 원장·수집 재처리·전달 경계 및 실제 후보의 수동 검토다.
+
+R2 코드 게시: 86de3ece0b5fb14463ae787b8c4eb0e7a515a99d, feat/image-generation 원격 SHA 일치.
+
+## R2 Closeout → R3
+
+코드 86de3ece0b5fb14463ae787b8c4eb0e7a515a99d 원격 일치. 전체333 PASS(3.79s).
+현재 Mermaid/PNG/HTML과 ego-browser 렌더 검증 PASS. 제품 UI 인수는 NOT_RUN.
+R2: Doc/Implementation/Validation/Push/Report COMPLETED; 전체 서비스 흐름은 GAP/PARTIAL.
+R3 점수7: 기존 원장·재시도·이미지/캡션 전달 경계 감사, 보관된 실제 후보의 수동 제품/카피 영역 검토.
+신규 기능은 확인된 이미지 모듈 gap만 보완한다. 실제 청구액·실서비스 인수는 없는 증거를 만들지 않는다.
