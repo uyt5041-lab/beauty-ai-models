@@ -126,3 +126,18 @@
 ## 2026-10-23 · B13 밝은 컬러 무광 보강
 
 - 사용자 선택한 밝은 컬러에 원본무광 보존지시를 보강하고 Langfuse v2로 기록했다. 동일원본으로 실제1장 추가, remote readback PASS. [실행·시각 비교·참고출처](../test/cosmetics-matte-b13.md).
+
+
+## 2026-10-30 · MVP R1 검증
+
+- MPO 대표 프레임 정규화와 Windows 디렉터리 sync 분리를 구현했다. 파일/DB 오류 계약을 보존했다.
+- 전체318 PASS, 실제 MPO2개, 동일 assets.py의 Linux 실제 저장10검사 PASS. Windows actual NOT_RUN.
+- API0회. Git 게시 전 검증 기록이며 푸시 성공으로 미리 표시하지 않는다. [근거](../test/image-mvp-relay-20261030-r1.md).
+
+
+## R1 전달 및 시각 검증
+
+코드 b9d00152de352499ce7773ac398fe8efb5408e8e를 feat/image-generation에 일반 push하고 원격 SHA 일치를 확인했다.
+목표/현재 Mermaid PNG2개와 HTML을 만들고 ego-browser TaskSpace23에서 이미지·제목·표 렌더를 검증했다.
+318 tests / 실제 MPO2 / Linux10 PASS; Windows 실제 NOT_RUN. 실제 서비스 UI 검증 또는 새 이미지 생성은 하지 않았다.
+다음 릴레이는 R2 A 템플릿과 safe_zone 연결이다.

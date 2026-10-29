@@ -170,3 +170,25 @@
 
 - Langfuse vivid-pop production v2 등록 및 v1 보존 확인. 실제편집1회 성공, 출력/요청해시·버전·사용량 원격재조회 일치.
 - 병의 강한 흰 반사가 줄고 원본 무광 느낌에 가까워짐. 장면은 재생성됐으며 실제품라벨·사람인수는 미검증. [검증과 출처](../test/cosmetics-matte-b13.md).
+
+
+## 2026-10-30 · MVP 릴레이 착수
+
+- 사용자 진행 지시와 최신 MVP 경계로 R1/R2/R3을 정리했다. 기존 미커밋 문서를 보존했다.
+- 첫 배치 MPO·Windows 호환의 의도/계약/검증은 [실행 원장](image-mvp-relay-20261030.md)에 기록했다.
+- 기준선301 PASS. 실제 제공자 호출0. 구현 완료/게시 결과는 검증 뒤 추가한다.
+
+
+## 2026-10-30 · MVP R1 검증
+
+- MPO 대표 프레임 정규화와 Windows 디렉터리 sync 분리를 구현했다. 파일/DB 오류 계약을 보존했다.
+- 전체318 PASS, 실제 MPO2개, 동일 assets.py의 Linux 실제 저장10검사 PASS. Windows actual NOT_RUN.
+- API0회. Git 게시 전 검증 기록이며 푸시 성공으로 미리 표시하지 않는다. [근거](../test/image-mvp-relay-20261030-r1.md).
+
+
+## R1 전달 및 시각 검증
+
+코드 b9d00152de352499ce7773ac398fe8efb5408e8e를 feat/image-generation에 일반 push하고 원격 SHA 일치를 확인했다.
+목표/현재 Mermaid PNG2개와 HTML을 만들고 ego-browser TaskSpace23에서 이미지·제목·표 렌더를 검증했다.
+318 tests / 실제 MPO2 / Linux10 PASS; Windows 실제 NOT_RUN. 실제 서비스 UI 검증 또는 새 이미지 생성은 하지 않았다.
+다음 릴레이는 R2 A 템플릿과 safe_zone 연결이다.

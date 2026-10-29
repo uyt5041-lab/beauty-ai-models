@@ -1,0 +1,104 @@
+{
+  "scope": "R1 MPO upload and directory synchronization portability",
+  "code_start": "65c2e84bb3a408a8bca123528b3ad3305b55c677",
+  "assets_sha256": "adc79140bfcac5c49b3c9dad23b45de48ca7728166de1edca2a33fb67e4cb25c",
+  "tests": {
+    "baseline": {
+      "passed": 301,
+      "seconds": 3.64
+    },
+    "targeted": {
+      "passed": 36,
+      "seconds": 0.27
+    },
+    "full": {
+      "passed": 318,
+      "seconds": 3.5
+    },
+    "windows_runtime": "NOT_RUN",
+    "actual_provider_calls": 0
+  },
+  "linux": {
+    "status": "PASS",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "python": "3.12.14",
+    "pillow": "12.3.0",
+    "checks": [
+      "linux-real-directory-and-file-fsync",
+      "two-frame-mpo-first-frame",
+      "exif-and-icc-normalization",
+      "metadata-strip",
+      "sqlite-reopen-and-png-hash",
+      "project-isolation",
+      "png-alpha-regression",
+      "mpo-pixel-limit",
+      "no-published-metadata-after-file-fsync",
+      "no-published-metadata-after-replace"
+    ],
+    "fsync_calls": {
+      "directory": 2,
+      "file": 1
+    },
+    "source_sha256": {
+      "assets.py": "adc79140bfcac5c49b3c9dad23b45de48ca7728166de1edca2a33fb67e4cb25c",
+      "contracts.py": "96684e1549a425f4c4074ab6c5ce252ee4719b3e1799b54a7d3a674aa125e3d7",
+      "errors.py": "45da5e6ccbbb9433596652115b2be2ad44283c663c5773e9682dd5c0a5a99f9d"
+    }
+  },
+  "macos_real_mpo": {
+    "platform": "macOS",
+    "pillow": "13.0.0",
+    "samples": [
+      {
+        "source": "reports/romand-live-20261029/inputs/product-01.jpg",
+        "source_sha256": "e412046460d39b6ff34551be5ac1862ba8c055aec9b8aedd75a33b07f68d7381",
+        "format": "MPO",
+        "frames": 2,
+        "selected_frame": 0,
+        "input_size": [
+          4032,
+          3024
+        ],
+        "output_size": [
+          3024,
+          4032
+        ],
+        "output_sha256": "9bd4d362cb08ed09b3f1455cc7404274b45f3b18e69065f894ddf367b6d37118",
+        "pixel_match": true,
+        "metadata_removed": true,
+        "source_had_icc": true,
+        "elapsed_seconds": 0.716,
+        "status": "PASS"
+      },
+      {
+        "source": "reports/romand-live-20261029/inputs/product-02.jpg",
+        "source_sha256": "230de0e81f6fbb25c90c44468ed152e52a694ddadc7119bd46524cdb9196a544",
+        "format": "MPO",
+        "frames": 2,
+        "selected_frame": 0,
+        "input_size": [
+          4032,
+          3024
+        ],
+        "output_size": [
+          3024,
+          4032
+        ],
+        "output_sha256": "00a63024d1fbd88c57f47dd9e933d4f8252cfec9995b774fb2af2cad2f58a577",
+        "pixel_match": true,
+        "metadata_removed": true,
+        "source_had_icc": true,
+        "elapsed_seconds": 0.713,
+        "status": "PASS"
+      }
+    ],
+    "actual_provider_calls": 0,
+    "teammate_exact_input_identity_verified": false
+  },
+  "verdict": "PASS_WITH_RISKS",
+  "remaining": [
+    "실제 Windows 런타임",
+    "팀원의 동일 입력 원본/실행 JSON 확인",
+    "실제 서비스 UI 승인/다운로드 공동 인수"
+  ]
+}
