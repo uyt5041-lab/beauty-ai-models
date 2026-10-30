@@ -1,0 +1,85 @@
+{
+  "full_suite": {
+    "count": 348,
+    "result": "PASS",
+    "output": "........................................................................ [ 20%]\n........................................................................ [ 41%]\n........................................................................ [ 62%]\n........................................................................ [ 82%]\n............................................................             [100%]\n348 passed in 4.34s\n"
+  },
+  "targeted": {
+    "count": 74,
+    "result": "PASS",
+    "seconds": 1.38
+  },
+  "before_fix": {
+    "saved_state": "succeeded",
+    "asset_readable": true,
+    "error": "PROVIDER_CALLS_DISABLED"
+  },
+  "actual_provider_calls": 0,
+  "cost_semantics": {
+    "reservation": "administrative_allowance_not_estimate_or_invoice",
+    "billing_status": "UNRECONCILED",
+    "actual_cost_usd": null
+  },
+  "product_review": {
+    "result": "REVIEW_REQUIRED",
+    "actual_source_pair_confirmed": false,
+    "input_preview_method": "frame0, EXIF orientation, embedded ICC to sRGB, scaled for inspection",
+    "sources": [
+      {
+        "path": "reports/romand-live-20261029/inputs/product-01.jpg",
+        "sha256": "e412046460d39b6ff34551be5ac1862ba8c055aec9b8aedd75a33b07f68d7381"
+      },
+      {
+        "path": "reports/romand-live-20261029/inputs/product-02.jpg",
+        "sha256": "230de0e81f6fbb25c90c44468ed152e52a694ddadc7119bd46524cdb9196a544"
+      },
+      {
+        "path": "reports/image-integration-feedback-20261029/teammate-result.png",
+        "sha256": "7f0b8eee2e3698d0a6caa93bc3d1564f3cb8f060e092f90cccdb5d64aa256e65"
+      }
+    ],
+    "candidate_dimensions": [
+      1152,
+      1440
+    ],
+    "manual_approximate_product_bounds": {
+      "left": 0.4,
+      "top": 0.11,
+      "right": 0.6,
+      "bottom": 0.84
+    },
+    "manual_bounds_are_not_detector_output": true,
+    "a_fixed_layout_overlap_rejected": true,
+    "observations": [
+      {
+        "area": "제품 대응·비율",
+        "status": "REVIEW_REQUIRED",
+        "note": "용기·뚜껑 전체 형태는 유사해 보이나 팀원 실제 입력쌍 미확인. 정량 비율/원본 픽셀 보존 PASS 아님."
+      },
+      {
+        "area": "색·라벨",
+        "status": "REVIEW_REQUIRED",
+        "note": "밝은 청록·핑크 조명 환경에서 본체가 밝아 보임. 프리뷰로 브랜드 색/작은 라벨 전체 일치를 확정하지 않음."
+      },
+      {
+        "area": "접지·반투명 경계",
+        "status": "REVIEW_REQUIRED",
+        "note": "받침 수면 반사와 투명 캡 하이라이트가 있음. 자연스러움·경계 일관성 승인 전 원본 해상도 비교 필요."
+      },
+      {
+        "area": "A 상단 카피",
+        "status": "REJECTED_FOR_FIXED_A_LAYOUT",
+        "note": "제품 상단 약 y12%가 상단25% 카피 영역과 겹침. 수동 보수적 bbox를 기존 보호 영역 검증에 넣어 거절 확인."
+      },
+      {
+        "area": "CTA·배경 대비",
+        "status": "REVIEW_REQUIRED",
+        "note": "CTA 구간은 수면 반사/무늬가 강함. 실제 카피 JSON이 없어 최종 대비·가독성 인수 NOT_RUN."
+      }
+    ],
+    "new_image_api_calls": 0,
+    "actual_teammate_copy_json": "NOT_AVAILABLE",
+    "serving_ui_acceptance": "NOT_RUN"
+  },
+  "code_commit": "b0cf72e889aa0b975021bccdd6d5eaca6934bc44"
+}

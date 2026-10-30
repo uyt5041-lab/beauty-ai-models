@@ -1,11 +1,13 @@
 flowchart TD
- U["제품 사진 · 확정 텍스트"]:::gray --> N["대표 사진 정규화 · 저장"]:::green
- N --> V["분석 검증 · 시도 원장"]:::green
- V --> G["이미지 후보 생성 · 사용량 기록"]:::blue
- G --> R{"제품 · 카피 영역 검토"}:::amber
- R -->|"수정 필요"| X["검토 요청 · 자동 재과금 금지"]:::amber
- R -->|"검토 통과"| C["A 중앙 고딕 합성 · 1080×1350"]:::gray
- C --> D["사용자 승인 · PNG / 캡션 다운로드"]:::green
+ B["입력 snapshot · project / job 조회"]:::gray
+ B -->|"저장 성공 일치"| R{"제품 보존 · 카피 영역 검토"}:::amber
+ B -->|"신규 작업"| N["정규화 · 입력 검증 · 예산 예약"]:::green
+ B -->|"실패 / 불명"| X["재호출 차단 · 영수증 검토"]:::amber
+ N --> G["이미지 후보 생성 · 사용량 기록"]:::blue
+ G --> R
+ R -->|"검토 필요"| Q["수동 수정 · 자동 재과금 금지"]:::amber
+ R -->|"검토 통과"| C["A 중앙 고딕 · 1080×1350 합성"]:::gray
+ C --> D["서빙 승인 · PNG / 캡션 다운로드"]:::green
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
 classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px
 classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933,stroke-width:1.5px

@@ -1,0 +1,49 @@
+{
+  "stage": "r3",
+  "taskSpaceId": 23,
+  "report_render": "PASS",
+  "product_ui_acceptance": "NOT_RUN",
+  "title": "BeautyAI MVP 릴레이 흐름",
+  "images": [
+    {
+      "alt": "Target Flow",
+      "width": 1266,
+      "height": 1758
+    },
+    {
+      "alt": "Current Implementation Flow",
+      "width": 1568,
+      "height": 1842
+    }
+  ],
+  "headings": [
+    {
+      "name": "Target Flow",
+      "visible": true
+    },
+    {
+      "name": "Current Implementation Flow",
+      "visible": true
+    },
+    {
+      "name": "Color Semantics",
+      "visible": true
+    },
+    {
+      "name": "Target vs Current Gap",
+      "visible": true
+    },
+    {
+      "name": "Done / Not Done Priority",
+      "visible": true
+    },
+    {
+      "name": "Scoring Criteria",
+      "visible": true
+    },
+    {
+      "name": "Validation",
+      "visible": true
+    }
+  ]
+}

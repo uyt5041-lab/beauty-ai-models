@@ -1,13 +1,14 @@
 flowchart TD
- U["기존 제품 MPO 2개 · 테스트 텍스트"]:::gray --> N["대표 frame0 PNG 저장 · 재조회 PASS"]:::green
- N --> V["기존 분석 검증 · 재사용 원장"]:::green
- V --> G["기존 생성 어댑터 · 이번 실호출 0"]:::blue
- G --> R{"제품 보존 / 실제 카피 검토"}:::amber
- R -->|"자료 / 검토 필요"| X["실제 팀원 JSON · 서빙 인수 대기"]:::red
- R -->|"모듈 검증 경로"| A["A preset / safe_zone 연결 검증"]:::gray
- A --> C["로컬 합성 · 캡션 bytes / 수동 검토"]:::green
- C --> D["실제 승인 / 다운로드 UI NOT_RUN"]:::red
- N --> W["Windows 모의 PASS / 실제 NOT_RUN"]:::amber
+ B["같은 snapshot · project / job 검증"]:::gray
+ B -->|"성공 재조회 · API 0"| R{"제품 보존 · 카피 영역 검토"}:::amber
+ B -->|"신규 작업만"| N["MPO 정규화 · 입력 / 예산 제한"]:::green
+ B -->|"실패 / 불명 / 변조"| X["추가 POST 차단"]:::amber
+ N --> G["기존 이미지 생성 경로 · 이번 실호출 0"]:::blue
+ N --> W["Windows 모의 PASS · 실제 NOT_RUN"]:::amber
+ G --> R
+ R -->|"보관된 팀원 후보"| Q["A 상단 침범 · REVIEW_REQUIRED"]:::red
+ R -->|"합성 fixture 검증"| C["A 합성 · PNG / 캡션 PASS"]:::green
+ C --> D["실제 팀 입력 / 승인 / UI 인수 대기"]:::red
 classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
 classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px
 classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933,stroke-width:1.5px

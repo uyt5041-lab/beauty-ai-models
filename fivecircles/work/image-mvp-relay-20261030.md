@@ -11,7 +11,7 @@
 ## 1. Target / Current
 
 타겟: 업로드 → 정규화/저장 → 과금 전 검증 → 시도 원장/이미지 후보 → 제품 검토 → A 합성 → 승인된 결과 전달.
-현재: MPO·제한적 Windows 디렉터리 sync 수정은 R1에서 전달했다. Windows 실환경은 NOT_RUN이다. 기존 원장/합성 모듈과 A safe_zone 연결은 다음 릴레이에서 확인한다. 실제 사용자 승인/다운로드 인수는 미완료다.
+현재: R1 MPO/저장, R2 A safe_zone/합성 helper, R3 기존 원장 감사/저장 성공 재조회 보완을 전달했다. 전체348 PASS. Windows 실제 환경, 제품 보존 승인, 실제 팀 입력/서빙 인수·정산은 미완료다.
 
 ## 2. Selection
 
@@ -27,7 +27,7 @@ HEIC는 조건부 후속이다.
 
 ## 4. Implementation
 
-R1: assets.py와 전용 회귀 테스트. 구현 COMPLETED, 검증 PASS_WITH_RISKS.
+R1 assets.py 입력/저장, R2 A helper/버전 안전 바인딩, R3 saved-success 조회 경계. 구현 COMPLETED, 이미지 모듈 검증 PASS_WITH_RISKS.
 후속 TODO는 imageTodo 13절에 있으며 과거 완료 내역을 다시 미구현으로 표시하지 않는다.
 
 ## 5. Validation
@@ -57,19 +57,19 @@ R1 closeout 전 R2 코드를 변경하지 않는다. 완료 후 최고 우선의
 
 ## 10. Ledger
 
-- Doc: COMPLETED(initial)
-- Implementation: R1 COMPLETED
-- Validation: 318 PASS + actual MPO2 + Linux10 PASS; Windows actual NOT_RUN
-- Repair: NOT_APPLICABLE(initial)
-- Push: R1 code VERIFIED(b9d0015), plan publication in this commit
-- Report: R1 Mermaid/PNG/HTML/browser PASS
-- Relay: R1 CLOSED → R2 A template
+- Doc: R1–R3 COMPLETED
+- Implementation: R1–R3 COMPLETED(image module)
+- Validation: final348 PASS + actual MPO2 + Linux10 PASS; Windows actual NOT_RUN
+- Repair: R3 API-disabled saved-result replay fixed and regression verified
+- Push: code VERIFIED(b0cf72e); final plan publication in this commit
+- Report: final target/current Mermaid/PNG/HTML/browser PASS; TaskSpace23 FINISHED
+- Relay: R1/R2/R3 CLOSED; next actual-input/environment acceptance
 - Flow diagram verification: UPDATED / remaining GAP explicitly shown
 
 
 ## R1 검증 영수증
 
-[318회귀·실제MPO·Linux 근거](../test/image-mvp-relay-20261030-r1.md). logall 갱신 완료. Push/report closeout 대기.
+[318회귀·실제MPO·Linux 근거](../test/image-mvp-relay-20261030-r1.md). R1 게시와 closeout은 아래 영수증에서 확인한다.
 
 ## R1 Closeout → R2
 
@@ -102,3 +102,24 @@ R2 코드 게시: 86de3ece0b5fb14463ae787b8c4eb0e7a515a99d, feat/image-generatio
 R2: Doc/Implementation/Validation/Push/Report COMPLETED; 전체 서비스 흐름은 GAP/PARTIAL.
 R3 점수7: 기존 원장·재시도·이미지/캡션 전달 경계 감사, 보관된 실제 후보의 수동 제품/카피 영역 검토.
 신규 기능은 확인된 이미지 모듈 gap만 보완한다. 실제 청구액·실서비스 인수는 없는 증거를 만들지 않는다.
+
+## 2026-10-30 R3 원장 감사·재조회 보완
+
+기존 원장을 확인하고 live_calls=False에서 정상 저장 결과 조회까지 막히는 현상을 재현·수정했다.
+순수 요청/소유project/hash/결과/asset 검증을 보존하고 신규 실행에만 제공자/예약 제한을 적용했다.
+74 targeted 및 전체348 PASS. 예약금액과 실비를 구분하고 실제 청구 미확인 상태를 유지했다.
+보관된 실제 후보의 상단 제품이 A 카피 영역과 겹쳐 보호 검사에서 거절됐다. 제품 보존은 REVIEW_REQUIRED.
+실제 팀 입력JSON·Windows·서빙 UI·정산·수집worker는 후속 TODO로 유지했다. 새 API0.
+
+R3 코드 게시: b0cf72e889aa0b975021bccdd6d5eaca6934bc44, feat/image-generation 원격 SHA 일치.
+
+## 최종 Closeout · R1–R3
+
+- 코드: b9d0015 → 86de3ec → b0cf72e, 지정 feat/image-generation 일반 fast-forward push 및 원격 SHA 확인.
+- 최종 전체348 PASS(4.34s). API actual0. 실제 MPO2·Linux10 검증을 함께 보존했다.
+- 목표/현재 흐름, gap/우선순위/점수, PNG/HTML/browser 검증 완료. TaskSpace23 keep=[] FINISHED.
+- 이미지 모듈 전달 완료; 전체 서비스 인수는 GAP/PARTIAL. CI 실행 근거 없음(workflow 없음 확인), CD NOT_APPLICABLE.
+- 다음 인수: 실제 팀원 원본쌍+JSON, A 침범/가독성·제품 보존 승인, 실제 UI 승인/PNG/캡션 다운로드.
+- 환경/자료 후속: Windows 실제 저장, 모델/단가/청구 대조. HEIC는 지원 약속에 따라 별도 결정.
+- 내부 수집/디자인 자동화/텍스트 검수 정렬은 공유 TODO에서 별도로 유지한다.
+- 현 범위에서 추가 이미지 호출·서빙 구현·외부 메시지 없이 실행 가능한 릴레이는 종료했다.
