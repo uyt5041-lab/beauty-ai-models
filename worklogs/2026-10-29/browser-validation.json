@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "engine": "Ego Lite",
+  "task_space_id": 24,
+  "index_link": "PASS",
+  "new_progress_svg": "PASS",
+  "journal_sections": 8,
+  "progress_value": 63,
+  "progress_max": 202,
+  "full_todo_link": "PASS",
+  "full_todo_checkboxes": 202,
+  "full_todo_checked": 63,
+  "horizontal_overflow": false,
+  "screenshots": [
+    "preview-journal.png",
+    "preview-checklist.png"
+  ],
+  "checked_at": "2026-10-30T00:51:03.964Z"
+}

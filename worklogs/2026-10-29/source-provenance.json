@@ -1,0 +1,160 @@
+{
+  "activity_date": "2026-10-29",
+  "recorded_at": "2026-10-30T09:44:50.330887+09:00",
+  "scope": "Retrospective documentation only. Original photos, generated ads, private execution inputs and runtime databases are excluded.",
+  "sources": [
+    {
+      "project_relative_path": "docs/handoff-beautyai-mvp-2026-10-29.md",
+      "available_at_recording": true,
+      "sha256": "f191cad6b6a1ea3e52524a8bbe3262dd9b07dd6d36b1398329f069f761b7a0a7",
+      "published_original": false
+    },
+    {
+      "project_relative_path": "reports/image-integration-feedback-20261029/evidence.json",
+      "available_at_recording": true,
+      "sha256": "ea72fdace233ec719ac9f0bdc0a17b4676cc8b8693b3f4187b29c2004eedea37",
+      "published_original": false
+    },
+    {
+      "project_relative_path": "reports/text-review-20261029/offline-results.json",
+      "available_at_recording": true,
+      "sha256": "5311c42f6edaea9b0a823f4134fceab14c77b69f2aabec7bd9f61aca61f3ef97",
+      "published_original": false
+    },
+    {
+      "project_relative_path": "fivecircles/work/review/review-text-generation-2026-10-29.md",
+      "available_at_recording": true,
+      "sha256": "a9bdabe42418a94e7d3c241fee0905bea40fc3b436e6659e784825ee12bd2a54",
+      "published_original": false
+    },
+    {
+      "project_relative_path": "reports/romand-live-20261029/report.md",
+      "available_at_recording": true,
+      "sha256": "f79c13c616a896009ca2af05d14b7c20125d1e98b146a63ce346d1af222a6ce9",
+      "published_original": false
+    },
+    {
+      "project_relative_path": "reports/romand-peach-glow-live-20261029/report.md",
+      "available_at_recording": true,
+      "sha256": "846d06f6cc2fe3b643d38b96c7e722418ac9bdb7e6ef0b235a758461dfe2efe9",
+      "published_original": false
+    },
+    {
+      "project_relative_path": "reports/romand-peach-glow-v2-live-20261029/status.json",
+      "available_at_recording": true,
+      "sha256": "83b3fb775670b0cbdba62de80a9f15abd979cb19959b9b24b505109707d3a90a",
+      "published_original": false
+    },
+    {
+      "project_relative_path": "reports/copy-prop-semantics-20261029/report.md",
+      "available_at_recording": true,
+      "sha256": "a67dd966f73d81856b15b666baf501b94cd3d439a960ea6d961f019c9c788a6c",
+      "published_original": false
+    },
+    {
+      "project_relative_path": "configs/design/background-presets/peach-glow.v3-spring.json",
+      "available_at_recording": true,
+      "sha256": "fadae501f91c8e4758edfae15872e6aab3a50d120b0050e4e8fe0f869b9709c7",
+      "published_original": false
+    }
+  ],
+  "teammate_report": {
+    "source": "user-forwarded teammate message + attached image, 2026-10-29",
+    "independently_reproduced": false,
+    "reported_inputs": [
+      "ImagePromptOutput",
+      "AdCopyOutput",
+      "ProductAnalysisResult"
+    ],
+    "reported_output_size": [
+      1152,
+      1440
+    ],
+    "attached_image_size": [
+      1152,
+      1440
+    ],
+    "attached_image_sha256": "7f0b8eee2e3698d0a6caa93bc3d1564f3cb8f060e092f90cccdb5d64aa256e65",
+    "reported_elapsed_seconds_approx": 49,
+    "reported_input_tokens": 6491,
+    "reported_input_image_tokens": 5808,
+    "reported_input_text_tokens": 683,
+    "reported_output_tokens": 418,
+    "calculated_image_share_of_input_tokens": 0.8947773840702511,
+    "reported_estimated_cost_usd": 0.06,
+    "actual_settled_cost_usd": null,
+    "reported_image_cost_share": 0.75,
+    "model_and_price_version": null,
+    "workarounds": [
+      "MPO first photo manually converted to JPEG",
+      "Windows directory fsync skipped in test only"
+    ],
+    "not_established": [
+      "MPO/HEIC support",
+      "multi-original upload path",
+      "Windows durable storage without workaround",
+      "strict product preservation",
+      "final 1080x1350 composition and serving download",
+      "actual billed cost"
+    ],
+    "visual_review": {
+      "product_top_normalized_approx": 0.12,
+      "measurement": "manual visual estimate from attached image",
+      "A_header_zone_proposed_bottom": 0.25,
+      "finding": "product and upper bright reflections may overlap A headline area; side margins alone do not prove copy readability"
+    }
+  },
+  "text_review": {
+    "base": "2d7c1a7a95baa30c8fc5344554c91d4bfd087445",
+    "head": "c5585397533ab38c1fd08bb478e80c65d235b8e9",
+    "network_calls": 0,
+    "probes": [
+      {
+        "input": "홍조를 줄여줘요",
+        "passed": false,
+        "issue_count": 1
+      },
+      {
+        "input": "홍조를 줄여주고 화사한 메이크업을 연출해요",
+        "passed": true,
+        "issue_count": 0
+      },
+      {
+        "input": "홍조를 가려주는 메이크업을 연출해요",
+        "passed": true,
+        "issue_count": 0
+      },
+      {
+        "input": "흔적을 없애고 화사한 메이크업을 연출해요",
+        "passed": true,
+        "issue_count": 0
+      },
+      {
+        "input": "홍조를 줄여줘요. 자연스러운 메이크업을 연출해요",
+        "passed": false,
+        "issue_count": 1
+      },
+      {
+        "input": "✨홍조를 줄여줘요",
+        "passed": false,
+        "issue_count": 1
+      }
+    ],
+    "existing_highlight_fixture_issue_count": 10,
+    "existing_highlight_offsets": "PASS",
+    "html_escape": "PASS",
+    "live_failure_script": "NOT_RUN: includes real external API requests",
+    "pipeline_script": "NOT_RUN: includes paid generation calls"
+  },
+  "peach_v2_status": {
+    "status": "GENERATED_SEMANTIC_REVIEW_REQUIRED",
+    "generation_tool_calls": 1,
+    "composition": "DEFERRED_AFTER_USER_FEEDBACK",
+    "reason": "Spring season not visibly expressed; semantic prop selection requested",
+    "cost_usd": null,
+    "team_key_used": false
+  },
+  "today_implementation_excluded_from_yesterday": true,
+  "new_image_api_calls_for_this_document_repair": 0,
+  "message_sent": false
+}

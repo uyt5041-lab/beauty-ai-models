@@ -1,0 +1,41 @@
+{
+  "activity_date": "2026-10-29",
+  "recorded_date": "2026-10-30",
+  "status": "PASS",
+  "policy_tests": 7,
+  "source_commit": "3480c34282c4ac0c6bedb1369eb0c2c6247cf34c",
+  "source_checkboxes": 202,
+  "source_checked": 70,
+  "journal_checked": 63,
+  "journal_percent": 31.2,
+  "md_sections": 8,
+  "html_sections": 8,
+  "future_or_undated_checked": 0,
+  "old_worklogs_preserved": true,
+  "shared_todo_existing_checkboxes_unchanged": true,
+  "new_unchecked_cost_item": 1,
+  "new_api_calls": 0,
+  "messages_sent": 0,
+  "scope": "Document integrity and rendering only; not model quality, actual Windows or service E2E.",
+  "browser": {
+    "status": "PASS",
+    "engine": "Ego Lite",
+    "task_space_id": 24,
+    "index_link": "PASS",
+    "new_progress_svg": "PASS",
+    "journal_sections": 8,
+    "progress_value": 63,
+    "progress_max": 202,
+    "full_todo_link": "PASS",
+    "full_todo_checkboxes": 202,
+    "full_todo_checked": 63,
+    "horizontal_overflow": false,
+    "screenshots": [
+      "preview-journal.png",
+      "preview-checklist.png"
+    ],
+    "checked_at": "2026-10-30T00:51:03.964Z"
+  },
+  "local_links_checked": 65,
+  "validated_at": "2026-10-30T09:52:56.679222+09:00"
+}
