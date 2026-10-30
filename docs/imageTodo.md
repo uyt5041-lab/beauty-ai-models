@@ -1,6 +1,6 @@
 # 이미지 모델 담당 작업 체크리스트
 
-> **팀 공유 갱신: 2026-10-29 / 마일스톤 판정 집계는 기존 2026-10-28까지 유지. 10/29는 실행 보고와 후속 계획 추가.** 노션에서 연결한 이 파일을 계속 사용한다. 팀 MVP 코드는 [잇템 feat/image-generation](https://github.com/taemin050-sys/project-it-tem/tree/feat/image-generation), 실제 구현 체크는 [개인 레포 feat/image-generation](https://github.com/uyt5041-lab/beauty-ai-models/blob/feat/image-generation/docs/imageTodo.md)에서 관리한다. 이 브랜치는 노션에 연결된 팀 공유 계획이다. 브랜치 병합이나 PR은 하지 않는다.
+> **팀 공유 갱신: 2026-10-30 / 마일스톤 판정 집계는 기존 2026-10-28까지 유지. 10/29 실행 보고·후속 계획과 10/30 R1–R3 구현·검증을 날짜별로 기록.** 노션에서 연결한 이 파일을 계속 사용한다. 팀 MVP 코드는 [잇템 feat/image-generation](https://github.com/taemin050-sys/project-it-tem/tree/feat/image-generation), 실제 구현 체크는 [개인 레포 feat/image-generation](https://github.com/uyt5041-lab/beauty-ai-models/blob/feat/image-generation/docs/imageTodo.md)에서 관리한다. 이 브랜치는 노션에 연결된 팀 공유 계획이다. 브랜치 병합이나 PR은 하지 않는다.
 >
 > **10/28까지의 7개 일별 마일스톤 중 전체 확인 3개, 부분 완료 4개.** `10/20·10/22·10/23`만 체크한다. `10/21·10/26·10/27·10/28`은 미달 조건을 함께 표시한다. 10/29 이후는 먼저 구현했더라도 일정 인수 체크를 하지 않는다. 아래 구현 이력 체크는 마일스톤 완료 수에 합산하지 않는다.
 >
@@ -583,7 +583,7 @@ B10에서 OpenAI 래퍼와 결과 저장의 오프라인 구현을 완료했다.
 
 ## 12. 2026-10-29 · 이미지 담당 후속 TODO와 실제 텍스트 연결 보고
 
-상세: [이미지 모듈 연동 후속 계획](imageIntegrationFollowupPlan.md). 아래 구현은 아직 완료 처리하지 않는다. 이전 10/28 집계와 과거 체크는 유지한다.
+상세: [이미지 모듈 연동 후속 계획](imageIntegrationFollowupPlan.md). 이 절은 10/29 당시 기록이며 로컬 초안을 10/30에 게시했다. 아래 항목은 당시 구현 전 상태로 보존한다. 현재 구현 상태는 13절을 따르며 이전 10/28 집계와 과거 체크는 유지한다.
 
 ### 협업 근거와 확인 범위
 
@@ -628,6 +628,7 @@ B10에서 OpenAI 래퍼와 결과 저장의 오프라인 구현을 완료했다.
 - [ ] 실제 Windows 파일 저장/재조회: runtime 확보 후 수행한다. 모의 플랫폼 분기는 실환경 PASS가 아니다.
 - [ ] 실제 팀원 입력 JSON·원본으로 공동 연동, A 카피 줄바꿈·대비·제품 침범 확인, 최종 UI 승인·다운로드 인수.
 - [ ] 동일한 실제 입력쌍 기준 제품 보존 승인. 현재 보관 후보는 A 상단과 겹치므로 배치/여백 재검토가 필요하다.
+- [ ] 기본 추정 비용: 사용 모델·단가 기준·사용량을 고정해 계산/표시를 확인한다. 근거가 없으면 미확인으로 남기고 원장 예약금액으로 대체하지 않는다. 자동 비용 최적화는 후속이다.
 - [ ] 모델·단가·실제 청구 근거를 대조해 비용 인수. 원장 예약금액은 가격 추정/실비가 아니다.
 - [ ] 원형 보존이 계속 실패하면 원본 누끼 고정 합성을 비교한다. 새 유료 누끼/이미지 호출은 이번에 실행하지 않는다.
 - [ ] 자동 팔레트·콘셉트·소품·연상어·서체 확장·정량 품질·비용 최적화는 후속 실험이다.
@@ -642,3 +643,7 @@ R1 구현 검증: 전체318 PASS, 실제 MPO2개와 독립 Linux smoke PASS. Win
 R2 구현 검증: 전체333 PASS, 신규 safe_zone v3/과거 v1·v2 재사용 및 로컬 A 합성 PASS. 실제 생성 준수·실제 팀 카피 인수 NOT_RUN. [근거](../fivecircles/test/image-mvp-relay-20261030-r2.md).
 
 R3 검증: 전체348 PASS, 저장 성공 재조회 보완·기존 원장/전달 경계 확인. 실제 후보 REVIEW_REQUIRED 및 고정 A 침범 거절. [근거](../fivecircles/test/image-mvp-relay-20261030-r3.md).
+
+10/30 협업 전달: [다혜님 회신 초안](dahyeImageIntegrationReply-20261030.md). 실제 전송·상대 확인은 아직 하지 않았다.
+
+[10/29 협업일지·전체 체크](https://github.com/uyt5041-lab/beauty-ai-models/blob/ad52d8b4e44082218ca2c5d690b0afeb13135898/worklogs/2026-10-29/park-jisoo-worklog.md)는 작업일10/29·기록일10/30으로 별도 게시했다. 당시 구현 원본 기준63/202개(31.2%)이며 위10/30 모듈 구현을 소급 합산하지 않았다.
