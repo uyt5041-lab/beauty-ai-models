@@ -246,3 +246,7 @@ W&B·실험별 상태는 유지하고 계정 예산만 별도 SQLite로 공유�
 ## 2026-11-03 · 생성당 추정 비교 G2/G3
 
 선택 비교 입력·한국어 화면·W&B 생성비용 표/summary를 추가했다. 20건 비교·6건 제외·추정감소1.216849052%를실제W&B에서원본/표/summary재조회했다. SDK의summary null생략을수리하고독립검토/전체2030testsPASS. 생성API0회/기존run재업로드없이readback검증. 전체제작 토큰측정은계약/TODO FIN-L1~3만반영하고미구현유지. [검증](finops-generation-20261103.md).
+
+## 2026-11-03 · AD-WORK-COSTS W0
+- [작업별 누적 비용 계약](../architecture/contract/ad-work-costs.md)을 5단계 EGM으로 검토·보완했다. [작업 기록](ad-work-costs-20261103.md).
+- 기반 2030 tests PASS, 구현/원격게시/배포 완료는 아직 아니다. 사용자 지정 PR base는 feature/image-model이다.

@@ -633,3 +633,12 @@ A1~A3 완료일: **2026-10-28**. [검증](../fivecircles/test/vlm-ko-20261028.md
 FIN-L1~3은 계약·계획이며 아직 구현/팀합의 완료가 아니다. 생 프롬프트 로컬 토큰 수는 API 청구 usage와 구분한다.
 
 FIN-G0~3 완료 검증: 전체2030 tests PASS, 20건/6건제외 화면·W&B실제 readback 확인. 이미지 API0회. FIN-L1~3 전체제작 계측은 후속으로 유지한다.
+
+## 2026-11-03 · 광고 제작 work_id 실제 연결
+
+[누적 계약](../fivecircles/architecture/contract/ad-work-costs.md), [작업 기록](../fivecircles/work/ad-work-costs-20261103.md).
+- [ ] WORK-0: work/receipt/완료/가격/표시/PR 계약 검토.
+- [ ] WORK-1: 영속 원장·project 격리·중복/재시작·작업/단계/model 누적.
+- [ ] WORK-2: SDK 기획/검수/수정과 이미지/HTTP/외부영수증 연결, 실패/재사용/완료 관측.
+- [ ] WORK-3: 전체 제작 화면·W&B summary/Table·완료쌍 비교와 제외 표시.
+- [ ] WORK-4: 모의 전체 제작·실제 W&B 재조회·단계별/전체 테스트 후 PR→feature/image-model merge.
