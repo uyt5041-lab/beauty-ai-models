@@ -10,9 +10,11 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 import json
+import math
 from pathlib import Path
 import re
 import sqlite3
+import time
 from uuid import UUID, uuid4
 
 from .contracts import ExternalImageResult, ImageProviderUsage
@@ -41,7 +43,11 @@ class ProviderAttemptStore:
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with self._connection() as db:
-                db.execute("PRAGMA journal_mode=WAL")
+                self._enable_wal(db)
+                db.execute("BEGIN IMMEDIATE")
+                if db.execute("""SELECT 1 FROM sqlite_master WHERE type='table'
+                    AND name IN ('budgets','reservations','settlements') LIMIT 1""").fetchone():
+                    raise self._storage_error()
                 db.execute("""CREATE TABLE IF NOT EXISTS provider_attempts (
                     job_id TEXT PRIMARY KEY, project_id TEXT NOT NULL,
                     request_hash TEXT NOT NULL, attempt_id TEXT NOT NULL UNIQUE,
@@ -51,18 +57,43 @@ class ProviderAttemptStore:
                     error_code TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
                 )""")
                 db.execute("CREATE INDEX IF NOT EXISTS provider_project ON provider_attempts(project_id)")
+                columns = {row[1] for row in db.execute("PRAGMA table_info(provider_attempts)")}
+                for name, kind in (("raw_usage_json", "TEXT"), ("metadata_json", "TEXT"),
+                                   ("elapsed_seconds", "REAL"), ("account_reservation_id", "TEXT")):
+                    if name not in columns:
+                        db.execute(f"ALTER TABLE provider_attempts ADD COLUMN {name} {kind}")
+                db.execute("""CREATE TABLE IF NOT EXISTS provider_reuse_events (
+                    event_id TEXT PRIMARY KEY, job_id TEXT NOT NULL, project_id TEXT NOT NULL,
+                    attempt_id TEXT NOT NULL, request_hash TEXT NOT NULL, created_at TEXT NOT NULL
+                )""")
                 db.execute("""CREATE TABLE IF NOT EXISTS experiment_limits (
                     singleton INTEGER PRIMARY KEY CHECK(singleton=1),
                     plan_sha256 TEXT NOT NULL, project_id TEXT NOT NULL,
                     max_attempts INTEGER NOT NULL, jobs_json TEXT NOT NULL,
                     state TEXT NOT NULL CHECK(state IN ('ready','running','halted','succeeded'))
                 )""")
+                db.commit()
         except (OSError, sqlite3.Error):
             raise self._storage_error() from None
 
     @staticmethod
     def _storage_error():
         return GatewayError("PROVIDER_ATTEMPT_STORAGE_ERROR", "Provider receipt storage is unavailable.")
+
+    @staticmethod
+    def _enable_wal(db):
+        # SQLite's journal-mode conversion can report BUSY immediately even
+        # with busy_timeout, when several processes first open an older DB.
+        deadline = time.monotonic() + 15
+        while True:
+            try:
+                db.execute("PRAGMA journal_mode=WAL")
+                return
+            except sqlite3.OperationalError as error:
+                if (getattr(error, "sqlite_errorcode", None) not in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
+                        or time.monotonic() >= deadline):
+                    raise
+                time.sleep(0.01)
 
     @staticmethod
     def _conflict():
@@ -92,10 +123,16 @@ class ProviderAttemptStore:
             db.close()
 
     def begin(self, job_id: UUID, project_id: UUID, request_hash: str, *,
-              budget_limit_usd, reservation_usd) -> UUID:
+              budget_limit_usd, reservation_usd, metadata: dict | None = None,
+              account_reservation_id: str | None = None) -> UUID:
         self._ids(job_id, project_id)
         if not isinstance(request_hash, str) or not re.fullmatch(r"[a-f0-9]{64}", request_hash):
             raise ValueError("A canonical request hash is required.")
+        if (account_reservation_id is not None and
+                (type(account_reservation_id) is not str
+                 or not re.fullmatch(r"[a-f0-9]{64}", account_reservation_id))):
+            raise ValueError("Invalid account reservation identifier.")
+        encoded_metadata = self._metadata_json(metadata, request_hash)
         limit = money_units(budget_limit_usd)
         reservation = money_units(reservation_usd, positive=True)
         attempt_id = uuid4()
@@ -110,16 +147,37 @@ class ProviderAttemptStore:
                 if held + reservation > limit:
                     raise GatewayError("PROVIDER_BUDGET_EXCEEDED", "Image reservation allowance is exhausted.")
                 db.execute("""INSERT INTO provider_attempts
-                    (job_id,project_id,request_hash,attempt_id,state,reservation_units,created_at,updated_at)
-                    VALUES (?,?,?,?, 'submitting',?,?,?)""",
-                           (str(job_id), str(project_id), request_hash, str(attempt_id), reservation, now, now))
+                    (job_id,project_id,request_hash,attempt_id,state,reservation_units,created_at,updated_at,
+                     metadata_json,account_reservation_id)
+                    VALUES (?,?,?,?, 'submitting',?,?,?,?,?)""",
+                           (str(job_id), str(project_id), request_hash, str(attempt_id), reservation, now, now,
+                            encoded_metadata, account_reservation_id))
         except sqlite3.Error:
             raise self._storage_error() from None
         return attempt_id
 
+    @staticmethod
+    def _metadata_json(metadata, request_hash):
+        if metadata is None:
+            return None
+        fields = {"operation", "model", "quality", "width", "height", "prompt_version", "request_hash"}
+        if (type(metadata) is not dict or set(metadata) != fields
+                or metadata["request_hash"] != request_hash
+                or metadata["operation"] not in {"generate", "edit", "cutout"}
+                or any(type(metadata[name]) is not int or not 1 <= metadata[name] <= 16384
+                       for name in ("width", "height"))
+                or any(type(metadata[name]) is not str or not 1 <= len(metadata[name]) <= 200
+                       for name in ("model", "quality"))
+                or (metadata["prompt_version"] is not None and
+                    (type(metadata["prompt_version"]) is not str
+                     or not 1 <= len(metadata["prompt_version"]) <= 200))):
+            raise ValueError("Invalid provider observation metadata.")
+        return json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
     def finish(self, job_id: UUID, project_id: UUID, attempt_id: UUID, *, state: str,
                provider_request_id: str | None = None, usage: ImageProviderUsage | None = None,
-               result: ExternalImageResult | None = None, error_code: str | None = None):
+               result: ExternalImageResult | None = None, error_code: str | None = None,
+               raw_usage: dict | None = None, elapsed_seconds: float | None = None):
         self._ids(job_id, project_id)
         if not isinstance(attempt_id, UUID) or state not in {"succeeded", "failed", "unknown"}:
             raise ValueError("Invalid attempt completion.")
@@ -132,20 +190,43 @@ class ProviderAttemptStore:
                 raise ValueError("Successful attempts require their saved result.")
         elif result is not None or error_code is None:
             raise ValueError("Failed or unknown attempts require a safe error code, without a result.")
+        if (elapsed_seconds is not None and
+                (type(elapsed_seconds) not in (int, float) or not math.isfinite(elapsed_seconds)
+                 or elapsed_seconds < 0)):
+            raise ValueError("Invalid provider observation duration.")
+        # Import at the observation boundary: account_budget imports the exact
+        # reservation arithmetic above, while the adapter imports its permit.
+        from .openai_images import OpenAIImagesAdapter, OpenAIImagesError, validate_raw_usage
+        invalid_usage = False
+        try:
+            raw_usage = validate_raw_usage(raw_usage)
+            OpenAIImagesAdapter._usage(raw_usage, provider_request_id)
+            if usage is not None:
+                usage = ImageProviderUsage.model_validate(usage.model_dump(warnings=False))
+        except (OpenAIImagesError, ValueError, TypeError, AttributeError):
+            invalid_usage = True
+            state, error_code, result = "failed", "PROVIDER_USAGE_INVALID", None
+            usage, raw_usage = None, None
+        encoded_raw = (json.dumps(raw_usage, ensure_ascii=False, sort_keys=True,
+                                  separators=(",", ":"), allow_nan=False)
+                       if raw_usage is not None else None)
         try:
             with self._connection(write=True) as db:
                 count = db.execute("""UPDATE provider_attempts SET state=?,provider_request_id=?,usage_json=?,
-                    result_json=?,error_code=?,updated_at=?
+                    result_json=?,error_code=?,updated_at=?,raw_usage_json=?,elapsed_seconds=?
                     WHERE job_id=? AND project_id=? AND attempt_id=? AND state='submitting'""",
                                    (state, provider_request_id, usage.model_dump_json() if usage else None,
                                     result.model_dump_json() if result else None, error_code,
-                                    datetime.now(timezone.utc).isoformat(), str(job_id), str(project_id), str(attempt_id))).rowcount
+                                    datetime.now(timezone.utc).isoformat(), encoded_raw, elapsed_seconds,
+                                    str(job_id), str(project_id), str(attempt_id))).rowcount
                 if count != 1:
                     raise self._conflict()
                 if state in {"failed", "unknown"}:
                     db.execute("UPDATE experiment_limits SET state='halted' WHERE singleton=1")
         except sqlite3.Error:
             raise self._storage_error() from None
+        if invalid_usage:
+            raise GatewayError("PROVIDER_USAGE_INVALID", "Provider usage observation is invalid.")
 
     @staticmethod
     def _experiment_error(code: str):
@@ -258,8 +339,45 @@ class ProviderAttemptStore:
                 "billing_status": "UNRECONCILED", "actual_cost_usd": None,
                 "submission_status": "UNKNOWN" if row["state"] in {"submitting", "unknown"} else "RESPONSE_RECEIVED",
                 "usage": usage.model_dump(mode="json") if usage else None,
+                "raw_usage": json.loads(row["raw_usage_json"]) if row["raw_usage_json"] else None,
+                "metadata": json.loads(row["metadata_json"]) if row["metadata_json"] else None,
+                "elapsed_seconds": row["elapsed_seconds"],
+                "account_reservation_id": row["account_reservation_id"],
                 "result": result.model_dump(mode="json") if result else None,
                 "error_code": row["error_code"], "created_at": row["created_at"], "updated_at": row["updated_at"],
             }
         except (sqlite3.Error, ValueError, TypeError):
+            raise self._storage_error() from None
+
+    def record_reuse(self, job_id: UUID, project_id: UUID, request_hash: str) -> str:
+        """Observe a verified receipt lookup, without adding an attempt or cost."""
+        self._ids(job_id, project_id)
+        event_id = str(uuid4())
+        try:
+            with self._connection(write=True) as db:
+                row = db.execute("""SELECT attempt_id,result_json FROM provider_attempts
+                    WHERE job_id=? AND project_id=? AND request_hash=? AND state='succeeded'""",
+                                 (str(job_id), str(project_id), request_hash)).fetchone()
+                if row is None or row["result_json"] is None:
+                    raise self._conflict()
+                result = ExternalImageResult.model_validate_json(row["result_json"])
+                if str(result.attempt_id) != row["attempt_id"]:
+                    raise self._conflict()
+                db.execute("""INSERT INTO provider_reuse_events
+                    (event_id,job_id,project_id,attempt_id,request_hash,created_at) VALUES (?,?,?,?,?,?)""",
+                           (event_id, str(job_id), str(project_id), row["attempt_id"], request_hash,
+                            datetime.now(timezone.utc).isoformat()))
+        except (sqlite3.Error, ValueError, TypeError):
+            raise self._storage_error() from None
+        return event_id
+
+    def get_reuse_events(self, job_id: UUID, project_id: UUID) -> list[dict]:
+        self._ids(job_id, project_id)
+        try:
+            with self._connection() as db:
+                rows = db.execute("""SELECT event_id,job_id,project_id,attempt_id,request_hash,created_at
+                    FROM provider_reuse_events WHERE job_id=? AND project_id=? ORDER BY created_at,event_id""",
+                                  (str(job_id), str(project_id))).fetchall()
+            return [dict(row) for row in rows]
+        except sqlite3.Error:
             raise self._storage_error() from None

@@ -17,12 +17,17 @@ from uuid import UUID
 import httpx
 from pydantic import ValidationError
 
-from .contracts import ExternalImageRequest, ImageProviderUsage
+from .account_budget import AccountBudgetStore, BudgetPermit
+from .contracts import ExternalImageRequest, ImageProviderUsage, content_hash
 from .cosmetics_prompts import render_cosmetics_provider_prompt
+from .errors import GatewayError
 
 _MIB = 1024 * 1024
 _BASE_URL = "https://api.openai.com/v1/"
 _REQUEST_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,199}", re.ASCII)
+_USAGE_KEY = re.compile(r"[A-Za-z][A-Za-z0-9_]{0,63}", re.ASCII)
+_PRIVATE_USAGE_KEY = re.compile(
+    r"api_?key|authorization|password|secret|credential|access_?token", re.IGNORECASE | re.ASCII)
 _CUTOUT_PROMPT = (
     "Remove only the background from the provided product photo and return a "
     "transparent PNG. Keep the same product view, shape, color, label, logo and "
@@ -32,14 +37,22 @@ _CUTOUT_PROMPT = (
 
 
 class OpenAIImagesError(RuntimeError):
-    """Only a stable code and validated request ID may leave the adapter."""
+    """Only safe codes, identifiers, and validated usage leave the adapter."""
 
-    def __init__(self, code: str, *, provider_request_id: str | None = None):
-        if re.fullmatch(r"PROVIDER_[A-Z0-9_]{1,70}", code, re.ASCII) is None:
+    def __init__(self, code: str, *, provider_request_id: str | None = None,
+                 usage: ImageProviderUsage | None = None, raw_usage: dict | None = None):
+        if re.fullmatch(r"(?:PROVIDER|ACCOUNT_BUDGET)_[A-Z0-9_]{1,60}", code, re.ASCII) is None:
             code = "PROVIDER_RESPONSE_INVALID"
+        try:
+            raw_usage = validate_raw_usage(raw_usage)
+            if usage is not None:
+                usage = ImageProviderUsage.model_validate(usage.model_dump(warnings=False))
+        except (OpenAIImagesError, ValidationError, ValueError, TypeError, AttributeError):
+            code, usage, raw_usage = "PROVIDER_USAGE_INVALID", None, None
         super().__init__(code)
         self.code = code
         self.provider_request_id = _safe_request_id(provider_request_id)
+        self.usage, self.raw_usage = usage, raw_usage
 
 
 @dataclass(frozen=True)
@@ -58,10 +71,49 @@ class ProviderImageResponse:
     image_bytes: bytes = field(repr=False)
     provider_request_id: str | None = None
     usage: ImageProviderUsage | None = None
+    raw_usage: dict | None = None
 
 
 def _safe_request_id(value: object) -> str | None:
     return value if isinstance(value, str) and _REQUEST_ID.fullmatch(value) else None
+
+
+def validate_raw_usage(value: object) -> dict | None:
+    """Return a detached, bounded JSON observation with no arbitrary text."""
+    if value is None:
+        return None
+
+    def visit(node, depth):
+        if depth > 8:
+            raise ValueError
+        if node is None:
+            return
+        if type(node) in (int, float):
+            if node < 0 or (type(node) is float and not math.isfinite(node)):
+                raise ValueError
+        elif type(node) is dict:
+            for key, child in node.items():
+                if (type(key) is not str or not _USAGE_KEY.fullmatch(key)
+                        or _PRIVATE_USAGE_KEY.search(key)):
+                    raise ValueError
+                visit(child, depth + 1)
+        elif type(node) is list:
+            for child in node:
+                visit(child, depth + 1)
+        else:
+            raise ValueError
+
+    try:
+        if type(value) is not dict:
+            raise ValueError
+        visit(value, 0)
+        encoded = json.dumps(value, ensure_ascii=False, sort_keys=True,
+                             separators=(",", ":"), allow_nan=False)
+        if len(encoded.encode("utf-8")) > 65536:
+            raise ValueError
+        return json.loads(encoded)
+    except (ValueError, TypeError, OverflowError, RecursionError):
+        raise OpenAIImagesError("PROVIDER_USAGE_INVALID") from None
 
 
 class OpenAIImagesAdapter:
@@ -170,8 +222,14 @@ class OpenAIImagesAdapter:
         return prompt
 
     def execute(self, request: ExternalImageRequest, product_images: list[bytes],
-                reference_images: list[bytes], *, client_request_id: UUID) -> ProviderImageResponse:
+                reference_images: list[bytes], *, client_request_id: UUID,
+                budget_permit: BudgetPermit | None = None) -> ProviderImageResponse:
         """Submit exactly once; the caller owns durable attempts and asset storage."""
+        if ((not self.offline and isinstance(self.config, OpenAIImagesConfig)
+             and self.config.live_calls is True) or budget_permit is not None):
+            if (type(budget_permit) is not BudgetPermit
+                    or not isinstance(budget_permit._store, AccountBudgetStore)):
+                raise OpenAIImagesError("ACCOUNT_BUDGET_REQUIRED")
         self.validate_input(request, product_images, reference_images)
         snapshot = self._snapshot(request)
         if not isinstance(client_request_id, UUID):
@@ -207,6 +265,11 @@ class OpenAIImagesAdapter:
         }
         request_id = None
         deadline = time.monotonic() + self.config.timeout_seconds
+        if budget_permit is not None:
+            try:
+                budget_permit.claim(content_hash(snapshot), client_request_id)
+            except GatewayError as error:
+                raise OpenAIImagesError(error.code) from None
         try:
             transport = self._transport if offline else httpx.HTTPTransport(retries=0, trust_env=False)
             with httpx.Client(base_url=_BASE_URL, transport=transport, trust_env=False,
@@ -224,13 +287,17 @@ class OpenAIImagesAdapter:
                             body = self._json_object(raw)
                         except OpenAIImagesError:
                             body = {}
+                        raw_usage = validate_raw_usage(body.get("usage"))
+                        usage = self._usage(raw_usage, request_id)
                         raise OpenAIImagesError(self._http_error(response.status_code, body),
-                                                provider_request_id=request_id)
+                                                provider_request_id=request_id,
+                                                usage=usage, raw_usage=raw_usage)
                     body = self._json_object(raw)
                     return self._decode(body, request_id)
         except OpenAIImagesError as exc:
             if request_id is not None and exc.provider_request_id is None:
-                raise OpenAIImagesError(exc.code, provider_request_id=request_id) from None
+                raise OpenAIImagesError(exc.code, provider_request_id=request_id,
+                                        usage=exc.usage, raw_usage=exc.raw_usage) from None
             raise
         except (httpx.TransportError, OSError, TimeoutError):
             raise OpenAIImagesError("PROVIDER_SUBMISSION_UNKNOWN",
@@ -293,6 +360,19 @@ class OpenAIImagesAdapter:
         return "PROVIDER_REQUEST_REJECTED"
 
     def _decode(self, body: dict, request_id: str | None) -> ProviderImageResponse:
+        raw_usage = validate_raw_usage(body.get("usage"))
+        usage = self._usage(raw_usage, request_id)
+        try:
+            return self._decode_image(body, request_id, usage, raw_usage)
+        except OpenAIImagesError as error:
+            raise OpenAIImagesError(error.code, provider_request_id=request_id,
+                                    usage=usage, raw_usage=raw_usage) from None
+        except Exception:
+            raise OpenAIImagesError("PROVIDER_RESPONSE_INVALID", provider_request_id=request_id,
+                                    usage=usage, raw_usage=raw_usage) from None
+
+    def _decode_image(self, body: dict, request_id: str | None,
+                      usage: ImageProviderUsage | None, raw_usage: dict | None) -> ProviderImageResponse:
         data = body.get("data")
         if (body.get("error") is not None or not isinstance(data, list)
                 or len(data) != 1 or not isinstance(data[0], dict)
@@ -311,22 +391,22 @@ class OpenAIImagesAdapter:
             raise OpenAIImagesError("PROVIDER_RESPONSE_INVALID", provider_request_id=request_id) from None
         if not image or len(image) > self.config.max_output_image_bytes:
             raise OpenAIImagesError("PROVIDER_RESPONSE_TOO_LARGE", provider_request_id=request_id)
-        return ProviderImageResponse(image, request_id, self._usage(body.get("usage"), request_id))
+        return ProviderImageResponse(image, request_id, usage, raw_usage)
 
     @staticmethod
     def _usage(value: object, request_id: str | None) -> ImageProviderUsage | None:
         if value is None:
             return None
         if not isinstance(value, dict):
-            raise OpenAIImagesError("PROVIDER_RESPONSE_INVALID", provider_request_id=request_id)
+            raise OpenAIImagesError("PROVIDER_USAGE_INVALID", provider_request_id=request_id)
         details = value.get("input_tokens_details")
         if details is not None and not isinstance(details, dict):
-            raise OpenAIImagesError("PROVIDER_RESPONSE_INVALID", provider_request_id=request_id)
+            raise OpenAIImagesError("PROVIDER_USAGE_INVALID", provider_request_id=request_id)
         details = details or {}
         counts = {name: value.get(name) for name in ("input_tokens", "output_tokens", "total_tokens")}
         counts.update(input_image_tokens=details.get("image_tokens"),
                       input_text_tokens=details.get("text_tokens"))
         if any(count is not None and (type(count) is not int or not 0 <= count <= 2**63 - 1)
                for count in counts.values()):
-            raise OpenAIImagesError("PROVIDER_RESPONSE_INVALID", provider_request_id=request_id)
+            raise OpenAIImagesError("PROVIDER_USAGE_INVALID", provider_request_id=request_id)
         return ImageProviderUsage(**counts) if any(count is not None for count in counts.values()) else None

@@ -6,6 +6,7 @@ import io
 import json
 import traceback
 from dataclasses import replace
+from datetime import datetime, timedelta, timezone
 from email import policy
 from email.parser import BytesParser
 from types import SimpleNamespace
@@ -15,7 +16,8 @@ import httpx
 import pytest
 from PIL import Image
 
-from beauty_ai.contracts import AssetRef, ExternalImageRequest, ImagePrompt
+from beauty_ai.account_budget import AccountBudgetPolicy, AccountBudgetStore
+from beauty_ai.contracts import AssetRef, ExternalImageRequest, ImagePrompt, content_hash
 from beauty_ai.openai_images import OpenAIImagesAdapter, OpenAIImagesConfig, OpenAIImagesError
 
 
@@ -65,12 +67,14 @@ def test_disabled_default_stops_before_client_construction(monkeypatch):
 
 
 @pytest.mark.parametrize("key", [None, "", "secret\nvalue", "한글", "x" * 513])
-def test_live_config_rejects_missing_or_unsafe_key_before_transport(monkeypatch, key):
+def test_live_config_rejects_missing_or_unsafe_key_before_transport(monkeypatch, tmp_path, key):
     no_network(monkeypatch)
     cfg = OpenAIImagesConfig(live_calls=True, api_key=key)
     assert "api_key" not in repr(cfg)
+    payload, attempt = request(), uuid4()
+    permit = live_permit(tmp_path, payload, attempt)
     with pytest.raises(OpenAIImagesError, match="^PROVIDER_CONFIG_INVALID$"):
-        call(OpenAIImagesAdapter(cfg))
+        OpenAIImagesAdapter(cfg).execute(payload, [], [], client_request_id=attempt, budget_permit=permit)
 
 
 @pytest.mark.parametrize("change", [
@@ -125,7 +129,17 @@ def test_generate_is_one_fixed_url_json_call_without_real_key(monkeypatch):
     assert options[0]["follow_redirects"] is False
 
 
-def test_live_transport_is_constructed_without_retries_or_environment_proxy(monkeypatch):
+def live_permit(tmp_path, payload, attempt):
+    now = datetime.now(timezone.utc)
+    budget = AccountBudgetStore(tmp_path / "shared.sqlite3", AccountBudgetPolicy(
+        account_ref="test", period_id="test", starts_at=(now - timedelta(days=1)).isoformat(),
+        ends_at=(now + timedelta(days=1)).isoformat(), hard_limit_usd="10",
+        opening_spend_usd="0", opening_evidence_ref="declared-test"))
+    reservation = budget.reserve(uuid4(), uuid4(), content_hash(payload), "1")
+    return budget.bind_attempt(reservation, attempt)
+
+
+def test_live_transport_is_constructed_without_retries_or_environment_proxy(monkeypatch, tmp_path):
     observed = []
     def mock_factory(**kwargs):
         observed.append(kwargs)
@@ -133,7 +147,9 @@ def test_live_transport_is_constructed_without_retries_or_environment_proxy(monk
         return httpx.MockTransport(lambda req: response())
     monkeypatch.setattr(httpx, "HTTPTransport", mock_factory)
     adapter = OpenAIImagesAdapter(OpenAIImagesConfig(live_calls=True, api_key="offline-fixture-key"))
-    assert call(adapter).image_bytes == picture()
+    payload, attempt = request(), uuid4()
+    assert adapter.execute(payload, [], [], client_request_id=attempt,
+                           budget_permit=live_permit(tmp_path, payload, attempt)).image_bytes == picture()
     assert observed == [{"retries": 0, "trust_env": False}]
 
 
@@ -337,7 +353,7 @@ def test_usage_preserves_only_observed_counts(usage, expected):
 def test_malformed_usage_never_becomes_cost_evidence(usage):
     body = {"data": [{"b64_json": "eA=="}], "usage": usage}
     adapter = OpenAIImagesAdapter(OpenAIImagesConfig(), httpx.MockTransport(lambda req: response(body)))
-    with pytest.raises(OpenAIImagesError, match="^PROVIDER_RESPONSE_INVALID$"):
+    with pytest.raises(OpenAIImagesError, match="^PROVIDER_USAGE_INVALID$"):
         call(adapter)
 
 

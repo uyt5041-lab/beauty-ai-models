@@ -1,0 +1,17 @@
+{
+  "schema_version": "beautyai-cost-comparison-v1",
+  "comparison_id": "synthetic-demo",
+  "accounting_window_id": "synthetic-window",
+  "cost_scope": [
+    "image"
+  ],
+  "quality_policy_version": "synthetic-quality-v1",
+  "estimate_rate_version": "synthetic-rate-v1",
+  "pairs": [
+    {
+      "product_id": "synthetic-product",
+      "baseline_batch_id": "synthetic-baseline",
+      "candidate_batch_id": "synthetic-candidate"
+    }
+  ]
+}

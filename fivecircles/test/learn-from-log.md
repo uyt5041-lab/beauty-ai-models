@@ -11,3 +11,5 @@
 - 2026-10-23 B11: 사용자의 기본연출 제거 요청을 대상 금지 규칙으로 확대하지 않는다. 기본값과 명시적 연출의 회귀를 분리했다. [사례](errorlogs/2026-10-23-cosmetics-prompts-b11.md).
 
 - 2026-10-23 B12: Langfuse observations는 기본core만 반환할 수 있다. 프롬프트·입출력·사용량 확인에는 필드그룹을 명시하고 비밀/SDK불필요메타데이터를 출력하지 않는다. 관찰문제로 유료이미지작업을 재실행하지 않는다.
+
+- FinOps B1: pytest request는 예약 fixture 이름이므로 입력 해시는 request_hash로 쓴다. [수리](errorlogs/2026-11-03-finops.md).

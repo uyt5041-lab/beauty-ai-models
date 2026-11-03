@@ -127,9 +127,16 @@ def test_trace_failure_preserves_three_images_without_duplicate_posts(monkeypatc
     module.begin_image_generation = begin
     monkeypatch.setitem(sys.modules, "beauty_ai.langfuse_prompts", module)
     monkeypatch.setattr(runner, "langfuse_cli", lambda args, settings: {"name": args[2], "version": 1})
+    account_config = tmp_path / "account-budget.json"
+    account_config.write_text(json.dumps({"schema_version": "beautyai-account-budget-v1",
+        "database_path": "shared-account.sqlite3", "account_ref": "historical-mock-fixture",
+        "period_id": "fixture-period", "starts_at": "2020-01-01T00:00:00Z",
+        "ends_at": "2100-01-01T00:00:00Z", "hard_limit_usd": "10", "opening_spend_usd": "0",
+        "opening_evidence_ref": "fixture:declared-opening"}))
     run_dir = runner.run(Namespace(execute=True, source=source, env_file=settings,
                                   output=tmp_path / "runs", publish_prompts=False,
-                                  product_description="Fictional serum bottle"))
+                                  product_description="Fictional serum bottle",
+                                  account_budget_config=account_config))
     report = json.loads((run_dir / "report.json").read_text())
     assert report["status"] == "SUCCEEDED"
     assert report["http_post_attempts"] == len(posts) == 3
