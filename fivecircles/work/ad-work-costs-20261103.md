@@ -13,8 +13,8 @@
 |---|---|---|
 | W0 | 계약·검토·기반 | PASS |
 | W1 | work원장·검증·순수누적 | PASS |
-| W2 | 텍스트/이미지/API/재시작 연결 | IN_PROGRESS |
-| W3 | 보고서·W&B | PENDING |
+| W2 | 텍스트/이미지/API/재시작 연결 | PASS |
+| W3 | 보고서·W&B | IN_PROGRESS |
 | W4 | 전체흐름·실제W&B·PR·CI·merge | PENDING |
 
 공통권한은기존bearer→project이며새stage/complete/receipt는프로젝트경계를검증한다. APItoken/사진/원시프롬프트를새영수증에저장하지않는다.
@@ -34,3 +34,10 @@ HIGH/FULL, 5단계 독립 검토와 중요한 지적의 같은 검토자 재확�
 ## W1 완료
 계약 검증62·원장20·집계25, 합계107 tests PASS(-W error). SQLite 재시작·경쟁·late cancel·project격리·provider중복·완료 stage/hash·사용량/비용 누락·비교 제외를 확인했다. 가격은 snapshot/명시근거만 사용한다. SDK 로컬 검사에서 LegacyAPIResponse accessor를 raw.http_response.json()으로 바로잡았다(관측/상태 정책 불변, source 검증에 따른 targeted 수정).
 다음 W2: 원장 노드에 텍스트/이미지/내부 HTTP 경로를 연결. CONTINUE_WITH_NEXT_FORM=W2. 배포 NOT_APPLICABLE: 아직 SDK/HTTP를 변경하지 않은 라이브러리 배치.
+
+## W2 완료
+텍스트 SDK raw 관측·재시도0·공유검증, 이미지 finally 수집·완료 후 성공재사용, Backend/freeform 선택 work, 내부 HTTP와 runtime의 영속 원장을 연결했다. 외부 팀 텍스트는 생성 코드를 바꾸지 않고 시도 등록/영수증 API를 사용할 수 있다.
+모의 전과정: 기획→생성→사용량이 관측된 검수 실패→검수 성공→수정→재생성→실제 PNG 합성→재시작/완료/읽기.7attempts(6API+1local), input70/output78, 추정$0.001852000(가상 단가/자료), 실제 청구null, 재사용 추가POST0. 실제 광고 품질·절감 효과의 증명은 아니다.
+W2 code review의 local 잘못된 입력 PENDING 잔존·동시 inbox소비 오탐을 고쳤고 독립 재확인 PASS. strict gateway terminal 재호출 guard는 구조/비평/준비도 범위를 재사용 검토한 뒤 추가했다. 외부API 기본동작은 유지한다.
+관련 회귀 포함 315 passed in 4.72s. 로컬 test/모의 HTTP까지만 검증했고 서비스 배포 NOT_RUN; 배포가 없는 라이브러리/API 패키지 반영이므로 CD는 NOT_APPLICABLE이다.
+CONTINUE_WITH_NEXT_FORM=W3: 저장된 이력→보고서→W&B 연결. 모델 호출은 추가하지 않는다.

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 import hmac
+import re
 from typing import Annotated, Callable, Mapping
 from uuid import UUID
 
@@ -14,12 +15,14 @@ from starlette.concurrency import run_in_threadpool
 
 from .assets import LocalAssetStore
 from .contracts import (AssetRef, BackgroundRequest, Contract, ExternalImageRequest, ImageJob,
-                        ImageRequest, VisualBrief)
+                        ImageRequest, VisualBrief, content_hash)
 from .errors import GatewayError
 from .image_worker import Processor, SingleHostWorker
 from .image_edits import ImageEditStore
 from .job_ledger import JobExecution, JobLedger, JobTiming
 from .product_approval import ProductApprovalStore
+from .work_api import install_work_api, work_error_status
+from .work_contracts import normalize_uuid
 
 
 _REQUEST = TypeAdapter(Annotated[ImageRequest, Field(discriminator="kind")])
@@ -63,7 +66,7 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
                *, approvals: ProductApprovalStore | None = None,
                request_validator: Callable[[ImageRequest], None] | None = None,
                edits: ImageEditStore | None = None,
-               provider_attempts=None) -> FastAPI:
+               provider_attempts=None, work_ledger=None) -> FastAPI:
     """Bind a server-owned bearer credential to one project, never to user input.
 
     With no processor, requests stay durably queued. A compatible separate
@@ -90,6 +93,7 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.worker = worker
+    app.state.work_ledger = work_ledger
 
     async def project(authorization: Annotated[str | None, Header()] = None) -> UUID:
         token = authorization[7:] if authorization and authorization.startswith("Bearer ") else ""
@@ -105,6 +109,9 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
 
     @app.exception_handler(GatewayError)
     async def gateway_error(request: Request, exc: GatewayError):
+        if type(exc.code) is str and re.fullmatch(r"WORK_[A-Z_]+", exc.code):
+            return JSONResponse(status_code=work_error_status(exc.code),
+                                content={"detail": {"code": exc.code}})
         statuses = {
             "ASSET_NOT_FOUND": 404, "IMAGE_JOB_NOT_FOUND": 404,
             "IDEMPOTENCY_CONFLICT": 409, "JOB_STATE_CONFLICT": 409,
@@ -160,15 +167,36 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
                 {"type": e["type"]} for e in exc.errors()
             ]) from None
 
+        work_headers = request.headers.getlist("x-ad-work-id")
+        work_id = None
+        if work_headers:
+            if len(work_headers) != 1:
+                raise HTTPException(400, detail={"code": "WORK_ID_INVALID"})
+            try:
+                work_id = normalize_uuid(work_headers[0])
+            except ValueError:
+                raise HTTPException(400, detail={"code": "WORK_ID_INVALID"}) from None
+            if work_ledger is None:
+                raise HTTPException(503, detail={"code": "WORK_SERVICE_UNAVAILABLE"})
+            if not isinstance(payload, ExternalImageRequest):
+                raise HTTPException(400, detail={"code": "WORK_IMAGE_PROFILE_INVALID"})
+            # Resolve project ownership before mutable asset/processor checks.
+            # The eventual bind checks OPEN atomically immediately before queueing.
+            await run_in_threadpool(work_ledger.get_work, project_id, work_id)
+
         # Replays read the committed record before revalidating mutable files. A
         # lost acknowledgement still resolves to the original job/hash even if
         # a file later becomes unavailable. New submissions validate actual files.
         try:
-            await run_in_threadpool(ledger.get, job_id, project_id)
+            existing = await run_in_threadpool(ledger.get, job_id, project_id)
         except GatewayError as exc:
             if exc.code != "IMAGE_JOB_NOT_FOUND":
                 raise
         else:
+            if work_id is not None:
+                if existing.request_hash != content_hash(payload):
+                    raise GatewayError("IDEMPOTENCY_CONFLICT", "Job inputs do not match the committed request.")
+                await run_in_threadpool(work_ledger.bind_image_job, project_id, work_id, job_id)
             return await run_in_threadpool(ledger.submit, job_id, project_id, payload)
 
         if request_validator is not None:
@@ -183,6 +211,8 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
                 refs.extend([payload.product_rgba, payload.preserve_mask])
         for ref in refs:
             await run_in_threadpool(assets.read_bytes, ref, project_id=project_id)
+        if work_id is not None:
+            await run_in_threadpool(work_ledger.bind_image_job, project_id, work_id, job_id)
         return await run_in_threadpool(ledger.submit, job_id, project_id, payload)
 
     @app.get("/internal/v1/jobs/{job_id}", response_model=ImageJob)
@@ -276,4 +306,5 @@ def create_app(ledger: JobLedger, assets: LocalAssetStore,
             "model_readiness": "not_assessed",
         })
 
+    install_work_api(app, work_ledger, project, _read_limited)
     return app

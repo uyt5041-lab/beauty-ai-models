@@ -13,3 +13,6 @@
 - 2026-10-23 B12: Langfuse observations는 기본core만 반환할 수 있다. 프롬프트·입출력·사용량 확인에는 필드그룹을 명시하고 비밀/SDK불필요메타데이터를 출력하지 않는다. 관찰문제로 유료이미지작업을 재실행하지 않는다.
 
 - FinOps B1: pytest request는 예약 fixture 이름이므로 입력 해시는 request_hash로 쓴다. [수리](errorlogs/2026-11-03-finops.md).
+
+## 2026-11-03 · work capture
+SDK parse 전에 raw 사용량을 관측한다. 저장복구와 모델 재호출은 분리하고 terminal 요청 재등록도 원장 transaction에서 막는다. local receipt는 시도 등록 전에 검증한다. [원인/수정](errorlogs/backend/2026-11-03-ad-work-capture.md).

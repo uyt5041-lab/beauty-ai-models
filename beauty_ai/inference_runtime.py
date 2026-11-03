@@ -20,6 +20,7 @@ from .contracts import ExternalImageRequest
 from .openai_images import OpenAIImagesAdapter, OpenAIImagesConfig
 from .api_image_processor import ExternalImageProcessor
 from .provider_attempts import ProviderAttemptStore
+from .work_ledger import AdWorkLedger
 
 
 class _ProfileRouter:
@@ -72,15 +73,17 @@ def build_app(root: str | Path, project_id: UUID, token: str, *,
     elif background_backend != "bright-template":
         raise ValueError("Unsupported background backend")
     attempts = ProviderAttemptStore(root / "provider_attempts.sqlite3")
+    work_ledger = AdWorkLedger(root / "ad_works.sqlite3")
     external = ExternalImageProcessor(
         assets, OpenAIImagesAdapter(openai_config or OpenAIImagesConfig(), transport=openai_transport),
         attempts, budget_limit_usd=image_budget_usd, reservation_usd=image_reservation_usd,
-        account_budget=account_budget)
+        account_budget=account_budget, work_ledger=work_ledger)
     processor = _ProfileRouter(processor, overrides, external)
     ledger = JobLedger(root / "jobs.sqlite3")
     edits = ImageEditStore(root / "edits.sqlite3", assets, ledger)
     return create_app(ledger, assets, {token: project_id}, processor, approvals=approvals,
-                      request_validator=processor.validate_request, edits=edits, provider_attempts=attempts)
+                      request_validator=processor.validate_request, edits=edits, provider_attempts=attempts,
+                      work_ledger=work_ledger)
 
 
 def main() -> None:

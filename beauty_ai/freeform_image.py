@@ -28,8 +28,27 @@ from .experiment_runner import _read_json, write_json
 from .experiment_plan import DEFAULT_MODEL
 from .openai_images import OpenAIImagesAdapter, OpenAIImagesConfig
 from .provider_attempts import ProviderAttemptStore, money_units
+from .work_ledger import AdWorkLedger
 
 SCHEMA = "beautyai-freeform-preparation-v1"
+
+
+def _execution_work_ledger(work_id, work_ledger, project_id, *, attempt_db=None, account_budget=None):
+    if (work_id is None) != (work_ledger is None):
+        raise ValueError("WORK_ARGUMENTS_REQUIRED")
+    if work_ledger is None:
+        return None
+    if not isinstance(work_ledger, (AdWorkLedger, str, Path)):
+        raise ValueError("WORK_CONFIG_INVALID")
+    path = (work_ledger.path if isinstance(work_ledger, AdWorkLedger)
+            else _absolute_without_links(Path(work_ledger)))
+    if ((attempt_db is not None and path.resolve() == Path(attempt_db).resolve())
+            or account_budget is not None and path.resolve() == account_budget.path.resolve()):
+        raise ValueError("WORK_LEDGER_CONFLICT")
+    if not isinstance(work_ledger, AdWorkLedger):
+        work_ledger = AdWorkLedger(path)
+    work_ledger.require_open(project_id, work_id)
+    return work_ledger
 
 
 def _prompt_file(path: Path) -> str:
@@ -112,8 +131,11 @@ def execute_freeform(prepared_path: Path, *, project_id: UUID, job_id: UUID,
                      account_budget: AccountBudgetStore | None = None,
                      budget_usd: str = "0", reservation_usd: str = "1",
                      transport: httpx.MockTransport | None = None,
-                     allow_live: bool = False) -> dict:
+                     allow_live: bool = False, work_id: UUID | str | None = None,
+                     work_ledger: AdWorkLedger | str | Path | None = None) -> dict:
     """Execute one saved request, preserving processor reuse and no-retry rules."""
+    work_ledger = _execution_work_ledger(work_id, work_ledger, project_id,
+                                      attempt_db=attempt_db, account_budget=account_budget)
     offline = isinstance(transport, httpx.MockTransport)
     if transport is not None and not offline:
         raise ValueError("FREEFORM_TRANSPORT_INVALID")
@@ -137,6 +159,11 @@ def execute_freeform(prepared_path: Path, *, project_id: UUID, job_id: UUID,
         raise ValueError("FREEFORM_PREPARATION_MISMATCH")
     if money_units(budget_usd) < money_units(reservation_usd, positive=True):
         raise ValueError("FREEFORM_BUDGET_INSUFFICIENT")
+    from .work_tracking import resolve_image_work
+    scope = resolve_image_work(work_ledger, project_id, job_id, work_id=work_id)
+    if scope is not None:
+        _execution_work_ledger(scope.work_id, scope.ledger, project_id,
+                               attempt_db=attempt_db, account_budget=account_budget)
     assets = LocalAssetStore(source.parent / "runtime/assets")
     products = [assets.read_bytes(ref, project_id=project_id) for ref in request.product_images]
     references = [assets.read_bytes(ref, project_id=project_id) for ref in request.reference_images]
@@ -155,7 +182,7 @@ def execute_freeform(prepared_path: Path, *, project_id: UUID, job_id: UUID,
     adapter = OpenAIImagesAdapter(OpenAIImagesConfig(live_calls=not offline,
         api_key=settings.get("OPENAI_API_KEY"), timeout_seconds=300), transport=transport)
     processor = ExternalImageProcessor(assets, adapter, attempts, budget_limit_usd=budget_usd,
-        reservation_usd=reservation_usd, account_budget=account_budget)
+        reservation_usd=reservation_usd, account_budget=account_budget, work_ledger=work_ledger)
     result = processor.process_job(request, project_id, job_id)
     from .experiment_execution import _write_bytes
     _write_bytes(source.parent / "image.png", assets.read_bytes(result.image, project_id=project_id))
@@ -190,18 +217,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--account-budget-config", type=Path)
     parser.add_argument("--budget-usd", default="0")
     parser.add_argument("--reservation-usd", default="1")
+    parser.add_argument("--work-id", type=UUID)
+    parser.add_argument("--work-ledger", type=Path)
     args = parser.parse_args(argv)
+    if (args.work_id is None) != (args.work_ledger is None):
+        parser.error("--work-id and --work-ledger must be provided together.")
     if args.prepared and (args.prompt_file or args.product or args.reference or args.output):
         parser.error("--prepared cannot be combined with new preparation inputs.")
     if not args.prepared and not (args.prompt_file and args.product and args.output):
         parser.error("New preparation requires --prompt-file, --product and --output.")
     try:
         account_budget = None
+        work_ledger = None
         if args.execute:
             # Gate before preparation, credentials, local attempts or provider access.
             account_budget = load_account_budget(args.account_budget_config)
             if not all((args.project_id, args.job_id, args.env_file, args.attempt_db)):
                 raise ValueError("FREEFORM_EXECUTION_ARGUMENTS_REQUIRED")
+            work_ledger = _execution_work_ledger(args.work_id, args.work_ledger, args.project_id,
+                attempt_db=args.attempt_db, account_budget=account_budget)
         prepared = args.prepared or prepare_freeform(products=args.product, references=args.reference,
             prompt_file=args.prompt_file, output=args.output, project_id=args.project_id, job_id=args.job_id,
             prompt_version=args.prompt_version, language=args.language, width=args.width,
@@ -214,12 +248,13 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         report = execute_freeform(prepared, project_id=args.project_id, job_id=args.job_id,
             attempt_db=args.attempt_db, env_file=args.env_file, account_budget=account_budget,
-            budget_usd=args.budget_usd, reservation_usd=args.reservation_usd, allow_live=True)
+            budget_usd=args.budget_usd, reservation_usd=args.reservation_usd, allow_live=True,
+            work_id=args.work_id, work_ledger=work_ledger)
         print(json.dumps({"status": report["status"], "report": str(prepared.parent / "generation-result.json")}))
         return 0
     except Exception as error:
         code = getattr(error, "code", "") or (str(error) if type(error) is ValueError else "")
-        if not re.fullmatch(r"(?:ACCOUNT_BUDGET|FREEFORM|EXPERIMENT|PROVIDER|ASSET)_[A-Z_]{1,70}", code):
+        if not re.fullmatch(r"(?:ACCOUNT_BUDGET|FREEFORM|EXPERIMENT|PROVIDER|ASSET|WORK)_[A-Z_]{1,70}", code):
             code = "FREEFORM_FAILED"
         print(json.dumps({"status": "STOPPED", "error_code": code}))
         return 1

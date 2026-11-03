@@ -90,6 +90,8 @@ class AdWorkLedger:
                     FOREIGN KEY(project_id,work_id) REFERENCES ad_works(project_id,work_id))""")
                 db.execute("""CREATE INDEX IF NOT EXISTS ad_attempt_work
                     ON ad_attempts(project_id,work_id)""")
+                db.execute("""CREATE INDEX IF NOT EXISTS ad_attempt_request
+                    ON ad_attempts(project_id,work_id,operation,request_hash)""")
                 db.execute("""CREATE TABLE IF NOT EXISTS ad_receipts (
                     project_id TEXT NOT NULL, attempt_id TEXT NOT NULL,
                     work_id TEXT NOT NULL, provider TEXT NOT NULL,
@@ -200,7 +202,8 @@ class AdWorkLedger:
         return {key: value for key, value in identity.items()
                 if key not in {"project_id", "work_id", "started_at"}}
 
-    def _start(self, db, project_id, work_id, spec, *, allow_closed=False, started_at=None):
+    def _start(self, db, project_id, work_id, spec, *, allow_closed=False, started_at=None,
+               reject_repeated_request=False):
         work = self._work(db, project_id, work_id)
         row = db.execute("SELECT work_id,data FROM ad_attempts WHERE project_id=? AND attempt_id=?",
                          (project_id, spec["attempt_id"])).fetchone()
@@ -231,6 +234,8 @@ class AdWorkLedger:
                            _decode(pending["receipt"], contracts.normalize_receipt))
                 if receipt is None or receipt["status"] == "UNKNOWN":
                     raise _error("WORK_PENDING")
+                if reject_repeated_request:
+                    raise _error("WORK_ALREADY_RECORDED")
         identity = _validate(contracts.normalize_attempt, {
             **spec, "project_id": project_id, "work_id": work_id,
             "started_at": started_at if started_at is not None else _now()})
@@ -244,7 +249,10 @@ class AdWorkLedger:
             spec["request_hash"], _json(identity)))
 
     def start_attempt(self, project_id, work_id, attempt_id, stage, operation, provider,
-                      configured_model, prompt_version, request_hash, parent_attempt_id=None) -> None:
+                      configured_model, prompt_version, request_hash, parent_attempt_id=None,
+                      *, reject_repeated_request=False) -> None:
+        if type(reject_repeated_request) is not bool:
+            raise _error("WORK_INVALID")
         project_id, work_id = self._ids(project_id, work_id)
         spec = _validate(contracts.normalize_attempt_spec, {
             "attempt_id": _validate(contracts.normalize_uuid, attempt_id),
@@ -255,7 +263,8 @@ class AdWorkLedger:
                                   _validate(contracts.normalize_uuid, parent_attempt_id))})
         with self._connection(write=True) as db:
             self._open(self._work(db, project_id, work_id))
-            self._start(db, project_id, work_id, spec)
+            self._start(db, project_id, work_id, spec,
+                        reject_repeated_request=reject_repeated_request)
 
     def _record(self, db, project_id, work_id, receipt):
         work = self._work(db, project_id, work_id)

@@ -71,6 +71,7 @@ runtime은 root/ad_works.sqlite3를 만들고 processor와 내부 work API에 �
 OpenAITextGateway._parse는 scope가 있을 때 start_attempt→SDK raw response→usage관측→parse/검증→terminal receipt를 기록한다. tracked SDK는 responses.with_raw_response.parse를 사용하고 raw.http_response.json()의 usage/model/id와 x-request-id를 먼저 관측한 뒤 raw.parse()한다. 이 기능도 없으면 WORK_CLIENT_UNSAFE로 호출 전 거절한다. SDK가 raw response 자체를 주지 못한 오류는 usage=null이며 추정하지 않는다.
 텍스트 상태는 검증된 응답 SUCCEEDED, refusal/incomplete/응답 후 schema 실패/명시 HTTP오류 FAILED, timeout/연결실패/취소/응답 전 SDK parse오류 UNKNOWN이다. 도메인 후검증 실패는 이미 성공한 모델 receipt를 바꾸지 않는다. 취소도 finally에서 안전 receipt를 남긴 후 원래 취소를 전파한다.
 텍스트 응답 후 receipt는 먼저 원장 인접 .cache/work-receipts에 mode0600 atomic replace+fsync로 sanitized recovery JSON을 쓴 뒤 record_receipt한다. 성공 시 inbox 파일을 지운다. 원장 실패는 WORK_CAPTURE_PENDING(안전 receipt 속성 포함)으로 반환하며 다음 scope 진입/호출 전 inbox 재수집을 시도한다. inbox까지 실패하면 오류에 포함한 receipt를 POST receipts로 재입력할 수 있다. 두 저장 모두 실패한 사실은 안전하게 복구 불가할 수 있음을 표시하며 usage를 지어내지 않는다. 같은 work의 같은 operation/request_hash가 PENDING 또는 UNKNOWN이면 새 SDK 호출은 거절한다. 재수집은 network 호출0회다.
+SDK gateway는 start_attempt의 선택 내부 flag reject_repeated_request=True로 이미 terminal인 같은 operation/request_hash도 WORK_ALREADY_RECORDED(409)로 거절한다. 응답 내용은 저장하지 않으므로 inbox 복구 후 재시도도 자동 재생성하지 않는다. 의도적 재실험은 새 prompt_version/수정 요청이나 새 work를 사용한다. 외부 원장/API의 기본 flag=False와 같은 attempt ID의 멱등 재입력은 유지한다. 이 flag는 HTTP 입력 필드가 아니다.
 관측 중 실제 SDK는 with_options(max_retries=0)로 사용한다. 이를 지원하지 않는 추적 client는 SDK호출 전 WORK_CLIENT_UNSAFE. 비추적 경로의 기존 SDK2 retries는 유지한다.
 기획/검수/수정 생성 내용과 ReviewService 정책은 바꾸지 않는다. 도메인 후검증 실패는 모델 호출 성공/광고 승인과 구분한다.
 외부 팀 텍스트는 동일 start_attempt+record_receipt 계약으로 입력한다. 이 경로는 비용 근거 수신이며 텍스트 생성 로직을 재구현하지 않는다.
@@ -86,6 +87,7 @@ GET /internal/v1/ad-works/{work_id}: work+metrics; GET /internal/v1/ad-works: pr
 POST /internal/v1/ad-works/{work_id}/attempts: identity 필드에서 project/work/started_at 제외한 start spec.
 POST /internal/v1/ad-works/{work_id}/receipts: terminal Receipt. POST .../complete: completion. POST .../cancel: 빈객체.
 기존 PUT /jobs/{job_id}에 선택 X-Ad-Work-Id UUID header를 지원한다. 인증/요청 검증 후 queue 전에 work/job을 바인딩한다. workstore 없으면503, 다른project/없으면404.
+work header는 ExternalImageRequest만 지원한다. 과거 local GPU profile은 WORK_IMAGE_PROFILE_INVALID(400)이며 local 합성은 명시 local receipt로 기록한다. work/provider/account DB 경로가 같으면 초기화·자산·호출 전에 WORK_LEDGER_CONFLICT로 차단한다.
 WORK_NOT_FOUND404, WORK_*CONFLICT/CLOSED/PENDING/MISSING_STAGE/COMPLETION_INVALID409, 검증400/413, storage/capture503. 인증오류401 기존정책유지.
 
 ## 가격·집계·표시

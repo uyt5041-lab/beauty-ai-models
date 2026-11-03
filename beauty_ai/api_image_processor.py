@@ -14,12 +14,14 @@ from .contracts import ExternalImageRequest, ExternalImageResult, content_hash, 
 from .errors import GatewayError
 from .openai_images import OpenAIImagesAdapter, OpenAIImagesError
 from .provider_attempts import ProviderAttemptStore, money_units
+from .work_ledger import AdWorkLedger
 
 
 class ExternalImageProcessor:
     def __init__(self, assets: LocalAssetStore, adapter: OpenAIImagesAdapter,
                  attempts: ProviderAttemptStore, *, budget_limit_usd="0", reservation_usd="1",
-                 account_budget: AccountBudgetStore | None = None):
+                 account_budget: AccountBudgetStore | None = None,
+                 work_ledger: AdWorkLedger | None = None):
         money_units(budget_limit_usd)
         money_units(reservation_usd, positive=True)
         self.assets, self.adapter, self.attempts = assets, adapter, attempts
@@ -27,6 +29,15 @@ class ExternalImageProcessor:
         if account_budget is not None and not isinstance(account_budget, AccountBudgetStore):
             raise GatewayError("ACCOUNT_BUDGET_CONFIG_INVALID", "Account budget configuration is invalid.")
         self.account_budget = account_budget
+        self._validate_work_ledger(work_ledger)
+        self.work_ledger = work_ledger
+
+    def _validate_work_ledger(self, work_ledger: AdWorkLedger | None) -> None:
+        if work_ledger is not None and not isinstance(work_ledger, AdWorkLedger):
+            raise GatewayError("WORK_CONFIG_INVALID", "Advertisement work configuration is invalid.")
+        if work_ledger is not None and (work_ledger.path.resolve() == self.attempts.path.resolve()
+                or self.account_budget is not None and work_ledger.path.resolve() == self.account_budget.path.resolve()):
+            raise GatewayError("WORK_LEDGER_CONFLICT", "Advertisement work requires a separate ledger.")
 
     def validate_request(self, request: ExternalImageRequest) -> None:
         if not self.adapter.offline and self.adapter.config.live_calls and self.account_budget is None:
@@ -60,6 +71,35 @@ class ExternalImageProcessor:
 
     def process_job(self, request: ExternalImageRequest, project_id: UUID,
                     job_id: UUID) -> ExternalImageResult:
+        from .work_tracking import resolve_image_work, sync_image_receipt
+
+        scope = resolve_image_work(self.work_ledger, project_id, job_id)
+        if scope is None:
+            return self._process_job(request, project_id, job_id)
+        self._validate_work_ledger(scope.ledger)
+        try:
+            work = scope.ledger.get_work(project_id, scope.work_id)
+            if work["status"] != "OPEN":
+                existing = self.attempts.get(job_id, project_id)
+                reusable = False
+                if (existing is not None and existing["state"] == "succeeded"
+                        and existing["request_hash"] == content_hash(request)):
+                    result = ExternalImageResult.model_validate(existing["result"])
+                    reusable = image_result_matches(request, result)
+                if not reusable:
+                    raise GatewayError("WORK_CLOSED", "Advertisement work is closed.")
+            return self._process_job(request, project_id, job_id)
+        finally:
+            try:
+                record = self.attempts.get(job_id, project_id)
+                if record is not None:
+                    sync_image_receipt(scope.ledger, project_id, job_id, record, request)
+            except Exception:
+                raise GatewayError("WORK_CAPTURE_PENDING", "Provider receipt needs work reconciliation.",
+                                   retryable=True) from None
+
+    def _process_job(self, request: ExternalImageRequest, project_id: UUID,
+                     job_id: UUID) -> ExternalImageResult:
         self.validate_request(request)
         # Copy validated fields before hashing or crossing the external boundary.
         request = ExternalImageRequest.model_validate(request.model_dump())
