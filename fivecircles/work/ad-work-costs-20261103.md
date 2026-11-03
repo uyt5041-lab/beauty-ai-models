@@ -12,8 +12,8 @@
 | 단계 | 목적 | 상태 |
 |---|---|---|
 | W0 | 계약·검토·기반 | PASS |
-| W1 | work원장·검증·순수누적 | IN_PROGRESS |
-| W2 | 텍스트/이미지/API/재시작 연결 | PENDING |
+| W1 | work원장·검증·순수누적 | PASS |
+| W2 | 텍스트/이미지/API/재시작 연결 | IN_PROGRESS |
 | W3 | 보고서·W&B | PENDING |
 | W4 | 전체흐름·실제W&B·PR·CI·merge | PENDING |
 
@@ -30,3 +30,7 @@ HIGH/FULL, 5단계 독립 검토와 중요한 지적의 같은 검토자 재확�
 목표흐름: 작업등록 → 기획 → 생성 → 검수 → 선택수정 → 합성 → 명시완료 → 누적보고/W&B.
 현재: 각 호출 기록/생성당 비교는 있고 work 연결은 없음. 우선 원장·검증·집계3개 모듈을 분리해 추가한다. score: 원장경계3/연결3/표시2 중 원장이 상위 차단점이다.
 완료판정은 W1의 상태/프로젝트/멱등/동시성/누락/비교 테스트 PASS다. CONTINUE_WITH_NEXT_FORM=W1. 실제 모델 호출0, W&B 검증자료는 synthetic, GCP 배포는 범위 밖.
+
+## W1 완료
+계약 검증62·원장20·집계25, 합계107 tests PASS(-W error). SQLite 재시작·경쟁·late cancel·project격리·provider중복·완료 stage/hash·사용량/비용 누락·비교 제외를 확인했다. 가격은 snapshot/명시근거만 사용한다. SDK 로컬 검사에서 LegacyAPIResponse accessor를 raw.http_response.json()으로 바로잡았다(관측/상태 정책 불변, source 검증에 따른 targeted 수정).
+다음 W2: 원장 노드에 텍스트/이미지/내부 HTTP 경로를 연결. CONTINUE_WITH_NEXT_FORM=W2. 배포 NOT_APPLICABLE: 아직 SDK/HTTP를 변경하지 않은 라이브러리 배치.

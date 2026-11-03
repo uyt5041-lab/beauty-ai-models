@@ -250,3 +250,6 @@ W&B·실험별 상태는 유지하고 계정 예산만 별도 SQLite로 공유�
 ## 2026-11-03 · AD-WORK-COSTS W0
 - [작업별 누적 비용 계약](../architecture/contract/ad-work-costs.md)을 5단계 EGM으로 검토·보완했다. [작업 기록](ad-work-costs-20261103.md).
 - 기반 2030 tests PASS, 구현/원격게시/배포 완료는 아직 아니다. 사용자 지정 PR base는 feature/image-model이다.
+
+## 2026-11-03 · AD-WORK-COSTS W1
+- work 계약/영속 원장/순수 집계를 구현하고107 tests PASS. [단계별 기록](ad-work-costs-20261103.md). 실제 API/서버 배포/절감 효과 증명은 아니다.
