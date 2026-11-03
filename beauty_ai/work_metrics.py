@@ -149,7 +149,12 @@ def _work_row(work: dict, facts: list[dict], unobserved: int) -> dict:
     }
 
 
-def _comparison(rows: list[dict], facts_by_work: dict[str, list[dict]]) -> dict:
+def compare_work_rows(rows: list[dict]) -> dict:
+    """Compare validated work-summary rows; shared by reporting and readback.
+
+Callers validate the wire first. Unknown applied rates also imply an unpriced
+nonlocal stage. Unobserved bindings alone do not invent a rate observation.
+"""
     groups = defaultdict(list)
     artifacts = Counter((row["arm"], row["final_artifact_sha256"]) for row in rows
                         if row["status"] == "COMPLETED" and row["arm"] is not None)
@@ -180,8 +185,8 @@ def _comparison(rows: list[dict], facts_by_work: dict[str, list[dict]]) -> dict:
                     pair_reasons.add(reason)
             if set(baseline["required_stages"]) != set(candidate["required_stages"]):
                 pair_reasons.add("STAGES_MISMATCH")
-            unknown_rate = any(fact["rate_version"] is None for row in members
-                               for fact in facts_by_work[row["work_id"]] if not fact["local"])
+            unknown_rate = any(stage["missing_cost_count"] > 0 for row in members
+                               for stage in row["stages"] if stage["provider"] != "local")
             if unknown_rate or baseline["rate_versions"] != candidate["rate_versions"]:
                 pair_reasons.add("RATE_MISMATCH")
         if pair_reasons:
@@ -252,5 +257,5 @@ def summarize_work_dataset(data: dict) -> dict:
         return {
             "schema_version": "beautyai-work-summary-v1", "scope": "MODEL_API_COST_ONLY",
             "authority": "DECLARED_WORK_ACCEPTANCE", "summary": summary, "works": rows,
-            "comparison": _comparison(rows, facts_by_work),
+            "comparison": compare_work_rows(rows),
         }

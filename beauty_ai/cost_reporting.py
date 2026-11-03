@@ -22,6 +22,9 @@ import tempfile
 from .cost_accounting import canonical_bytes, latest_records, normalize_dataset, usd_string
 from .cost_savings import COMPARISON_SCHEMA_VERSION, compare_costs
 from .generation_costs import compare_generations, normalize_generation_manifest
+from .errors import GatewayError
+from .work_contracts import MAX_JSON_BYTES as _MAX_WORK_JSON_BYTES, normalize_work_dataset, parse_work_json
+from .work_metrics import summarize_work_dataset
 
 
 REPORT_SCHEMA_VERSION = "beautyai-cost-report-v1"
@@ -143,7 +146,8 @@ def _empty_comparison(overview: dict, scope: dict) -> dict:
 
 
 def build_report(dataset: Mapping, comparison: Mapping | None = None, *,
-                 generation_comparison: Mapping | None = None) -> dict:
+                 generation_comparison: Mapping | None = None,
+                 work_dataset: Mapping | None = None) -> dict:
     """Build a deterministic report without IO or inferred acceptance/billing.
 
     Identity hashes canonical normalized input history + comparison + contract.
@@ -184,6 +188,15 @@ def build_report(dataset: Mapping, comparison: Mapping | None = None, *,
                          if generation_manifest is not None else None)
     if generation_manifest is not None:
         identity["generation_comparison"] = generation_manifest
+    normalized_work = normalize_work_dataset(work_dataset) if work_dataset is not None else None
+    if normalized_work is not None:
+        identity["work_dataset"] = normalized_work
+        has_existing_data = any(normalized[key] for key in ("cost_items", "batches", "acceptances"))
+        has_existing_data = has_existing_data or manifest is not None or generation_manifest is not None
+        work_synthetic = normalized_work["data_kind"] == "SYNTHETIC_FIXTURE"
+        existing_synthetic = synthetic and all(
+            re.match(r"^(synthetic|fixture)[-:./]", item["source_ref"], re.I) for item in items)
+        synthetic = work_synthetic and (existing_synthetic or not has_existing_data)
     report = {
         "schema_version": REPORT_SCHEMA_VERSION, "contract_version": CONTRACT_VERSION,
         "report_id": _digest(identity), "mode": "COMPARISON" if manifest else "OVERVIEW",
@@ -200,6 +213,9 @@ def build_report(dataset: Mapping, comparison: Mapping | None = None, *,
     if generation_manifest is not None:
         report["inputs"]["generation_comparison_sha256"] = _digest(generation_manifest)
         report["generation_comparison"] = generation_result
+    if normalized_work is not None:
+        report["inputs"]["work_dataset_sha256"] = _digest(normalized_work)
+        report["work_costs"] = summarize_work_dataset(normalized_work)
     return report
 
 
@@ -301,7 +317,7 @@ def _generation_reason_list(reasons: list[str]) -> str:
     ) + '</ul>'
 
 
-def _generation_section(section: Mapping) -> str:
+def _generation_section(section: Mapping, *, has_work: bool = False) -> str:
     pct = section["estimated_cost_reduction_pct"]
     if pct is None:
         metric, state, caption = "산출 보류", "wait", "생성당 추정비용 감소율"
@@ -327,6 +343,8 @@ def _generation_section(section: Mapping) -> str:
     excluded_details = (f'<details><summary>제외 기록 {_number(section["excluded_record_count"])}건의 사유</summary>'
                         '<div class="source-table"><table><thead><tr><th scope="col">비용 기록 ID</th>'
                         f'<th scope="col">제외 사유</th></tr></thead><tbody>{excluded_rows}</tbody></table></div></details>') if excluded_rows else ''
+    work_notice = ('<div class="notice"><strong>최종 광고 제작 비용은 작업별 누적에서 확인합니다.</strong>이 생성 비교와 작업 원장은 별도 입력입니다. 생성당 수치에 검수·수정·완료 비용을 더한 것으로 해석하지 않습니다.</div>'
+                   if has_work else '<div class="notice"><strong>생 프롬프트 → 최종 광고 완료 비용: 미측정</strong>수정·실패·검수까지 포함한 전체 제작 비용과 토큰은 아직 측정하지 않았습니다. 이 수치는 연결된 생성 결과의 관측 비교입니다. 채택 광고 한 장당 원가와 별개입니다.</div>')
     return f'''<section id="generation-comparison"><div class="section-head"><h2>생성당 추정비용 비교</h2><p class="muted">관측 비교 · 품질 미검증</p></div>
 <div class="grid-two"><article class="panel"><div class="basis-head"><h3>이미지 생성 1건의 추정비용</h3><span class="pill">단가표 기반 추정</span></div>
 <div class="metric"><strong class="{state}">{metric}</strong><span>{caption}</span></div>
@@ -339,9 +357,111 @@ def _generation_section(section: Mapping) -> str:
 <div class="meter" role="img" aria-label="생성 비교 coverage {_e(width)}퍼센트"><span style="width:{_e(width)}%"></span></div>
 <div class="coverage-meta"><span>전체 {_number(section['input_record_count'])}건</span><span>비교 {_number(section['compared_pair_count'])}쌍 / 계획 {_number(section['planned_pair_count'])}쌍</span><span>제외 {_number(section['excluded_pair_count'])}쌍</span></div>
 {_generation_reason_list(section['reason_codes'])}{excluded_details}</article></div>
-<div class="notice"><strong>생 프롬프트 → 최종 광고 완료 비용: 미측정</strong>수정·실패·검수까지 포함한 전체 제작 비용과 토큰은 아직 측정하지 않았습니다. 이 수치는 연결된 생성 결과의 관측 비교입니다. 채택 광고 한 장당 원가와 별개입니다.</div>
+{work_notice}
 <p class="rule">동일 품질을 검증한 대조 실험이 아닙니다. 한쪽 기록이 조건을 충족하지 않으면 연결된 양쪽 기록을 함께 제외합니다. 연구 자료도 이 생성 비교에 포함될 수 있습니다.</p>
 <p class="ids">비교 ID: {_e(section['comparison_id'])} · 단가 기준: {_e(section['estimate_rate_version'])}<br>근거 수준: {_e(section['assurance'])}</p></section>'''
+
+
+_WORK_REASONS = {
+    "UNPAIRED_WORK": "비교 상대 또는 기준군·개선군 배정이 없습니다.",
+    "NOT_COMPLETED": "양쪽 작업의 명시적 완료가 필요합니다.",
+    "PRODUCT_MISMATCH": "제품이 다릅니다.", "QUALITY_MISMATCH": "품질 기준이 다릅니다.",
+    "STAGES_MISMATCH": "필수 제작 단계가 다릅니다.", "COST_MISSING": "비용이 일부 미확인입니다.",
+    "RATE_MISMATCH": "적용 단가 정책이 다르거나 미확인입니다.",
+    "DUPLICATE_FINAL_ARTIFACT": "동일 비교군의 최종 파일이 중복됐습니다.",
+    "NO_COMPARABLE_PAIRS": "비교 조건을 충족한 완료 쌍이 없습니다.",
+    "BASELINE_ZERO_COST": "기준군 비용이 0이므로 감소율을 계산할 수 없습니다.",
+}
+_WORK_STATES = {"OPEN": "진행 중", "COMPLETED": "완료", "CANCELLED": "취소"}
+_WORK_STAGES = {"prompt_build": "기획·프롬프트", "image_generation": "이미지 생성",
+                "review": "검수", "revision": "수정", "composition": "합성"}
+
+
+def _work_reasons(codes) -> str:
+    return '<ul class="reasons">' + ''.join(
+        f'<li>{_e(_WORK_REASONS.get(code, code))} <code>{_e(code)}</code></li>' for code in codes
+    ) + '</ul>' if codes else '<p class="good">같은 제품·품질·단계·단가 정책의 완료 쌍입니다.</p>'
+
+
+def _work_coverage(row: Mapping) -> str:
+    known, missing = row["known_usage_count"], row["missing_usage_count"]
+    denominator = known + missing
+    if not denominator:
+        return "미확인 · 관측 대상 API 호출 없음"
+    with localcontext(Context(prec=80, rounding=ROUND_HALF_EVEN)):
+        pct = usd_string(Decimal(known) * 100 / denominator)
+    return f'{_e(_decimal_text(pct).removesuffix(".00"))}% · {_number(known)} / {_number(denominator)}건'
+
+
+def _work_amount(total, known) -> str:
+    return f'{_money(total)}<small>확인된 부분합 {_money(known)}</small>'
+
+
+def _work_stage_table(stages) -> str:
+    rows = ''.join(
+        f'<tr><th scope="row">{_e(_WORK_STAGES.get(stage["stage"], stage["stage"]))}<small>{_e(stage["provider"])} / {_e(stage["model"])}</small></th>'
+        f'<td>{_number(stage["attempt_count"])}</td><td>{_work_coverage(stage)}</td>'
+        f'<td>{_number(stage["input_tokens"])} / {_number(stage["output_tokens"])}<small>부분합 {_number(stage["known_input_tokens"])} / {_number(stage["known_output_tokens"])}</small></td>'
+        f'<td>{_number(stage["cached_input_tokens"])} / {_number(stage["reasoning_tokens"])}</td>'
+        f'<td>{_work_amount(stage["estimated_total_usd"], stage["known_partial_estimated_usd"])}<small>미확인 {_number(stage["missing_cost_count"])}건</small></td></tr>'
+        for stage in stages)
+    return '<div class="source-table"><table><thead><tr><th scope="col">단계 / 공급자 / 모델</th><th scope="col">시도</th><th scope="col">토큰 관측률</th><th scope="col">입력 / 출력 토큰</th><th scope="col">캐시 / 추론 토큰</th><th scope="col">추정 비용</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+
+
+def _work_section(section: Mapping) -> str:
+    summary, comparison = section["summary"], section["comparison"]
+    cards = [
+        ("전체 작업의 누적 API 추정비용", _money(summary["estimated_total_usd"]),
+         "확인된 부분합 " + _money(summary["known_partial_estimated_usd"]) + f' · 비용 미확인 {_number(summary["missing_cost_count"])}건'),
+        ("실제 청구 금액", _money(summary["actual_total_usd"]),
+         "확인된 부분합 " + _money(summary["known_partial_actual_usd"])),
+        ("완료 광고 1건당 전체 생산비", _money(summary["cost_per_completed_ad_usd"]),
+         f'고유 최종 파일 {_number(summary["completed_ad_count"])}건 · 실패·취소·진행 비용 포함'),
+        ("작업 상태", f'완료 {_number(summary["completed_work_count"])}건',
+         f'진행 {_number(summary["open_work_count"])} / 취소 {_number(summary["cancelled_work_count"])} / 전체 {_number(summary["work_count"])}건'),
+    ]
+    stats = ''.join(f'<article class="stat"><div class="label">{label}</div><div class="value">{value}</div><small>{note}</small></article>'
+                    for label, value, note in cards)
+    work_rows, details = [], []
+    for work in section["works"]:
+        work_rows.append(
+            f'<tr><th scope="row">{_e(work["product_ref"])}<small>{_e(work["work_id"])}</small><small>쌍 {_number(work["task_pair_id"])} / {_number(work["arm"])}</small></th>'
+            f'<td>{_e(_WORK_STATES.get(work["status"], work["status"]))}<small>{_e(work["status"])}</small></td>'
+            f'<td>{_work_amount(work["estimated_total_usd"], work["known_partial_estimated_usd"])}</td>'
+            f'<td>{_work_amount(work["actual_total_usd"], work["known_partial_actual_usd"])}</td>'
+            f'<td>{_number(work["input_tokens"])} / {_number(work["output_tokens"])}<small>부분합 {_number(work["known_input_tokens"])} / {_number(work["known_output_tokens"])}</small></td>'
+            f'<td>{_work_coverage(work)}</td><td>{_number(work["failed_count"])} / {_number(work["revision_attempt_count"])}<small>대기 {_number(work["pending_count"])} · 미관측 이미지 {_number(work["unobserved_image_job_count"])}</small></td>'
+            f'<td><code>{_number(work["final_artifact_sha256"])}</code></td></tr>')
+        with localcontext(Context(prec=80, rounding=ROUND_HALF_EVEN)):
+            elapsed = sum((Decimal(str(item["receipt"]["elapsed_seconds"])) for item in work["attempts"]
+                           if item["receipt"] is not None and item["receipt"]["elapsed_seconds"] is not None), Decimal(0))
+        details.append(f'<details class="panel"><summary>{_e(work["product_ref"])} · 단계와 모델별 내역</summary>'
+            f'<p class="ids">작업 {_e(work["work_id"])} · 품질 기준 {_number(work["quality_policy_version"])}<br>단가 정책 {_e(", ".join(work["rate_versions"])) or "미확인"}</p>'
+            f'<p class="muted">관측된 호출 경과 시간 합계 {_e(format(elapsed, ".3f"))}초 · 작업의 실제 완료 시간과 다릅니다.</p>'
+            + _work_stage_table(work["stages"]) + '</details>')
+    pct = comparison["estimated_cost_reduction_pct"]
+    if pct is None:
+        metric, label, state = "산출 보류", "완료쌍 비용 감소율", "wait"
+    else:
+        increase = Decimal(pct) < 0
+        metric = _e(_decimal_text(Decimal(pct).copy_abs()).removesuffix(".00")) + "%"
+        label, state = ("완료쌍 비용 증가율", "increase") if increase else ("완료쌍 비용 감소율", "")
+    pair_rows = ''.join(
+        f'<tr><th scope="row">{label}</th>' + ''.join(
+            f'<td>{_number(comparison[arm][key]) if key == "completed_work_count" else _money(comparison[arm][key])}</td>'
+            for arm in ("baseline", "candidate")) + '</tr>'
+        for label, key in (("비교에 포함된 완료 작업", "completed_work_count"),
+                           ("포함된 작업의 추정비용", "total_estimated_cost_usd"),
+                           ("비교군의 완료 광고 1건당 비용", "estimated_cost_per_completed_ad_usd")))
+    excluded = ''.join(f'<tr><th scope="row">{_number(pair["task_pair_id"])}<small>{_e(", ".join(pair["work_ids"]))}</small></th><td>{_work_reasons(pair["reason_codes"])}</td></tr>'
+                       for pair in comparison["excluded_pairs"])
+    return f'''<section id="work-costs"><style>#work-costs .grid-two>.panel{{min-width:0}}#work-costs .source-table{{max-width:100%}}#work-costs .work-pair-table{{min-width:0;width:100%;table-layout:fixed}}#work-costs .work-pair-table th,#work-costs .work-pair-table td{{white-space:normal;overflow-wrap:anywhere}}</style><div class="section-head"><h2>광고 작업별 누적 비용</h2><p class="muted">기획부터 최종 파일까지 · 모델 API 비용 범위</p></div>
+<div class="stats">{stats}</div><p class="rule">취소·진행 중·실패·수정 비용을 전체 생산비에 포함합니다. 로컬 합성의 CPU·저장공간 가격과 실제 청구를 추정하지 않습니다. 캐시 할인은 반영하지 않은 단가표 추정입니다.</p>
+<p class="muted">누적 입력 {_number(summary['input_tokens'])} / 출력 {_number(summary['output_tokens'])} 토큰 · 확인된 부분합 {_number(summary['known_input_tokens'])} / {_number(summary['known_output_tokens'])}. 모델별 사용량은 아래 내역에서 확인하며 다른 모델을 같은 효율 단위로 비교하지 않습니다.</p>
+<div class="panel source-table"><table id="work-cost-table"><thead><tr><th scope="col">제품 / 작업</th><th scope="col">상태</th><th scope="col">누적 추정비용</th><th scope="col">실제 청구</th><th scope="col">입력 / 출력 토큰</th><th scope="col">토큰 관측률</th><th scope="col">실패 / 수정</th><th scope="col">최종 파일 SHA-256</th></tr></thead><tbody>{''.join(work_rows)}</tbody></table></div>
+{''.join(details)}<div class="section-head"><h3>조건이 같은 완료쌍 비교</h3><p class="muted">전체 생산비와 구분한 진단 비교</p></div><div class="grid-two"><article class="panel"><div class="metric"><strong class="{state}">{metric}</strong><span>{label}</span></div><div class="source-table"><table class="work-pair-table"><colgroup><col style="width:44%"><col style="width:28%"><col style="width:28%"></colgroup><thead><tr><th scope="col">비교 항목</th><th scope="col">기준군</th><th scope="col">개선군</th></tr></thead><tbody>{pair_rows}</tbody></table></div><p class="cash-note">포함된 완료쌍의 추정비용 차이 {_money(comparison['estimated_cost_difference_usd'])}. 제외 작업까지 포함한 전체 생산비 절감이나 실제 현금 절감은 아닙니다.</p></article>
+<article class="panel"><h3>비교 범위와 제외 사유</h3><p>비교 {_number(comparison['compared_pair_count'])}쌍 / 계획 {_number(comparison['planned_pair_count'])}쌍 · 제외 {_number(comparison['excluded_pair_count'])}쌍, {_number(comparison['excluded_work_count'])}작업</p>{_work_reasons(comparison['reason_codes'])}<div class="source-table"><table><thead><tr><th scope="col">작업 쌍 / 작업 ID</th><th scope="col">제외 사유</th></tr></thead><tbody>{excluded}</tbody></table></div></article></div>
+<p class="rule">완료는 최종 파일 hash·검수자·품질 정책의 명시적 선언입니다. 모델 검수 성공을 법적 승인이나 실제 팀 채택으로 해석하지 않습니다. 상세 영수증과 정확한 금액은 JSON에 함께 보존됩니다.</p></section>'''
 
 
 def render_report(report: Mapping) -> str:
@@ -367,30 +487,38 @@ def render_report(report: Mapping) -> str:
     research = overview["categories"]["research"]
     mode = "비교 보고서" if report["mode"] == "COMPARISON" else "수집 현황 · 비교 조건 미등록"
     generation = report.get("generation_comparison")
-    generation_section = _generation_section(generation) if generation is not None else ""
+    work = report.get("work_costs")
+    work_section = _work_section(work) if work is not None else ""
+    work_nav = '<a href="#work-costs">작업별 누적</a>' if work is not None else ""
+    work_hash = f'<br>Work dataset SHA-256: {_e(report["inputs"]["work_dataset_sha256"])}' if work is not None else ""
+    generation_section = _generation_section(generation, has_work=work is not None) if generation is not None else ""
     generation_nav = '<a href="#generation-comparison">생성 추정비용</a>' if generation is not None else ""
     generation_hash = (f"<br>Generation comparison SHA-256: {_e(report['inputs']['generation_comparison_sha256'])}"
                        if generation is not None else "")
     generation_footer = ("<p>생성당 추정비용은 관측 비교이며 최종 광고 완료까지의 비용은 미측정입니다. 채택 광고 지표의 산출 여부와 별도로 확인합니다.</p>"
                          if generation is not None else "")
+    if work is not None and generation is not None:
+        generation_footer = "<p>생성당 비교와 작업별 누적은 서로 다른 선언 자료의 지표입니다. 금액을 중복 합산하지 않습니다.</p>"
     generation_mode = "생성당 추정 비교 · 채택 광고 비교 미등록" if report["mode"] == "OVERVIEW" else "생성당 추정 비교 · 채택 광고 비교"
     hero = (f"<span class=\"eyebrow\">{generation_mode}</span><h1>생성 한 건의 추정비용</h1><p class=\"muted\">연결된 이미지 생성의 추정비용을 비교하고, 제외 기록과 근거 범위를 함께 확인합니다. 실제 청구와 채택 광고 원가는 별도 지표입니다.</p>"
             if generation is not None else f'<span class="eyebrow">{mode}</span><h1>광고 한 장의 비용</h1><p class="muted">추정 비용과 확인된 청구를 나누고, 같은 품질 기준에서 채택한 광고의 원가를 비교합니다. 미확인 비용과 채택은 0으로 채우지 않습니다.</p>')
+    if work is not None:
+        hero = '<span class="eyebrow">광고 제작 원장</span><h1>광고 한 건, 완료까지의 비용</h1><p class="muted">기획·이미지·검수·반복 수정·합성을 한 작업으로 묶어 봅니다. 빠진 사용량과 비용은 미확인으로 남기고, 완료쌍 비교와 전체 생산비를 함께 확인합니다.</p>'
     return f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; script-src 'none'; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
 <title>BeautyAI · 광고 비용 보고서</title><style>{_CSS}</style></head><body>
-<header><div class="brand">BEAUTYAI<small>COST OBSERVATORY</small></div><nav aria-label="보고서 탐색">{generation_nav}<a href="#overview">수집 현황</a><a href="#comparison">원가 비교</a><a href="#research">연구비</a><a href="#sources">출처</a></nav><a class="download" href="report.json" download>JSON 내려받기 ↗</a></header>
+<header><div class="brand">BEAUTYAI<small>COST OBSERVATORY</small></div><nav aria-label="보고서 탐색">{work_nav}{generation_nav}<a href="#overview">수집 현황</a><a href="#comparison">원가 비교</a><a href="#research">연구비</a><a href="#sources">출처</a></nav><a class="download" href="report.json" download>JSON 내려받기 ↗</a></header>
 <main><div class="hero">{hero}</div>
-<div class="notice"><strong>{marker}</strong>{notice}</div><div class="stats">{cards}</div>
+<div class="notice"><strong>{marker}</strong>{notice}</div>{work_section}<div class="stats">{cards}</div>
 <div class="scope"><span>비용 범위 <b>{_e(', '.join(scope['cost_scope'])) or '기록 없음'}</b></span><span>기간 <b>{_number(scope['accounting_window_id'])}</b></span><span>품질 기준 <b>{_number(scope['quality_policy_version'])}</b></span><span>비교 단가 기준 <b>{_number(scope['estimate_rate_version'])}</b></span></div>
 {generation_section}<section id="overview"><div class="section-head"><h2>어디까지 확인됐나요?</h2><p class="muted">전체 수집 자료 · 생산비와 연구비 포함</p></div><div class="grid-two">{_coverage_panel(overview['estimated'], '추정 비용')}{_coverage_panel(overview['actual'], '실제 청구')}</div><p class="rule">관측 단가 기준: {_e(', '.join(scope['observed_rate_versions'])) or '미확인'}. 각 항목의 단가 근거는 아래 출처에서 확인할 수 있습니다.</p><p class="rule">금액이 있어도 부분 청구는 완결 비용이 아닙니다. 알려진 부분합은 전체 비용을 뜻하지 않습니다.</p></section>
 <section id="comparison"><div class="section-head"><h2>채택 광고 한 장당 원가</h2><p class="muted">선언된 생산비 범위 · 연구비 제외</p></div><div class="grid-two">{_comparison_panel(comparison['estimated'], '추정 비용 기준', '단가표 기반 추정')}{_comparison_panel(comparison['actual'], '실제 청구 기준', '청구 근거 연결')}</div><p class="rule">채택 수, 품질 기준, 비용 완전성, 제품별 채택 비중이 비교 조건을 충족할 때만 감소율을 표시합니다. 재사용 횟수는 절감액으로 더하지 않습니다.</p></section>
 <section id="research"><div class="section-head"><h2>연구비는 따로 봅니다</h2><p class="muted">{_number(research['cost_item_count'])}건 · 생산 원가와 감소율에 포함하지 않음</p></div><div class="grid-two research">{_coverage_panel(research['estimated'], '연구비 · 추정')}{_coverage_panel(research['actual'], '연구비 · 실제 청구')}</div></section>
-<section id="sources"><div class="section-head"><h2>기록의 출처</h2><p class="muted">원본 별칭과 해시 · 최신 비용 이력</p></div><div class="panel">{sources}<details><summary>입력 식별 정보</summary><p class="ids">Dataset SHA-256: {_e(report['inputs']['dataset_sha256'])}<br>Comparison SHA-256: {_number(report['inputs']['comparison_sha256'])}{generation_hash}</p></details></div></section>
+<section id="sources"><div class="section-head"><h2>기록의 출처</h2><p class="muted">원본 별칭과 해시 · 최신 비용 이력</p></div><div class="panel">{sources}<details><summary>입력 식별 정보</summary><p class="ids">Dataset SHA-256: {_e(report['inputs']['dataset_sha256'])}<br>Comparison SHA-256: {_number(report['inputs']['comparison_sha256'])}{generation_hash}{work_hash}</p></details></div></section>
 </main><footer>{generation_footer}<p>범위 권위: {_e(scope['scope_authority'])} · 품질 권위: {_e(scope['quality_authority'])}. 선언된 근거이며 계정 전체의 청구나 검수 진위를 인증하지 않습니다.</p><p>환산 차이는 실제 현금 절감액이나 연구비를 포함한 순이익이 아닙니다.</p><p class="ids">Report ID: {_e(report['report_id'])}<br>{_e(report['schema_version'])} · {_e(report['contract_version'])}</p></footer></body></html>'''
 
 
-def _read_json(path: Path) -> dict:
+def _read_json(path: Path, *, work: bool = False) -> dict:
     def unique(pairs):
         result = {}
         for key, value in pairs:
@@ -402,14 +530,17 @@ def _read_json(path: Path) -> dict:
     def invalid_constant(_):
         raise ValueError("COST_REPORT_JSON_INVALID")
 
+    limit = _MAX_WORK_JSON_BYTES if work else _MAX_JSON_BYTES
     descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0))
     with os.fdopen(descriptor, "rb") as source:
         info = os.fstat(source.fileno())
-        if not stat.S_ISREG(info.st_mode) or info.st_size > _MAX_JSON_BYTES:
-            raise ValueError("COST_REPORT_INPUT_INVALID")
-        raw = source.read(_MAX_JSON_BYTES + 1)
-    if len(raw) > _MAX_JSON_BYTES:
-        raise ValueError("COST_REPORT_INPUT_INVALID")
+        if not stat.S_ISREG(info.st_mode) or info.st_size > limit:
+            raise ValueError("WORK_INPUT_TOO_LARGE" if work else "COST_REPORT_INPUT_INVALID")
+        raw = source.read(limit + 1)
+    if len(raw) > limit:
+        raise ValueError("WORK_INPUT_TOO_LARGE" if work else "COST_REPORT_INPUT_INVALID")
+    if work:
+        return parse_work_json(raw)
     return json.loads(raw.decode("utf-8"), object_pairs_hook=unique, parse_constant=invalid_constant)
 
 
@@ -431,9 +562,11 @@ def _write_atomic(path: Path, content: bytes) -> None:
 
 def write_report(dataset: Mapping, comparison: Mapping | None = None,
                  output: str | Path = "outputs/finops-report", *,
-                 generation_comparison: Mapping | None = None) -> dict:
+                 generation_comparison: Mapping | None = None,
+                 work_dataset: Mapping | None = None) -> dict:
     """Write deterministic JSON and HTML locally; return paths and report ID."""
-    report = build_report(dataset, comparison, generation_comparison=generation_comparison)
+    report = build_report(dataset, comparison, generation_comparison=generation_comparison,
+                          work_dataset=work_dataset)
     content, page = canonical_bytes(report), render_report(report).encode("utf-8")
     root = Path(output).expanduser()
     if root.is_symlink() or (root.exists() and not root.is_dir()):
@@ -450,32 +583,53 @@ def write_report(dataset: Mapping, comparison: Mapping | None = None,
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", required=True, type=Path)
+    parser.add_argument("--dataset", type=Path)
     parser.add_argument("--comparison", type=Path)
     parser.add_argument("--generation-comparison", type=Path)
+    work_source = parser.add_mutually_exclusive_group()
+    work_source.add_argument("--work-dataset", type=Path)
+    work_source.add_argument("--work-ledger", type=Path)
+    parser.add_argument("--work-project")
+    parser.add_argument("--work-rates", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--wandb", action="store_true", help="Explicitly publish the cost report to private W&B")
     parser.add_argument("--wandb-entity")
     parser.add_argument("--wandb-project")
     args = parser.parse_args(argv)
+    if args.dataset is None and args.work_dataset is None and args.work_ledger is None:
+        parser.error("the following arguments are required: --dataset")
+    if args.work_ledger is not None and args.work_project is None:
+        parser.error("--work-ledger requires --work-project")
+    if args.work_ledger is None and (args.work_project is not None or args.work_rates is not None):
+        parser.error("--work-project/--work-rates require --work-ledger")
     if args.wandb and not (args.wandb_entity and args.wandb_project):
         parser.error("--wandb requires --wandb-entity and --wandb-project")
     if not args.wandb and (args.wandb_entity or args.wandb_project):
         parser.error("--wandb-entity/--wandb-project require --wandb")
     try:
-        inputs = [path for path in (args.dataset, args.comparison, args.generation_comparison) if path is not None]
+        inputs = [path for path in (args.dataset, args.comparison, args.generation_comparison,
+                                   args.work_dataset, args.work_ledger, args.work_rates) if path is not None]
         for target in (args.output / "report.json", args.output / "index.html"):
             for source in inputs:
                 if target.resolve() == source.resolve() or (target.exists() and os.path.samefile(target, source)):
                     raise ValueError("COST_REPORT_INPUT_OVERWRITE")
-        dataset = _read_json(args.dataset)
+        dataset = (_read_json(args.dataset) if args.dataset is not None else
+                   {"schema_version": "beautyai-cost-dataset-v1", "cost_items": [], "batches": [], "acceptances": []})
         comparison = _read_json(args.comparison) if args.comparison else None
         generation_comparison = _read_json(args.generation_comparison) if args.generation_comparison else None
-        paths = write_report(dataset, comparison, args.output, generation_comparison=generation_comparison)
+        work_dataset = _read_json(args.work_dataset, work=True) if args.work_dataset else None
+        if args.work_ledger is not None:
+            from .work_ledger import read_work_dataset
+            rates = _read_json(args.work_rates, work=True) if args.work_rates else None
+            work_dataset = read_work_dataset(args.work_ledger, args.work_project, rates)
+        paths = write_report(dataset, comparison, args.output, generation_comparison=generation_comparison,
+                             work_dataset=work_dataset)
     except (ValueError, OSError, UnicodeError, RecursionError) as exc:
         reason = str(exc)
-        code = reason if re.fullmatch(r"COST_[A-Z_]+", reason) else "COST_REPORT_INVALID"
+        code = reason if re.fullmatch(r"(?:COST|WORK)_[A-Z_]+", reason) else "COST_REPORT_INVALID"
         parser.exit(2, code + "\n")
+    except GatewayError as exc:
+        parser.exit(2, (exc.code if re.fullmatch(r"WORK_[A-Z_]+", exc.code) else "COST_REPORT_INVALID") + "\n")
     response = {"status": "LOCAL_REPORT_WRITTEN", **paths, "new_provider_calls": 0}
     exit_code = 0
     if args.wandb:
@@ -490,14 +644,15 @@ def main(argv: list[str] | None = None) -> int:
             if response["wandb_status"] != "READBACK_VERIFIED":
                 exit_code = 2
                 code = receipt.get("error_code", "WANDB_COST_READBACK_INCOMPLETE")
-                response["wandb_error_code"] = (code if isinstance(code, str) and re.fullmatch(r"WANDB_[A-Z_]+", code)
+                response["wandb_error_code"] = (code if isinstance(code, str) and (re.fullmatch(r"WANDB_[A-Z_]+", code)
+                                                                                 or code == "WORK_WANDB_COUNT_RANGE")
                                                 else "WANDB_COST_READBACK_INCOMPLETE")
         except Exception as exc:
             # Optional integration failures must not expose SDK/path/credential
             # exception text or obscure the already-written local report.
             code = str(exc)
             response["wandb_status"] = "INCOMPLETE"
-            response["wandb_error_code"] = (code if re.fullmatch(r"WANDB_[A-Z_]+", code)
+            response["wandb_error_code"] = (code if re.fullmatch(r"WANDB_[A-Z_]+", code) or code == "WORK_WANDB_COUNT_RANGE"
                                             else "WANDB_COST_SYNC_FAILED")
             exit_code = 2
     print(json.dumps(response, ensure_ascii=False, sort_keys=True))

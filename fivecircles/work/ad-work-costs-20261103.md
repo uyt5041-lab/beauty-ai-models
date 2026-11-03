@@ -14,8 +14,8 @@
 | W0 | 계약·검토·기반 | PASS |
 | W1 | work원장·검증·순수누적 | PASS |
 | W2 | 텍스트/이미지/API/재시작 연결 | PASS |
-| W3 | 보고서·W&B | IN_PROGRESS |
-| W4 | 전체흐름·실제W&B·PR·CI·merge | PENDING |
+| W3 | 보고서·W&B | PASS |
+| W4 | 전체흐름·실제W&B·PR·CI·merge | IN_PROGRESS |
 
 공통권한은기존bearer→project이며새stage/complete/receipt는프로젝트경계를검증한다. APItoken/사진/원시프롬프트를새영수증에저장하지않는다.
 실제모델유료호출은하지않고mockE2E를사용한다. W&B검증자료는가상자료임을표시한다. 배포/GCP인수는이작업merge와구분한다.
@@ -41,3 +41,9 @@ HIGH/FULL, 5단계 독립 검토와 중요한 지적의 같은 검토자 재확�
 W2 code review의 local 잘못된 입력 PENDING 잔존·동시 inbox소비 오탐을 고쳤고 독립 재확인 PASS. strict gateway terminal 재호출 guard는 구조/비평/준비도 범위를 재사용 검토한 뒤 추가했다. 외부API 기본동작은 유지한다.
 관련 회귀 포함 315 passed in 4.72s. 로컬 test/모의 HTTP까지만 검증했고 서비스 배포 NOT_RUN; 배포가 없는 라이브러리/API 패키지 반영이므로 CD는 NOT_APPLICABLE이다.
 CONTINUE_WITH_NEXT_FORM=W3: 저장된 이력→보고서→W&B 연결. 모델 호출은 추가하지 않는다.
+
+## W3 완료
+보고서/CLI와 W&B work_costs·work_stage_usage 및 summary 연결. 기존 미지정 report ID/JSON/HTML 바이트를 유지하고 새 입력 hash를 추가했다. 모델별 토큰/실패·수정/누락/부분합/완료쌍·제외를 표시한다. pair 판정은 공통 compare_work_rows를 재사용한다.
+독립 code review의 명시 receipt 금액 변조·조건 불일치 비교 위조 입력을 거절하도록 고쳤고 정상 입력과 함께 재확인했다. report에는 가격 snapshot 원문이 없어 외부 요율 진위까지 인증한다고 쓰지 않는다.
+브라우저 실제1482px/390px 확인. 신규 비교표가 모바일846px로 넘치는 FAIL을 발견해 새 work section에만 scoped style을 적용했다. 재검증 documentWidth390, viewport390, 완료쌍3열 전체 표시/넓은 상세표 내부 scroll 확인. screenshot은 로컬 outputs/work-costs-20261103/W3-*.
+340 passed in 1.61s. 원격 W&B 게시/정확한 readback은 다음W4. 배포 NOT_RUN, CD NOT_APPLICABLE(검증용 정적 HTML/라이브러리). CONTINUE_WITH_NEXT_FORM=W4: 독립 모의 예제→전체검증→실제W&B→PRmerge.

@@ -640,5 +640,5 @@ FIN-G0~3 완료 검증: 전체2030 tests PASS, 20건/6건제외 화면·W&B실�
 - [x] WORK-0: work/receipt/완료/가격/표시/PR 계약 검토.
 - [x] WORK-1: 영속 원장·project 격리·중복/재시작·작업/단계/model 누적.
 - [x] WORK-2: SDK 기획/검수/수정과 이미지/HTTP/외부영수증 연결, 실패/재사용/완료 관측.
-- [ ] WORK-3: 전체 제작 화면·W&B summary/Table·완료쌍 비교와 제외 표시.
+- [x] WORK-3: 전체 제작 화면·W&B summary/Table·완료쌍 비교와 제외 표시.
 - [ ] WORK-4: 모의 전체 제작·실제 W&B 재조회·단계별/전체 테스트 후 PR→feature/image-model merge.

@@ -256,3 +256,6 @@ W&B·실험별 상태는 유지하고 계정 예산만 별도 SQLite로 공유�
 
 ## 2026-11-03 · AD-WORK-COSTS W2
 - 텍스트/이미지/외부영수증API와 work_id 연결, 저장실패 복구·재호출 차단 및 모의전과정 통과. [작업 근거](ad-work-costs-20261103.md). 서버 배포/팀사용 인수는 별도다.
+
+## 2026-11-03 · AD-WORK-COSTS W3
+- 누적 제작 화면/W&B 새표와 strict readback 구현. 기존 report 호환, 단위회귀·모바일390px UI 통과. 원격 검증은 W4. [작업 근거](ad-work-costs-20261103.md).
