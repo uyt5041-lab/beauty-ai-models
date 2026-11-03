@@ -1,0 +1,20 @@
+{
+  "journal_headings": 8,
+  "journal_progress": {
+    "value": 67,
+    "max": 206
+  },
+  "journal_broken_images": 0,
+  "clicked_full_todo_html": true,
+  "full_todo": {
+    "title": "전체 TODO 진행률",
+    "progress": [
+      {
+        "value": 67,
+        "max": 206
+      }
+    ],
+    "text": "전체 이미지 TODO와 진행률\n\n2026-11-02 · 일지 체크 67/206개 · 32.5%\n\n이후 계획도 표시하되 미리 체크하지 않습니다. 제품 완성률과 구분합니다.\n\n최종 완료 체크\n T001 · SSOT-01~12의 필수 기능과 평가셋이 위 1~4단계의 합의한 기준을 통과했다. "
+  },
+  "selector_recovery": "Relative href locator did not match; inspected current page and used observed CSS href."
+}
