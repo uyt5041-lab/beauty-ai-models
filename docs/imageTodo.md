@@ -642,4 +642,6 @@ FIN-G0~3 완료 검증: 전체2030 tests PASS, 20건/6건제외 화면·W&B실�
 - [x] WORK-1: 영속 원장·project 격리·중복/재시작·작업/단계/model 누적.
 - [x] WORK-2: SDK 기획/검수/수정과 이미지/HTTP/외부영수증 연결, 실패/재사용/완료 관측.
 - [x] WORK-3: 전체 제작 화면·W&B summary/Table·완료쌍 비교와 제외 표시.
-- [ ] WORK-4: 모의 전체 제작·실제 W&B 재조회·단계별/전체 테스트 후 PR→feature/image-model merge.
+- [x] WORK-4: 모의 전체 제작·실제 W&B 재조회·단계별/전체 테스트 후 PR→feature/image-model merge.
+
+WORK-4 Git 완료: [PR #1](https://github.com/uyt5041-lab/beauty-ai-models/pull/1)이 `feature/image-model`에 merge됐다. merge SHA `f3bf03977ce2cf0f63b9b4ab4c3a4d5d34b7dab6`, 구현 head `9eee5b9`. 전체2335 tests PASS, PRIVATE W&B 두 번 readback·중복 업로드0 확인. 팀 서비스 적용은 FIN-TEAM 미완료로 유지한다.

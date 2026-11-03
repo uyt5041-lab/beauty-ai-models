@@ -1,6 +1,6 @@
 # 광고 작업 비용 구조와 데이터 흐름
 
-2026-11-03. W1 원장·집계, W2 SDK·이미지·내부 API와 W3 JSON/HTML·W&B 연결을 구현하고 로컬·mock 검증을 통과했다. W4에서 합성 자료의 PRIVATE W&B 원격 게시와 정확한 readback을 확인했다. PR/merge는 진행 중이다. 사용법은 [adWorkCosts.md](adWorkCosts.md), 정확한 입력·출력은 [work 비용 계약](../fivecircles/architecture/contract/ad-work-costs.md)이 원본이다.
+2026-11-03. W1 원장·집계, W2 SDK·이미지·내부 API와 W3 JSON/HTML·W&B 연결을 구현하고 로컬·mock 검증을 통과했다. W4에서 합성 자료의 PRIVATE W&B 원격 게시와 정확한 readback을 확인했다. PR #1 merge를 완료했다. 사용법은 [adWorkCosts.md](adWorkCosts.md), 정확한 입력·출력은 [work 비용 계약](../fivecircles/architecture/contract/ad-work-costs.md)이 원본이다.
 
 ## 모듈 의존성과 저장 책임
 

@@ -1,6 +1,6 @@
 # 광고 작업 흐름 목표·현재 검증 · 2026-11-03
 
-2026-11-03 · W1–W3 로컬/mock PASS · W4 PRIVATE W&B 2회 READBACK_VERIFIED(2회차 deduplicated=true). PR/merge는 진행 중이며 기능 노드가 아니다.
+2026-11-03 · W1–W3 로컬/mock PASS · W4 PRIVATE W&B 2회 READBACK_VERIFIED(2회차 deduplicated=true). [PR #1](https://github.com/uyt5041-lab/beauty-ai-models/pull/1) merge 완료. Git 반영은 기능 흐름과 별도 영수증으로 확인했다.
 
 ## 목표 흐름
 

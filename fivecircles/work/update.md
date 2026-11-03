@@ -262,3 +262,6 @@ W&B·실험별 상태는 유지하고 계정 예산만 별도 SQLite로 공유�
 
 ## 2026-11-03 · AD-WORK-COSTS W4 검증
 - 전체2335 tests PASS, SDK/mock12시도와 실제 W&B 두 표/summary/원본 재조회·중복 게시 방지 통과. [검증/범위](ad-work-costs-20261103.md), [최종 흐름](ad-work-flow-20261103.md). PR merge는 다음 영수증에서 기록한다.
+
+## 2026-11-03 · AD-WORK-COSTS Git 완료
+- [PR #1](https://github.com/uyt5041-lab/beauty-ai-models/pull/1) merged → feature/image-model, merge f3bf03977ce2cf0f63b9b4ab4c3a4d5d34b7dab6. 완료 체크·영수증 갱신. 전체2335 tests PASS/원격CI미설정/W&B 재조회2회. 배포는 수행하지 않았다.

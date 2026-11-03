@@ -15,7 +15,7 @@
 | W1 | work원장·검증·순수누적 | PASS |
 | W2 | 텍스트/이미지/API/재시작 연결 | PASS |
 | W3 | 보고서·W&B | PASS |
-| W4 | 전체흐름·실제W&B·PR·CI·merge | VALIDATED_AWAITING_MERGE |
+| W4 | 전체흐름·실제W&B·PR·CI·merge | PASS |
 
 공통권한은기존bearer→project이며새stage/complete/receipt는프로젝트경계를검증한다. APItoken/사진/원시프롬프트를새영수증에저장하지않는다.
 실제모델유료호출은하지않고mockE2E를사용한다. W&B검증자료는가상자료임을표시한다. 배포/GCP인수는이작업merge와구분한다.
@@ -48,7 +48,7 @@ CONTINUE_WITH_NEXT_FORM=W3: 저장된 이력→보고서→W&B 연결. 모델 �
 브라우저 실제1482px/390px 확인. 신규 비교표가 모바일846px로 넘치는 FAIL을 발견해 새 work section에만 scoped style을 적용했다. 재검증 documentWidth390, viewport390, 완료쌍3열 전체 표시/넓은 상세표 내부 scroll 확인. screenshot은 로컬 outputs/work-costs-20261103/W3-*.
 340 passed in 1.61s. 원격 W&B 게시/정확한 readback은 다음W4. 배포 NOT_RUN, CD NOT_APPLICABLE(검증용 정적 HTML/라이브러리). CONTINUE_WITH_NEXT_FORM=W4: 독립 모의 예제→전체검증→실제W&B→PRmerge.
 
-## W4 검증 완료 · Git 반영 대기
+## W4 검증 완료
 전체2335 tests PASS(-q -W error,36.58s), 설정/링크 검사 PASS, diff 검사 PASS. 실제 OpenAI SDK3.36.0을 MockTransport로 시험했고 구형 선택 생성인자도 모의 회귀로 보호했다. 실제2.x 설치 시험은 하지 않았다.
 최종 검토에서 새 입장이 project export 한도를 넘길 수 있는 문제를 고쳤다. work 생성과 attempt/미관측binding의 합산 기록 용량을 transaction에서 검사한다. binding은 모델 호출 전 기록 슬롯을 선점하고, 늦은 영수증 전환은 증가0이어서 옛 한도 초과DB에서도 보존한다. 금전 예약과는 별개다. 독립 구조/준비도 보완 검토 및7개 용량 회귀 PASS.
 텍스트 request ID는 HTTP x-request-id다. body 응답 ID를 요청 ID로 바꾸지 않는 계약과 headerless 시험을 추가했다.
@@ -59,4 +59,9 @@ PRIVATE W&B compare-e236da2f35e68cac2d06에서 report.json·work_costs·work_sta
 
 [목표/현재 흐름](ad-work-flow-20261103.md)과 PNG/HTML을 갱신하고 실제 브라우저에서 두 이미지/범례/차이/우선순위 표를 확인했다. 비용 화면은1482px/390px 검증했고390px 넘침을 수정했다.
 Graft wiring139files/2574nodes를 저장했다. deep layer는 이번에 LLM 호출로 재생성하지 않았으며 기존 deep summaries stale 경고와 구조 graph를 구분한다. 필요한 원문은 별도 확인했다.
-현 단계 미완료는 PR→feature/image-model merge와 그 영수증뿐이다. 팀 서비스 배포·외부 텍스트 서비스 적용·실제 청구/품질 인수는 범위 밖(NOT_RUN). 배포 CD NOT_APPLICABLE: 서비스 재시작/배포 요청 없는 라이브러리·검증보고서 전달.
+이 시점의 Git 대기는 아래 최종 영수증으로 완료했다. 팀 서비스 배포·외부 텍스트 서비스 적용·실제 청구/품질 인수는 범위 밖(NOT_RUN). 배포 CD NOT_APPLICABLE: 서비스 재시작/배포 요청 없는 라이브러리·검증보고서 전달.
+
+## 최종 Git 영수증
+[PR #1](https://github.com/uyt5041-lab/beauty-ai-models/pull/1), head 9eee5b9897e4240d4716fe69cc3564ab396ebd6a → feature/image-model. GitHub가 merged=true, merge SHA f3bf03977ce2cf0f63b9b4ab4c3a4d5d34b7dab6로 응답했고 원격 PR 상태를 재확인했다. 변경요청/미해결 review thread는 없고 원격 CI check는 설정되지 않아0개다(CI PASS로 표기하지 않음).
+본 마감은 source 변경 없이 체크리스트·영수증만 fast-forward push한다. 기존 공유 checkout의 R2 변경과 로컬 branch는 보존했다. 실제 팀 배포/청구 대사/품질 효과 인수는 범위 밖이다.
+릴레이 STOP_WITH_REASON=사용자가 요청한 work 기록/표시·검증·원격머지 완료. 다음 후보는 FIN-TEAM의 실제 서빙 적용이며 담당자 배포/인수 범위이므로 자동 확장하지 않는다.
