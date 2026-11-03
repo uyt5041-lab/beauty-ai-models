@@ -172,3 +172,17 @@ PRIVATE 프로젝트와 같은 보고서 ID의 run을 확인한다. `work_costs`
 JSON의 금액은 소수 9자리 문자열이며 W&B 표시에서만 숫자로 변환한다. 새 표·summary의 개별 토큰/count나 합계가 `2^53`을 넘으면 network/init 전에 `WORK_WANDB_COUNT_RANGE`로 거절한다. 로컬 JSON/HTML의 정확한 큰 정수는 유지한다. 미확인 값은 0으로 게시하지 않는다.
 
 가상 전과정 검증 자료는 `data_kind=SYNTHETIC_FIXTURE`로 구분한다. 실제 선언 자료와 혼합하면 `DECLARED_DATA`다. 가상 게시·SDK 시험·PR merge는 실제 팀 서빙 배포, 외부 텍스트 서비스 적용, 광고 품질이나 비용 절감 효과 검증과 별도다.
+
+## 실행 가능한 모의 예제
+
+저장소 루트에서 실행한다. 출력 폴더는 새 경로를 쓴다.
+
+```bash
+python -m examples.run_ad_work --output outputs/ad-work-demo
+```
+
+모든 모델 요청은 MockTransport로 처리한다. 애플리케이션은 실제 키나 환경 파일을 읽지 않고 가상 인증값·고정 endpoint를 사용한다. SDK가 내부적으로 환경의 custom headers를 조회할 수 있어도 실제 외부 전송 경로는 없다. 구형 SDK 선택 인자는 지원 여부를 확인한다.
+
+예제는 기준 작업·개선 작업·취소 작업·진행 작업을 만든다. 기획→생성→검수 실패→수정→재생성→PNG 합성→명시적 완료와 재시작·재사용을 확인한다. `report/index.html`에서 누적 비용을 보고 `execution.json`, `work-dataset.json`으로 근거를 확인한다. 예제 단가는 계산 검증용이며 실제 OpenAI 가격이 아니다.
+
+2026-11-03 검증 자료는 4작업·12시도다. 텍스트 SDK mock7회, 이미지 POST mock3회, 재사용2회, 유료 모델 호출0회다. 실제 W&B [검증 run](https://forge.coreweave.com/wandb/uyt5041-alphaflower/beautyai-image-experiments/runs/compare-e236da2f35e68cac2d06)에서 JSON·두 work 표·summary를 재조회했다. 같은 자료를 다시 동기화하면 업로드를 반복하지 않는다. 가상 자료의 감소율은 실제 광고 품질이나 현금 절감 효과가 아니다.

@@ -1,0 +1,21 @@
+{
+  "schema_version": "beautyai-ad-work-demo-v1",
+  "data_kind": "SYNTHETIC_FIXTURE",
+  "fixture_ref": "synthetic-ad-work-lifecycle-v1",
+  "description": "설치된 SDK의 모의 전송으로 제작 원장 전체 흐름을 검증하는 가상 자료입니다. 광고 품질·실제 청구·공급자 가격·비용 절감 효과를 증명하지 않습니다.",
+  "text_model": "synthetic-text-model",
+  "text_cases": [
+    {"case_ref": "baseline-plan", "operation": "draft_campaign", "prompt_version": "plan-v1", "input_tokens": 10, "output_tokens": 4, "response": "valid"},
+    {"case_ref": "baseline-review-failed", "operation": "review_copy", "prompt_version": "review-v1", "input_tokens": 3, "output_tokens": 2, "response": "schema_invalid"},
+    {"case_ref": "baseline-review", "operation": "review_copy", "prompt_version": "review-v2", "input_tokens": 5, "output_tokens": 3, "response": "valid"},
+    {"case_ref": "baseline-revision", "operation": "rewrite_copy", "prompt_version": "revision-v1", "input_tokens": 7, "output_tokens": 4, "response": "valid"},
+    {"case_ref": "candidate-plan", "operation": "draft_campaign", "prompt_version": "plan-v1", "input_tokens": 8, "output_tokens": 3, "response": "valid"},
+    {"case_ref": "candidate-review", "operation": "review_copy", "prompt_version": "review-v1", "input_tokens": 4, "output_tokens": 2, "response": "valid"},
+    {"case_ref": "cancelled-review", "operation": "review_copy", "prompt_version": "review-v1", "input_tokens": 2, "output_tokens": 1, "response": "schema_invalid"}
+  ],
+  "image_cases": [
+    {"case_ref": "baseline-image", "input_tokens": 20, "output_tokens": 30, "color": [220, 230, 240]},
+    {"case_ref": "baseline-revised", "input_tokens": 25, "output_tokens": 35, "color": [235, 215, 195]},
+    {"case_ref": "candidate-image", "input_tokens": 18, "output_tokens": 25, "color": [215, 235, 220]}
+  ]
+}

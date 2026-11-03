@@ -111,6 +111,8 @@ class AdWorkLedger:
                     FOREIGN KEY(project_id,attempt_id) REFERENCES ad_attempts(project_id,attempt_id))""")
                 db.execute("""CREATE UNIQUE INDEX IF NOT EXISTS ad_bound_attempt
                     ON ad_image_bindings(project_id,attempt_id) WHERE attempt_id IS NOT NULL""")
+                db.execute("""CREATE INDEX IF NOT EXISTS ad_unobserved_job
+                    ON ad_image_bindings(project_id,work_id) WHERE attempt_id IS NULL""")
                 db.execute(f"PRAGMA user_version={_SCHEMA_VERSION}")
         except (OSError, sqlite3.Error, ValueError, TypeError):
             raise _error("WORK_STORAGE_ERROR") from None
@@ -175,6 +177,9 @@ class AdWorkLedger:
                 if any(work[key] != value for key, value in spec.items()):
                     raise _error("WORK_SPEC_CONFLICT")
                 return work
+            if db.execute("SELECT count(*) FROM ad_works WHERE project_id=?",
+                          (project_id,)).fetchone()[0] >= contracts.MAX_WORKS:
+                raise _error("WORK_LIMIT")
             if spec["task_pair_id"] is not None and db.execute(
                     "SELECT 1 FROM ad_works WHERE project_id=? AND task_pair_id=? AND arm IS ?",
                     (project_id, spec["task_pair_id"], spec["arm"])).fetchone():
@@ -202,8 +207,23 @@ class AdWorkLedger:
         return {key: value for key, value in identity.items()
                 if key not in {"project_id", "work_id", "started_at"}}
 
+    @staticmethod
+    def _admit_slot(db, project_id, work_id):
+        # A bound, unobserved image job reserves metadata capacity before SDK IO.
+        # This is independent of financial reservations in AccountBudgetStore.
+        for owner, maximum in ((None, contracts.MAX_RECEIPTS),
+                               (work_id, contracts.MAX_ATTEMPTS_PER_WORK)):
+            suffix = " AND work_id=?" if owner is not None else ""
+            params = (project_id, owner) if owner is not None else (project_id,)
+            attempts = db.execute("SELECT count(*) FROM ad_attempts WHERE project_id=?" + suffix,
+                                  params).fetchone()[0]
+            unobserved = db.execute("SELECT count(*) FROM ad_image_bindings WHERE project_id=?"
+                                    + suffix + " AND attempt_id IS NULL", params).fetchone()[0]
+            if attempts + unobserved >= maximum:
+                raise _error("WORK_LIMIT")
+
     def _start(self, db, project_id, work_id, spec, *, allow_closed=False, started_at=None,
-               reject_repeated_request=False):
+               reject_repeated_request=False, consumes_binding=False):
         work = self._work(db, project_id, work_id)
         row = db.execute("SELECT work_id,data FROM ad_attempts WHERE project_id=? AND attempt_id=?",
                          (project_id, spec["attempt_id"])).fetchone()
@@ -221,10 +241,8 @@ class AdWorkLedger:
             if row is None:
                 raise _error("WORK_PARENT_CONFLICT")
             parent = _decode(row["data"], contracts.normalize_attempt)
-        count = db.execute("SELECT count(*) FROM ad_attempts WHERE project_id=? AND work_id=?",
-                           (project_id, work_id)).fetchone()[0]
-        if count >= contracts.MAX_ATTEMPTS_PER_WORK:
-            raise _error("WORK_LIMIT")
+        if not consumes_binding:
+            self._admit_slot(db, project_id, work_id)
         if spec["provider"] != "local" and spec["stage"] != "image_generation":
             for pending in db.execute("""SELECT a.data,r.data AS receipt FROM ad_attempts a
                     LEFT JOIN ad_receipts r USING(project_id,attempt_id)
@@ -317,6 +335,7 @@ class AdWorkLedger:
                     raise _error("WORK_BINDING_CONFLICT")
                 return
             self._open(work)
+            self._admit_slot(db, project_id, work_id)
             db.execute("INSERT INTO ad_image_bindings VALUES (?,?,?,NULL)",
                        (project_id, job_id, work_id))
 
@@ -358,7 +377,8 @@ class AdWorkLedger:
                 raise _error("WORK_BINDING_CONFLICT")
             self._start(db, project_id, work_id, self._attempt_spec(identity),
                         allow_closed=work["status"] == "CANCELLED",
-                        started_at=identity.get("started_at"))
+                        started_at=identity.get("started_at"),
+                        consumes_binding=binding["attempt_id"] is None)
             db.execute("UPDATE ad_image_bindings SET attempt_id=? WHERE project_id=? AND job_id=?",
                        (identity["attempt_id"], project_id, job_id))
             if receipt is not None:

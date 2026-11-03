@@ -259,3 +259,6 @@ W&B·실험별 상태는 유지하고 계정 예산만 별도 SQLite로 공유�
 
 ## 2026-11-03 · AD-WORK-COSTS W3
 - 누적 제작 화면/W&B 새표와 strict readback 구현. 기존 report 호환, 단위회귀·모바일390px UI 통과. 원격 검증은 W4. [작업 근거](ad-work-costs-20261103.md).
+
+## 2026-11-03 · AD-WORK-COSTS W4 검증
+- 전체2335 tests PASS, SDK/mock12시도와 실제 W&B 두 표/summary/원본 재조회·중복 게시 방지 통과. [검증/범위](ad-work-costs-20261103.md), [최종 흐름](ad-work-flow-20261103.md). PR merge는 다음 영수증에서 기록한다.

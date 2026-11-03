@@ -149,6 +149,20 @@ def test_inbox_and_database_failure_preserve_safe_manual_receipt(workspace, monk
         assert ledger.export_dataset(project)["receipts"][0]["status"] == "UNKNOWN"
 
 
+def test_response_object_id_is_not_mislabelled_as_a_provider_request_id(workspace):
+    ledger, project, work = workspace
+    with track_ad_work(ledger, project, work) as scope:
+        capture = TextWorkCapture(scope, operation="review_copy", model="model-v1",
+                                  prompt_version="p1", request_payload={"input": "test"})
+        capture.start()
+        capture.observe(SimpleNamespace(http_response=httpx.Response(200, json={
+            "id": "resp-safe-1", "model": "model-v1", "usage": {"input_tokens": 3, "output_tokens": 2}})))
+        capture.finish("SUCCEEDED")
+    receipt = ledger.export_dataset(project)["receipts"][0]
+    assert receipt["provider_request_id"] is None
+    assert receipt["usage"]["input_tokens"] == 3
+
+
 def test_strict_text_registration_is_atomic_and_default_api_still_allows_new_known_attempts(workspace):
     ledger, project, work = workspace
     def start(attempt, strict=True):

@@ -202,7 +202,7 @@ W&B에는 별도 `generation_cost_estimate` 표와 `generation_` 접두사의 �
 
 ## 생 프롬프트부터 완료까지 측정하는 방법
 
-이 부분은 후속 구현 계약이다. 현재 생성20건 비교에는 과거 텍스트 생성·검수의 토큰이 없다.
+2026-11-03 work 원장·SDK·내부 API·화면·W&B 연결을 구현했다. 기존 생성20건의 과거 텍스트·검수 토큰을 역산해 채우지는 않는다. 신규 제작부터 같은 work_id로 관측한다.
 
 1. 제작 시작 때 `work_id`를 만든다. 같은 광고를 고치는 동안 이 ID를 유지한다.
 2. 기획·프롬프트 생성·이미지 생성·검수·수정의 각 API 호출에 `attempt_id`를 붙인다. 원래 요청을 다시 전송한 경우도 별도 시도로 기록한다.
@@ -214,7 +214,7 @@ W&B에는 별도 `generation_cost_estimate` 표와 `generation_` 접두사의 �
 
 완료쌍의 흐름 비교에서는 제외된 작업 수를 함께 표시한다. 취소·미완료 작업의 이미 쓴 돈도 원장에 보존하고 전체 생산비에서 지우지 않는다. 기존 채택 광고당 원가 계산에는 그 생산 실패 비용까지 귀속해야 한다.
 
-이미지는 이미지 usage와 작업 연결을 제공하고, 텍스트는 기획·카피·검수 usage를 제공해야 한다. 서빙은 같은 work_id를 전달해야 한다. 이미지 TODO의 FIN-L1~3은 이 연동·집계·실험을 완료하기 위한 후속 항목이다. 팀원과의 합의나 실제 연결을 완료로 처리하지 않았다.
+이미지와 내장 텍스트 gateway는 work scope로 usage를 기록한다. 외부 텍스트는 attempt/receipt API, 서빙은 X-Ad-Work-Id 또는 Python work_id를 사용한다. FIN-L1~3 구현과 모의 검증을 완료했으며 팀 서비스 적용·배포 인수는 FIN-TEAM으로 남긴다. [연결 방법](adWorkCosts.md).
 
 2026-11-03 후속 검증: 생성당 추정 비교 보고서를 [W&B run](https://forge.coreweave.com/wandb/uyt5041-alphaflower/beautyai-image-experiments/runs/compare-e63b12dafbb37a9bd386)에 저장하고 원본·두 표·summary를 재조회했다. 비교20건/제외6건, 감소율1.216849052%다. 실제 청구 절감이나 전체제작 비용의 검증은 아니다.
 

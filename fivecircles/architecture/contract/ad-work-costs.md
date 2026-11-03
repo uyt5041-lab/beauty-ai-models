@@ -1,6 +1,6 @@
 # 광고 제작 work_id · 누적 토큰·비용 계약
 
-2026-11-03 · 상태 REVIEW_PENDING · 대상 beauty-ai-models.
+2026-11-03 · 상태 IMPLEMENTED_AND_VERIFIED · 대상 beauty-ai-models.
 기존 FinOps 미게시43개 파일을 해시로 격리한 codex/ad-work-costs-20261103에서 구현한다.
 PR base는 사용자 확정 feature/image-model. 작업 branch를 push하고 PR 설명·검증 후 merge한다. plan/models와 R2 WIP는 변경하지 않는다.
 기존 예산/중복 호출/생성당 비교를 보존한다. 실제 유료 모델 호출 없이 모의 전체 흐름으로 검증하고 W&B에는 구분된 검증 자료를 게시한다.
@@ -20,6 +20,7 @@ PR base는 사용자 확정 feature/image-model. 작업 branch를 push하고 PR 
 원시 프롬프트·사진·키·원시 오류는 저장하지 않는다. 기존 CallMeta/ExternalImageRequest/Result와 과거 request/report hash는 변경하지 않는다.
 식별자는 UUID(work/project/attempt/job), 제품/검수자/정책/모델/source 별칭은 기존 safe identifier로 검증한다. hash는64자리 lowercase hex.
 작업별 최대1000 attempts, project export 최대1000 works/20000 receipts, 입력JSON 최대1MiB. 초과는 안전 오류이며 부분 export로 성공시키지 않는다.
+새 work는 project1000개, 새 attempt/이미지binding의 합산 슬롯은 work1000/project20000개 전에 입장을 차단한다. 미관측 binding은 모델 호출 전 기록 용량을1개 선점하며 돈 예약과 다르다. binding→attempt 전환은 증가0이므로 옛 DB가 한도를 넘었더라도 이미 호출한 늦은 영수증을 보존한다. 기존 attempt/receipt replay에도 한도를 다시 적용하지 않는다. 한도 초과 구 DB export는 계속 WORK_LIMIT이며 일부 기록을 잘라 성공시키지 않는다.
 모든 JSON 입력은 중복 key·NaN·비밀 key/value·잘못된 타입을 거절한다. 오류 코드 WORK_*만 노출한다.
 
 Work: work_id, project_id, product_ref, task_pair_id(nullable), arm(nullable/baseline/candidate), required_stages,
@@ -77,6 +78,7 @@ SDK gateway는 start_attempt의 선택 내부 flag reject_repeated_request=True�
 외부 팀 텍스트는 동일 start_attempt+record_receipt 계약으로 입력한다. 이 경로는 비용 근거 수신이며 텍스트 생성 로직을 재구현하지 않는다.
 
 자동 provenance는 canonical_bytes/digest로 고정한다. text request_hash는 operation/model/prompt_version/instructions/input/max_output_tokens/store/text_format(schema JSON) 전체 요청값의 canonical SHA256이며 원문은 메모리에서만 hash한다. source_ref는 work-receipt:{attempt_id}, source_sha256은 receipt에서 source_ref/source_sha256을 제외한 모든 필드의 canonical SHA256이다. local receipt에도 같은 규칙을 쓴다. 예외 원문은 포함하지 않고 safe error_code만 포함한다.
+텍스트 provider_request_id는 HTTP x-request-id만 사용한다. body.id는 응답 객체 ID로 요청 ID와 다르므로 대신 넣지 않는다. 헤더가 없으면 null이며 request_hash/attempt_id는 계속 보존한다. 이 구분을 설치SDK/headerless 시험으로 유지한다.
 image identity는 stage=image_generation, operation=request.operation, provider=openai, configured_model=request.model, prompt_version=managed_prompt.version 또는 prompt.prompt_version 또는 unmanaged-v1, request_hash=기존 content_hash(request), parent=null을 쓴다. record metadata가 없으면 검증된 request로 채우며 결과 model은 metadata.model 또는 request.model이다. succeeded/failed/unknown은 SUCCEEDED/FAILED/UNKNOWN, submitting은 PENDING identity만 기록하고 receipt를 만들지 않는다. usage는 normalized usage 우선이며 raw_usage는 normalized에 없는 input/output/total/cache/reasoning만 채운다. result.image.sha256은 artifact, elapsed_seconds와 error_code는 underlying record 값, 비용은 명시 근거 없으면 null이다. created_at은 최초 identity 시간으로만 사용하고 updated_at/reuse events/raw metadata는 receipt/hash에서 제외한다. 동일 provider attempt 재관측은 동일 safe receipt/hash가 된다.
 
 ## 내부 HTTP API

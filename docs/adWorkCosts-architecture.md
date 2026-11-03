@@ -1,6 +1,6 @@
 # 광고 작업 비용 구조와 데이터 흐름
 
-2026-11-03. W1 원장·집계와 W2 SDK·이미지·내부 API 연결을 기준으로 한다. W3 보고 연결은 아래 계약을 따른다. 사용법은 [adWorkCosts.md](adWorkCosts.md), 정확한 입력·출력은 [work 비용 계약](../fivecircles/architecture/contract/ad-work-costs.md)이 원본이다.
+2026-11-03. W1 원장·집계, W2 SDK·이미지·내부 API와 W3 JSON/HTML·W&B 연결을 구현하고 로컬·mock 검증을 통과했다. W4에서 합성 자료의 PRIVATE W&B 원격 게시와 정확한 readback을 확인했다. PR/merge는 진행 중이다. 사용법은 [adWorkCosts.md](adWorkCosts.md), 정확한 입력·출력은 [work 비용 계약](../fivecircles/architecture/contract/ad-work-costs.md)이 원본이다.
 
 ## 모듈 의존성과 저장 책임
 
@@ -56,7 +56,7 @@ cost_wandb ─ report.json 검증·게시·readback
 - 비교는 같은 task pair의 양쪽 완료 work, 동일 제품·품질 정책·required stages, 완전한 비용과 같은 실제 적용 rate-version 집합을 요구한다. 같은 arm의 중복 최종 artifact와 불완전한 쌍은 통째로 제외하고 제외 수·이유를 남긴다. 다른 모델의 USD 비교는 같은 가격 정책에서 허용하며 모델 간 token 감소율은 제공하지 않는다.
 - 전체 원가는 모든 작업 비용을 고유한 완료 artifact 수로 나눈다. 비용 누락이나 완료 artifact 0개이면 `null`이다. 완료쌍의 진단적 절감률과 구분한다.
 
-W3의 `cost_reporting`은 선택적 work dataset과 정규화 dataset hash를 report identity에 함께 넣는다. `cost_wandb`는 작업당 `work_costs` 1행, 작업/단계/model당 `work_stage_usage` 1행과 `work_` summary를 게시한다. 보고 JSON의 USD 문자열은 유지하고 W&B 표시에서만 숫자로 바꾼다. W&B count/token의 절댓값이 2^53을 넘으면 network/init 전에 거절한다. 정확한 `report.json` artifact·각 표·summary의 readback이 보고 완료 조건이며 게시 ACK만으로 충족되지 않는다. 모의 자료는 `SYNTHETIC_FIXTURE`로 구분한다.
+`cost_reporting`은 선택적 work dataset과 정규화 dataset hash를 report identity에 함께 넣는다. `cost_wandb`는 작업당 `work_costs` 1행, 작업/단계/model당 `work_stage_usage` 1행과 `work_` summary를 게시한다. 보고 JSON의 USD 문자열은 유지하고 W&B 표시에서만 숫자로 바꾼다. W&B count/token의 절댓값이 2^53을 넘으면 network/init 전에 거절한다. 정확한 `report.json` artifact·각 표·summary의 readback이 보고 완료 조건이며 게시 ACK만으로 충족되지 않는다. 모의 자료는 `SYNTHETIC_FIXTURE`로 구분한다. W4의 `compare-e236da2f35e68cac2d06`은 PRIVATE 프로젝트에서 이 readback을 통과했고 새 이미지 모델 호출은 0회다. 실제 광고 품질·청구·배포 검증과 구분한다.
 
 ## 현재 보안과 다음 통합 조건
 
