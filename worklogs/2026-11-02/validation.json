@@ -1,0 +1,17 @@
+{
+  "report_date": "2026-11-02",
+  "record_date": "2026-11-03",
+  "journal_sections": 8,
+  "todo_checked": 67,
+  "todo_total": 206,
+  "percent": 32.5,
+  "milestones_due": 10,
+  "milestones_completed": 3,
+  "milestones_partial": 7,
+  "future_milestones_unchecked": 9,
+  "future_checks": 0,
+  "private_paths_or_keys": false,
+  "source_commit": "096053eafacb6a77796126364f37fba3f2b8e593",
+  "progress_policy_tests": 7,
+  "state": "LOCAL_STRUCTURAL_PASS_NOT_PUSH_RECEIPT"
+}

@@ -13,6 +13,7 @@
 | 2026-10-27 | [한국어·연결 어댑터·리사이즈 완료 기록](worklogs/2026-10-27/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-27/park-jisoo-worklog.html) |
 | 2026-10-28 | [이미지 MVP·한글 합성·301개 테스트 전달](worklogs/2026-10-28/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-28/park-jisoo-worklog.html) |
 | 2026-10-29 | [연동 보고·텍스트 리뷰·광고 표현 실험](worklogs/2026-10-29/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-29/park-jisoo-worklog.html) |
+| 2026-11-02 | [이미지 경계·A 배치·직접 API 실험](worklogs/2026-11-02/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-02/park-jisoo-worklog.html) |
 
 HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
@@ -92,3 +93,14 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 [전체 TODO 202개](worklogs/2026-10-29/full-todo.md) · [HTML 목록](worklogs/2026-10-29/full-todo.html) · [10/29 협업일지](worklogs/2026-10-29/park-jisoo-worklog.md) · [검증 근거](worklogs/2026-10-29/evidence.md)
 
 작업일10/29·기록일10/30의 누락 보완이다. 원본3480c34와 기존 일정 매핑을 유지했으며10/28과 집계가 같다. 10/29의 연동 보고 분석·텍스트 리뷰·디자인 실험·미게시 후속 계획은 활동으로 기록하고 구현 체크를 늘리지 않았다. 10/30 R1–R3 구현은 별도 날짜 기록이며 과거 일지와 마일스톤 수치는 보존한다.
+
+
+## 전체 TODO 진행률 · 2026-11-02
+
+**공유용 일지 체크: 67/206개 · 32.5%. 일별 마일스톤: 보고일까지 3/10 전체 확인·7개 부분 완료.**
+
+![전체 TODO 진행률](worklogs/2026-11-02/progress.svg)
+
+[협업일지](worklogs/2026-11-02/park-jisoo-worklog.md) · [HTML](worklogs/2026-11-02/park-jisoo-worklog.html) · [전체 TODO](worklogs/2026-11-02/full-todo.md) · [전체 목록 HTML](worklogs/2026-11-02/full-todo.html) · [마일스톤](worklogs/2026-11-02/milestones.md) · [근거](worklogs/2026-11-02/evidence.md)
+
+작업일11/02·기록일11/03을 구분한다. 원본에10/30 게시 구현4항목을 보완해 분모가202→206으로 바뀌었다. 과거 기록은 보존하고 이후 일정은 미체크다. 이는 제품 완성률이 아니다. 실제 생성 실험과 서비스 품질·청구·팀 인수는 구분한다.
