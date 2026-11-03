@@ -1,0 +1,47 @@
+{
+  "report_date": "2026-11-03",
+  "as_of_kst": "2026-11-03T19:28:00+09:00",
+  "scope": "sanitized hashes only; sources retained locally, not uploaded",
+  "items": [
+    {
+      "evidence_id": "reports/r-measured-wandb-20261103/summary.json",
+      "sha256": "e09b8b2991b5372eea6310f99d8baddbfc631177af8c7591e900e855cf3f63c5",
+      "bytes": 2747
+    },
+    {
+      "evidence_id": "reports/r-measured-wandb-20261103/validation.json",
+      "sha256": "7b4de52bb41eda0761423641640726db7c46155563d09db1aa2fc967c50ac66f",
+      "bytes": 1350
+    },
+    {
+      "evidence_id": "reports/r-measured-wandb-20261103/wandb/history-and-measured/upload-receipt.json",
+      "sha256": "e078cc4e486f2e85f786a7f54d438ff69bc3bfc1d8231fd43691a572783dabbd",
+      "bytes": 16173
+    },
+    {
+      "evidence_id": "reports/r-measured-wandb-20261103/comparison-view/upload-receipt.json",
+      "sha256": "5f29f1bf4d5e8ac0c95654a89a77039549089a02d37c62759f048927c8560dd0",
+      "bytes": 905
+    },
+    {
+      "evidence_id": "reports/r2-preset-library-20261103/implementation-receipt.json",
+      "sha256": "9b63ec0123e8cc93d11dccdd9f65ee45ef7071695be9b317c54e22ee3ee770bc",
+      "bytes": 1387
+    },
+    {
+      "evidence_id": "reports/r2-preset-library-20261103/preparation-receipts.json",
+      "sha256": "2eb06dc524aee193c06e897b4e9785aa44aacd59523529464a1d5bab172ae957",
+      "bytes": 3278
+    },
+    {
+      "evidence_id": "outputs/finops-generation-20261103/delivery-receipt.json",
+      "sha256": "d017a8b0deee1280cebaff7e48f66ce74c7e134dbf18a7faafe879f0f95f844d",
+      "bytes": 3581
+    },
+    {
+      "evidence_id": "reports/journal-update-20261103/notion-enhancements-source.json",
+      "sha256": "9b95257970d8b3074d6b185974c54058940c8146f7a3d67514548a19a85c539b",
+      "bytes": 1132
+    }
+  ]
+}

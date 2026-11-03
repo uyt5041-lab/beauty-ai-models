@@ -14,6 +14,7 @@
 | 2026-10-28 | [이미지 MVP·한글 합성·301개 테스트 전달](worklogs/2026-10-28/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-28/park-jisoo-worklog.html) |
 | 2026-10-29 | [연동 보고·텍스트 리뷰·광고 표현 실험](worklogs/2026-10-29/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-29/park-jisoo-worklog.html) |
 | 2026-11-02 | [이미지 경계·A 배치·직접 API 실험](worklogs/2026-11-02/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-02/park-jisoo-worklog.html) |
+| 2026-11-03 | [6테마 R2·W&B·FinOps·고도화7개](worklogs/2026-11-03/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-03/park-jisoo-worklog.html) |
 
 HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
@@ -104,3 +105,14 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 [협업일지](worklogs/2026-11-02/park-jisoo-worklog.md) · [HTML](worklogs/2026-11-02/park-jisoo-worklog.html) · [전체 TODO](worklogs/2026-11-02/full-todo.md) · [전체 목록 HTML](worklogs/2026-11-02/full-todo.html) · [마일스톤](worklogs/2026-11-02/milestones.md) · [근거](worklogs/2026-11-02/evidence.md)
 
 작업일11/02·기록일11/03을 구분한다. 원본에10/30 게시 구현4항목을 보완해 분모가202→206으로 바뀌었다. 과거 기록은 보존하고 이후 일정은 미체크다. 이는 제품 완성률이 아니다. 실제 생성 실험과 서비스 품질·청구·팀 인수는 구분한다.
+
+
+## 전체 TODO 진행률 · 2026-11-03
+
+**공유용 일지 체크: 67/206개 · 32.5%. 오늘까지 일별 마일스톤:3/11 전체 확인·8개 부분 완료.**
+
+![전체 TODO 진행률](worklogs/2026-11-03/progress.svg)
+
+[협업일지](worklogs/2026-11-03/park-jisoo-worklog.md) · [HTML](worklogs/2026-11-03/park-jisoo-worklog.html) · [전체 TODO](worklogs/2026-11-03/full-todo.md) · [전체 목록 HTML](worklogs/2026-11-03/full-todo.html) · [마일스톤](worklogs/2026-11-03/milestones.md) · [고도화7개+추가 기능](worklogs/2026-11-03/enhancements.md) · [근거](worklogs/2026-11-03/evidence.md)
+
+보고 기준은11/03 19:28 KST다. 기존 구현 원본096053e를 유지해 전체 체크는11/02와 같다. 오늘의 R2·FinOps 로컬 코드는 미게시라 완료 수에 더하지 않았다. W&B 기록 게시·실험·사용자 선호와 서비스 품질/팀 인수는 구분한다. 공유 계획7개+추가4개는 중복 합산하지 않는다.11/04 이후 일정은 미체크이며 과거 날짜 기록은 보존한다.

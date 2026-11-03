@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-03",
+  "status": "LOCAL_DOCUMENT_VALIDATION_PASS",
+  "source_commit": "096053eafacb6a77796126364f37fba3f2b8e593",
+  "todo_total": 206,
+  "todo_checked": 67,
+  "percent": 32.5,
+  "milestones_due": 11,
+  "milestones_full": 3,
+  "milestones_partial": 8,
+  "priority_enhancements": 7,
+  "extra_preset": 1,
+  "future_items": 3,
+  "journal_sections": 8,
+  "progress_policy_tests": 7,
+  "markdown_html_numbers_match": true,
+  "local_links_checked": 20,
+  "future_checks": 0,
+  "secret_or_local_path_detected": false,
+  "image_api_calls_during_logging": 0,
+  "independent_evidence_review": "PASS",
+  "browser_local_html": {
+    "headings": 8,
+    "progress": [
+      67,
+      206
+    ],
+    "broken_images": 0,
+    "horizontal_overflow": false
+  },
+  "remote_readback": "recorded separately after publication"
+}
