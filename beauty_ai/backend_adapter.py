@@ -197,7 +197,8 @@ class BackendImageAdapter:
         except (sqlite3.Error, ValueError):
             raise GatewayError("BACKEND_BINDING_INVALID", "Image binding is unavailable or invalid.") from None
 
-    def generate(self, body: BackendImageInput, *, project_id: UUID) -> BackendGeneratedImage:
+    def generate(self, body: BackendImageInput, *, project_id: UUID,
+                 work_id: UUID | str | None = None) -> BackendGeneratedImage:
         # Revalidate copies/model_construct before trusting mutable nested data.
         body = BackendImageInput.model_validate(body.model_dump(warnings=False))
         # Guard before binding, asset writes, reservations and network activity.
@@ -207,6 +208,14 @@ class BackendImageAdapter:
         if not body.product_analysis.analysis.is_cosmetic:
             raise GatewayError("PRODUCT_NOT_COSMETIC", "화장품 사진을 다시 올려주세요.")
         internal_job = self._job(project_id, body.job_id)
+        from .work_tracking import resolve_image_work
+        scope = resolve_image_work(self.processor.work_ledger, project_id, internal_job, work_id=work_id)
+        if scope is not None:
+            self.processor._validate_work_ledger(scope.ledger)
+        if scope is not None and scope.ledger.get_work(project_id, scope.work_id)["status"] != "OPEN":
+            existing = self.processor.attempts.get(internal_job, project_id)
+            if existing is None or existing["state"] != "succeeded":
+                raise GatewayError("WORK_CLOSED", "Advertisement work is closed.")
         request = self._bind(body, project_id)
         result = self.processor.process_job(request, project_id, internal_job)
         data = self.processor.assets.read_bytes(result.image, project_id=project_id)

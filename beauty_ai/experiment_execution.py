@@ -16,6 +16,7 @@ import httpx
 from fastapi.testclient import TestClient
 
 from .assets import LocalAssetStore
+from .account_budget import AccountBudgetStore
 from .contracts import (ExternalImageRequest, ExternalImageResult, ImageProviderUsage,
                         content_hash, image_result_matches)
 from .cosmetics_prompts import render_cosmetics_provider_prompt
@@ -146,7 +147,8 @@ def execute_plan(plan_path: Path, *, expected_sha256: str,
                  env_file: Path | None = None, budget_usd: str = "0",
                  reservation_usd: str = "1", transport: httpx.MockTransport | None = None,
                  allow_live: bool = False, wandb_entity: str | None = None,
-                 wandb_project: str = "beautyai-image-experiments") -> dict:
+                 wandb_project: str = "beautyai-image-experiments",
+                 account_budget: AccountBudgetStore | None = None) -> dict:
     """Execute sequential jobs once. Mock mode never reads keys or traces remotely.
 
     Attempt slots are durable reservations, not proof of POST delivery or bills.
@@ -160,6 +162,8 @@ def execute_plan(plan_path: Path, *, expected_sha256: str,
         raise ValueError("EXPERIMENT_LIVE_NOT_AUTHORIZED")
     if transport is not None and not offline:
         raise ValueError("EXPERIMENT_TRANSPORT_INVALID")
+    if not offline and account_budget is None:
+        raise GatewayError("ACCOUNT_BUDGET_REQUIRED", "ACCOUNT_BUDGET_REQUIRED")
     if type(expected_sha256) is not str or re.fullmatch(r"[a-f0-9]{64}", expected_sha256) is None:
         raise ValueError("EXPERIMENT_EXPECTED_PLAN_HASH_REQUIRED")
     from .experiment_runner import load_verified_plan, write_json
@@ -219,7 +223,7 @@ def execute_plan(plan_path: Path, *, expected_sha256: str,
         with context:
             app = build_app(root / "runtime", project_id, token, openai_config=config,
                 openai_transport=transport, image_budget_usd=budget_usd,
-                image_reservation_usd=reservation_usd)
+                image_reservation_usd=reservation_usd, account_budget=account_budget)
             with TestClient(app, headers={"Authorization": "Bearer " + token}) as client:
                 for case, request, entry in zip(plan["cases"], requests, report["operations"]):
                     entry.update(status="submitting", started_at=_now())

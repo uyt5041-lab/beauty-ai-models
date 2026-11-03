@@ -77,3 +77,11 @@ python -m beauty_ai.wandb_experiments \
 완료 조건은 원격 run summary 확인, artifact 재다운로드 후 모든 이미지·프롬프트·record 해시 일치, 비교표 행/열 확인, 평가 계획의 바이트 일치다. `READBACK_VERIFIED`만 업로드 완료이며 사람의 이미지 품질 승인이나 팀 인수는 별도다.
 
 [W&B Tables 공식 문서](https://docs.coreweave.com/products/wandb/track/log/log-tables) · [Public API](https://docs.coreweave.com/products/wandb/ref/python/public-api/api) · [SDK 설정](https://docs.coreweave.com/products/wandb/ref/python/experiments/settings)
+
+## 2026-11-03 비용 절감 비교 추가
+
+기존 W&B 이미지/프롬프트 기록은 유지한다. 계정 예산은 호출 전에 별도 SQLite로 검사하고, 새 보고서는 채택 광고당 원가·감소율·미확인을 비교한다. [사용법과 실행 예시](finopsSavings.md)를 참고한다. 저장자료 수집과 W&B 재동기화는 이미지 API를 호출하지 않는다.
+
+## 광고 작업 전체 제작 기록
+
+work_id 누적은 `work_costs`와 `work_stage_usage` 표, `work_` summary로 저장한다. 생성 한 건 비교와 완료까지의 제작비를 구분한다. 원본 JSON·두 표·summary를 각각 재조회하며, 같은 파일은 run을 다시 만들지 않는다. [사용법·모의 실행 예제](adWorkCosts.md), [구조와 책임](adWorkCosts-architecture.md).

@@ -271,6 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     execute.add_argument("--env-file", type=Path, required=True)
     execute.add_argument("--budget-usd", required=True)
     execute.add_argument("--reservation-usd", default="1")
+    execute.add_argument("--account-budget-config", type=Path)
     execute.add_argument("--execute", action="store_true")
     execute.add_argument("--wandb", action="store_true", help="로컬 결과 저장 후 W&B에 자동 등록")
     execute.add_argument("--wandb-entity")
@@ -306,8 +307,11 @@ def main(argv: list[str] | None = None) -> int:
                 "image_api_calls": 0}, ensure_ascii=False))
             return 0
         from .experiment_execution import execute_plan
+        from .account_budget import load_account_budget
+        account_budget = load_account_budget(args.account_budget_config) if args.account_budget_config else None
         report = execute_plan(args.plan, expected_sha256=args.expect_sha256, env_file=args.env_file,
             budget_usd=args.budget_usd, reservation_usd=args.reservation_usd, allow_live=True,
+            account_budget=account_budget,
             **({"wandb_entity": args.wandb_entity, "wandb_project": args.wandb_project} if args.wandb else {}))
         receipt = _read_json(args.plan.parent / "wandb-sync.json") if args.wandb else None
         print(json.dumps({"status": report["status"], "report": str(args.plan.parent / "report.json"),
@@ -316,7 +320,9 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         return 0 if report["status"] == "SUCCEEDED" else 1
     except Exception as error:
-        print(json.dumps({"status": "STOPPED", "error_type": type(error).__name__}))
+        code = getattr(error, "code", "")
+        safe = {"error_code": code} if re.fullmatch(r"ACCOUNT_BUDGET_[A-Z_]{1,60}", code) else {}
+        print(json.dumps({"status": "STOPPED", "error_type": type(error).__name__, **safe}))
         return 1
 
 

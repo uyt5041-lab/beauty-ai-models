@@ -1,0 +1,26 @@
+flowchart TB
+  A["작업 등록 · project/work 소유권"] --> B["기획 · Model SDK MOCK_ONLY"]
+  B --> C["이미지 생성 · Model SDK MOCK_ONLY"]
+  C --> D["검수 · Model SDK MOCK_ONLY"]
+  D --> E{"검수 통과?"}
+  E -->|수정| F["revision · Model SDK MOCK_ONLY"]
+  F --> C
+  E -->|통과| G["로컬 합성 · 명시 API 0 receipt"]
+  G --> H["명시적 완료 · 단계/terminal/최종 hash"]
+  H --> I["전체 API 원가 · 누락 null/부분합 · 완료쌍 비교"]
+  I --> J["정확한 JSON · 한국어 HTML"]
+  J --> K["PRIVATE W&B · JSON/표/summary readback"]
+  A -. "별도 저장 책임" .-> L["work 원장 ≠ provider 원장 ≠ 계정 예산"]
+  B -. "수집 실패" .-> M["안전 receipt 복구 · 재수집 호출 0회"]
+  M -. "동일 attempt" .-> I
+  J -. "이번 목표 범위 밖" .-> N["팀 서비스 배포 · 실광고 품질 · 청구 대사 NOT_RUN"]
+  class A,G,H,I,J,K green
+  class B,C,D,F blue
+  class M amber
+  class N red
+  class E,L gray
+  classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
+  classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px
+  classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933,stroke-width:1.5px
+  classDef red fill:#fde9e6,stroke:#e8bab5,color:#1f2933,stroke-width:1.5px
+  classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px

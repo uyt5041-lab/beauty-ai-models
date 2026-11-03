@@ -77,6 +77,8 @@ def finish_trace(trace: object | None, **values: object) -> dict:
 def run(args: argparse.Namespace) -> Path:
     if not args.execute:
         raise RuntimeError("LIVE_EXECUTION_NOT_AUTHORIZED")
+    from beauty_ai.account_budget import load_account_budget
+    account_budget = load_account_budget(getattr(args, "account_budget_config", None))
     import httpx
     from fastapi.testclient import TestClient
     from PIL import Image
@@ -127,7 +129,7 @@ def run(args: argparse.Namespace) -> Path:
         app = build_app(run_dir / "runtime", uuid4(), settings["INFERENCE_INTERNAL_TOKEN"],
                         openai_config=OpenAIImagesConfig(live_calls=True, api_key=settings["OPENAI_API_KEY"],
                                                         timeout_seconds=300),
-                        image_budget_usd="3", image_reservation_usd="1")
+                        image_budget_usd="3", image_reservation_usd="1", account_budget=account_budget)
         with TestClient(app, headers={"Authorization": "Bearer " + settings["INFERENCE_INTERNAL_TOKEN"]}) as client:
             uploaded = client.post("/internal/v1/assets", content=source_bytes)
             if uploaded.status_code != 201:

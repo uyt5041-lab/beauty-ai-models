@@ -1,0 +1,31 @@
+flowchart TB
+  A["work_api 생성 · bearer→project"] --> B["track_ad_work · 기획 raw SDK MOCK_ONLY"]
+  B --> C["이미지 scope/project/work/DB 경로 일치"]
+  C --> D["Image SDK MOCK_ONLY · 별도 provider receipt"]
+  D --> E["검수 실패 usage 보존 · SDK MOCK_ONLY"]
+  E --> F["검수 성공 · 수정 · 재생성 SDK MOCK_ONLY"]
+  F --> G["실제 로컬 PNG 합성 · API token/cost 0 receipt"]
+  G --> H["complete · 모든 terminal/required stage/hash/expected ID"]
+  H --> I["원장 재시작 · 동일 work 읽기"]
+  I --> J["순수 metrics · 전체 원가/부분합/누락/완료쌍 제외"]
+  J --> K["JSON exact USD · 한국어 HTML · 합성 자료 표시"]
+  K --> L["PRIVATE W&B READBACK_VERIFIED · JSON+두 새 표+summary"]
+  C --- M["ad_works.sqlite3 · provider/계정 DB와 경로 분리"]
+  D -. "기존 성공" .-> R["검증된 성공 재사용 · 추가 POST 0회"]
+  R --> G
+  B -. "저장 실패" .-> T["0600 inbox · WORK_CAPTURE_PENDING · 재수집 호출 0회"]
+  T -. "동일 receipt" .-> I
+  D -. "수집 실패/취소 중 응답" .-> P["provider record 보존 · 늦은 receipt 동기화"]
+  P -. "동일 attempt" .-> I
+  B -. "근거 구분" .-> Q["HTTP x-request-id 관측 · body response id와 구분"]
+  K -. "이번 목표 범위 밖" .-> N["외부 팀 서비스 배포/실제 품질/청구 대사 NOT_RUN"]
+  class A,C,G,H,I,J,K,L green
+  class B,D,E,F blue
+  class R,T,P amber
+  class N red
+  class M,Q gray
+  classDef green fill:#e8f2ea,stroke:#bdd1c2,color:#1f2933,stroke-width:1.5px
+  classDef blue fill:#e8f0f7,stroke:#c2d3e0,color:#1f2933,stroke-width:1.5px
+  classDef amber fill:#fff4dc,stroke:#e7c88f,color:#1f2933,stroke-width:1.5px
+  classDef red fill:#fde9e6,stroke:#e8bab5,color:#1f2933,stroke-width:1.5px
+  classDef gray fill:#eef1ed,stroke:#d8e0da,color:#1f2933,stroke-width:1.5px

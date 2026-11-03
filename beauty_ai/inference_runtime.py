@@ -6,6 +6,9 @@ import os
 from pathlib import Path
 from uuid import UUID
 
+import httpx
+
+from .account_budget import AccountBudgetStore, load_account_budget
 from .assets import LocalAssetStore
 from .inference_api import create_app
 from .job_ledger import JobLedger
@@ -17,6 +20,7 @@ from .contracts import ExternalImageRequest
 from .openai_images import OpenAIImagesAdapter, OpenAIImagesConfig
 from .api_image_processor import ExternalImageProcessor
 from .provider_attempts import ProviderAttemptStore
+from .work_ledger import AdWorkLedger
 
 
 class _ProfileRouter:
@@ -44,7 +48,11 @@ def build_app(root: str | Path, project_id: UUID, token: str, *,
               cutout_backend: str = "uploaded-alpha", model_root: str | Path = "models",
               model_device: str = "mps", background_backend: str = "bright-template",
               openai_config: OpenAIImagesConfig | None = None, openai_transport=None,
-              image_budget_usd="0", image_reservation_usd="1"):
+              image_budget_usd="0", image_reservation_usd="1",
+              account_budget: AccountBudgetStore | None = None):
+    if (openai_config is not None and openai_config.live_calls
+            and not isinstance(openai_transport, httpx.MockTransport) and account_budget is None):
+        raise GatewayError("ACCOUNT_BUDGET_REQUIRED", "ACCOUNT_BUDGET_REQUIRED")
     root = Path(root)
     assets = LocalAssetStore(root / "assets")
     approvals = ProductApprovalStore(root / "products.sqlite3", assets)
@@ -65,14 +73,17 @@ def build_app(root: str | Path, project_id: UUID, token: str, *,
     elif background_backend != "bright-template":
         raise ValueError("Unsupported background backend")
     attempts = ProviderAttemptStore(root / "provider_attempts.sqlite3")
+    work_ledger = AdWorkLedger(root / "ad_works.sqlite3")
     external = ExternalImageProcessor(
         assets, OpenAIImagesAdapter(openai_config or OpenAIImagesConfig(), transport=openai_transport),
-        attempts, budget_limit_usd=image_budget_usd, reservation_usd=image_reservation_usd)
+        attempts, budget_limit_usd=image_budget_usd, reservation_usd=image_reservation_usd,
+        account_budget=account_budget, work_ledger=work_ledger)
     processor = _ProfileRouter(processor, overrides, external)
     ledger = JobLedger(root / "jobs.sqlite3")
     edits = ImageEditStore(root / "edits.sqlite3", assets, ledger)
     return create_app(ledger, assets, {token: project_id}, processor, approvals=approvals,
-                      request_validator=processor.validate_request, edits=edits, provider_attempts=attempts)
+                      request_validator=processor.validate_request, edits=edits, provider_attempts=attempts,
+                      work_ledger=work_ledger)
 
 
 def main() -> None:
@@ -94,8 +105,10 @@ def main() -> None:
         live_value = os.environ.get("BEAUTY_OPENAI_IMAGE_LIVE_CALLS", "false").lower()
         if live_value not in {"true", "false"}:
             raise ValueError
+        budget_path = os.environ.get("BEAUTY_ACCOUNT_BUDGET_CONFIG")
+        account_budget = load_account_budget(budget_path) if budget_path or live_value == "true" else None
         config = OpenAIImagesConfig(live_calls=live_value == "true",
-                                    api_key=os.environ.get("OPENAI_API_KEY", ""),
+                                    api_key=os.environ.get("OPENAI_API_KEY", "") if live_value == "true" else None,
                                     timeout_seconds=float(os.environ.get("BEAUTY_OPENAI_IMAGE_TIMEOUT_SECONDS", "180")))
         app = build_app(os.environ.get("BEAUTY_STORAGE_ROOT", "outputs/inference"), project_id, token,
                         cutout_backend=os.environ.get("BEAUTY_CUTOUT_BACKEND", "uploaded-alpha"),
@@ -103,9 +116,13 @@ def main() -> None:
                         model_root=os.environ.get("BEAUTY_MODEL_ROOT", "models"),
                         model_device=os.environ.get("BEAUTY_MODEL_DEVICE", "mps"),
                         openai_config=config,
+                        account_budget=account_budget,
                         image_budget_usd=os.environ.get("BEAUTY_IMAGE_BUDGET_USD", "0"),
                         image_reservation_usd=os.environ.get("BEAUTY_IMAGE_RESERVATION_USD", "1"))
-    except (GatewayError, ValueError):
+    except GatewayError as error:
+        parser.error(error.code if error.code.startswith("ACCOUNT_BUDGET_") else
+                     "Image runtime configuration is invalid or the selected legacy backend is unavailable.")
+    except ValueError:
         parser.error("Image runtime configuration is invalid or the selected legacy backend is unavailable.")
     uvicorn.run(app, host=args.host, port=args.port, access_log=False)
 

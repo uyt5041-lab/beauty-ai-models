@@ -1,0 +1,174 @@
+{
+  "schema_version": "beautyai-cost-dataset-v1",
+  "cost_items": [
+    {
+      "cost_id": "synthetic-cost-baseline",
+      "revision": 1,
+      "supersedes_revision": null,
+      "source_ref": "synthetic:baseline-cost",
+      "source_sha256": "eae1e094a55a2cf5827aeb1259a195f3b3801819972b886fc79dabb4ad9594d4",
+      "kind": "image",
+      "category": "production",
+      "estimated_cost_usd": "2.000000000",
+      "rate_version": "synthetic-rate-v1",
+      "actual_cost_usd": "2.000000000",
+      "billing_status": "RECONCILED",
+      "billing_evidence_ref": "synthetic:billing-baseline",
+      "allocations": {
+        "synthetic-baseline": 10000
+      },
+      "state": "RECORDED"
+    },
+    {
+      "cost_id": "synthetic-cost-candidate",
+      "revision": 1,
+      "supersedes_revision": null,
+      "source_ref": "synthetic:candidate-cost",
+      "source_sha256": "c37a9966d383c238df9d95398fd2a788f45d2bf6a74fe7098b5b30850356a613",
+      "kind": "image",
+      "category": "production",
+      "estimated_cost_usd": "1.500000000",
+      "rate_version": "synthetic-rate-v1",
+      "actual_cost_usd": "1.500000000",
+      "billing_status": "RECONCILED",
+      "billing_evidence_ref": "synthetic:billing-candidate",
+      "allocations": {
+        "synthetic-candidate": 10000
+      },
+      "state": "RECORDED"
+    },
+    {
+      "cost_id": "synthetic-research-cost",
+      "revision": 1,
+      "supersedes_revision": null,
+      "source_ref": "synthetic:research-cost",
+      "source_sha256": "30100bf82f689db4c85033440246df885954e869242c1e5bf21aba7caaedd191",
+      "kind": "compute",
+      "category": "research",
+      "estimated_cost_usd": "0.250000000",
+      "rate_version": "synthetic-rate-v1",
+      "actual_cost_usd": "0.250000000",
+      "billing_status": "RECONCILED",
+      "billing_evidence_ref": "synthetic:billing-research",
+      "allocations": {},
+      "state": "RECORDED"
+    }
+  ],
+  "batches": [
+    {
+      "batch_id": "synthetic-baseline",
+      "product_id": "synthetic-product",
+      "expected_cost_ids": [
+        "synthetic-cost-baseline"
+      ]
+    },
+    {
+      "batch_id": "synthetic-candidate",
+      "product_id": "synthetic-product",
+      "expected_cost_ids": [
+        "synthetic-cost-candidate"
+      ]
+    }
+  ],
+  "acceptances": [
+    {
+      "ad_id": "synthetic-baseline-ad-1",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-baseline",
+      "action": "accept",
+      "artifact_sha256": "304589076602cc55f58d4d3933efddb3c901bcc80aac673da6f0071afd452cf2",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    },
+    {
+      "ad_id": "synthetic-baseline-ad-2",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-baseline",
+      "action": "accept",
+      "artifact_sha256": "568b6a7dbe3b94b719093729b7fa86be4375ff7840386464bd0243494a6d16c8",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    },
+    {
+      "ad_id": "synthetic-baseline-ad-3",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-baseline",
+      "action": "accept",
+      "artifact_sha256": "e44e4111351a707120bcc2b3320bd9003759f5151a12669a0db75254f3db30b8",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    },
+    {
+      "ad_id": "synthetic-baseline-ad-4",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-baseline",
+      "action": "accept",
+      "artifact_sha256": "10345222469c0db6819ba04cbd54ebb8f60ca0cd97253c6b74e96c0415615945",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    },
+    {
+      "ad_id": "synthetic-candidate-ad-1",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-candidate",
+      "action": "accept",
+      "artifact_sha256": "d1cbdd6fb69bf78894d6d8719777d5de6850d6116b06c957510978130d818750",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    },
+    {
+      "ad_id": "synthetic-candidate-ad-2",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-candidate",
+      "action": "accept",
+      "artifact_sha256": "b1b6879ed2c2050811e5c4af35a25c112b44d1eef3c914f2840412fd674b38fc",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    },
+    {
+      "ad_id": "synthetic-candidate-ad-3",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-candidate",
+      "action": "accept",
+      "artifact_sha256": "db13e29a2ea2342c70bf33f6c989e8cc237ea3187bf7a7c2f4ee5cfc186ae085",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    },
+    {
+      "ad_id": "synthetic-candidate-ad-4",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-candidate",
+      "action": "accept",
+      "artifact_sha256": "c29f7c8ba98708e717678af2860eb6ae040174c30ac921a2a14f892bb9110549",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    },
+    {
+      "ad_id": "synthetic-candidate-ad-5",
+      "revision": 1,
+      "supersedes_revision": null,
+      "batch_id": "synthetic-candidate",
+      "action": "accept",
+      "artifact_sha256": "8fb479dc623df5dcde2f8922cdb9ce737a35402503b30c3b5a3d3a3235ab567c",
+      "reviewer_ref": "synthetic-reviewer",
+      "quality_policy_version": "synthetic-quality-v1",
+      "quality_pass": true
+    }
+  ]
+}

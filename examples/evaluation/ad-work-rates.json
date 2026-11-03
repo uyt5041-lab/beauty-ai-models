@@ -1,0 +1,20 @@
+{
+  "schema_version": "beautyai-work-rates-v1",
+  "rate_version": "synthetic-ad-work-rates-v1",
+  "models": {
+    "synthetic-text-model": {
+      "mode": "combined",
+      "input_usd": "2.000000000",
+      "input_text_usd": null,
+      "input_image_usd": null,
+      "output_usd": "4.000000000"
+    },
+    "gpt-image-2.5-sunburst-2026-09-08": {
+      "mode": "combined",
+      "input_usd": "10.000000000",
+      "input_text_usd": null,
+      "input_image_usd": null,
+      "output_usd": "20.000000000"
+    }
+  }
+}
