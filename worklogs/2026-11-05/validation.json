@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "date": "2026-11-05",
+  "official_sections": 8,
+  "md_html_headings_match": true,
+  "todo_items": 220,
+  "checked": 75,
+  "percent": 34.1,
+  "future_prechecked": 0,
+  "private_absolute_paths": 0,
+  "links_exist": true,
+  "progress_generator_tests": 7,
+  "published_code_test_record": 395,
+  "image_api_calls_in_recording": 0,
+  "git_readback": "PENDING_PUSH"
+}

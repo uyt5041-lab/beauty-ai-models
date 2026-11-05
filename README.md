@@ -15,6 +15,7 @@
 | 2026-10-29 | [연동 보고·텍스트 리뷰·광고 표현 실험](worklogs/2026-10-29/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-29/park-jisoo-worklog.html) |
 | 2026-11-02 | [이미지 경계·A 배치·직접 API 실험](worklogs/2026-11-02/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-02/park-jisoo-worklog.html) |
 | 2026-11-03 | [6테마 R2·W&B·FinOps·고도화7개](worklogs/2026-11-03/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-03/park-jisoo-worklog.html) |
+| 2026-11-05 | [비율·합성 게시와 협업/보류 안건](worklogs/2026-11-05/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-05/park-jisoo-worklog.html) |
 
 HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
@@ -116,3 +117,14 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 [협업일지](worklogs/2026-11-03/park-jisoo-worklog.md) · [HTML](worklogs/2026-11-03/park-jisoo-worklog.html) · [전체 TODO](worklogs/2026-11-03/full-todo.md) · [전체 목록 HTML](worklogs/2026-11-03/full-todo.html) · [마일스톤](worklogs/2026-11-03/milestones.md) · [고도화7개+추가 기능](worklogs/2026-11-03/enhancements.md) · [근거](worklogs/2026-11-03/evidence.md)
 
 보고 기준은11/03 19:28 KST다. 기존 구현 원본096053e를 유지해 전체 체크는11/02와 같다. 오늘의 R2·FinOps 로컬 코드는 미게시라 완료 수에 더하지 않았다. W&B 기록 게시·실험·사용자 선호와 서비스 품질/팀 인수는 구분한다. 공유 계획7개+추가4개는 중복 합산하지 않는다.11/04 이후 일정은 미체크이며 과거 날짜 기록은 보존한다.
+
+
+## 전체 TODO 진행률 · 2026-11-05
+
+**공유용 일지 체크: 75/220개 · 34.1%. 일별 마일스톤:3/13 전체 확인·10개 부분 완료/미인수.**
+
+![전체 TODO 진행률](worklogs/2026-11-05/progress.svg)
+
+[협업일지](worklogs/2026-11-05/park-jisoo-worklog.md) · [HTML](worklogs/2026-11-05/park-jisoo-worklog.html) · [전체 TODO](worklogs/2026-11-05/full-todo.md) · [전체 목록 HTML](worklogs/2026-11-05/full-todo.html) · [마일스톤](worklogs/2026-11-05/milestones.md) · [근거](worklogs/2026-11-05/evidence.md)
+
+기준:2026-11-05 14:48 KST. 고정원본ed9f4fa에서14개를추가한220개중75개를일지기준으로체크했다. 비율/합성·모델설정게시,시안선택·협업설계와서비스인수를구분했다. 자유형:합성형1:1·2:1·3:1기능구현은보류다. 이전기록은보존했다.
