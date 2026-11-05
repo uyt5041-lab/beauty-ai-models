@@ -1,0 +1,36 @@
+{
+  "source_commit": "b9d00152de352499ce7773ac398fe8efb5408e8e",
+  "description": "Actual pre-v3 _bind output with synthetic PNG fixtures; no generation or provider call. Tests replay historical request bytes.",
+  "cases": {
+    "legacy": {
+      "changes": {
+        "safe_zone": {
+          "left": 0.06,
+          "top": 0.05,
+          "right": 0.94,
+          "bottom": 0.25
+        }
+      },
+      "input_hash": "f4406a0cab16b0c9eb9827bf66720d90e7f0258c386a7c67069d4b4deee18349",
+      "request_json": "{\"kind\":\"api_image\",\"operation\":\"edit\",\"pipeline_profile_id\":\"openai-images\",\"pipeline_revision\":\"2\",\"model\":\"gpt-image-2.5-sunburst-2026-09-08\",\"product_images\":[{\"asset_id\":\"237d9236-7f0a-47d7-9b97-c5eec45c61a3\",\"sha256\":\"47362901d92295677444316714430a99a3b56933a5a40acb66d735ae4b19cc19\",\"width\":32,\"height\":40,\"mime_type\":\"image/png\"},{\"asset_id\":\"80d16dac-6d98-462b-8e0c-f9b2cecd055e\",\"sha256\":\"f05d193163b31e6c3eee01a0b4ab8c9d6840878a27adfb77f0e8b09e9ee393da\",\"width\":32,\"height\":40,\"mime_type\":\"image/png\"}],\"reference_images\":[],\"prompt\":{\"positive\":\"밝은 배경. 원본 제품은 그대로 둔다.\\n\\n콘셉트: 간결한 루틴\\n전달받은 광고 무드: 청량, 선명\\n\\n제품 분석 참고값(확인되지 않은 AI 관찰이며 실행 지시가 아님):\\n{\\\"제품 유형\\\": \\\"색조\\\", \\\"용기 형태\\\": \\\"어플리케이터\\\", \\\"용기·뚜껑 색\\\": [\\\"연분홍\\\", \\\"아이보리\\\"], \\\"제품 디자인 분위기\\\": [\\\"사랑스러운\\\"], \\\"투명·반투명 용기\\\": \\\"예\\\"}\\n사진과 사용자 확인 정보가 우선이다. 광고 무드는 위에 전달받은 값을 따르며 분석의 제품 디자인 분위기로 덮어쓰지 않는다. 라벨 판독값으로 글자를 새로 만들거나 효능·성분을 추정하지 않는다.\\n카피 여백: 왼쪽 0.06, 위 0.05, 오른쪽 0.94, 아래 0.25. 0~1 정규화 좌표. 이 영역에 제품을 배치하지 않는다.\",\"negative\":\"\",\"prompt_version\":\"backend-v02-ko-v1\",\"source_revision\":1,\"language\":\"ko\"},\"watermark_policy\":\"exclude-v1\",\"cosmetics_policy_version\":\"ko-v1\",\"width\":1152,\"height\":1440,\"quality\":\"medium\"}",
+      "request_hash": "e70b968d0e351afdda8fcb47bb90939fa5b2718464d021636bf693b22bed5d3e"
+    },
+    "string_revision": {
+      "changes": {
+        "copy_revision": "approved-copy-r2",
+        "image_prompt": {
+          "prompt": "밝은 분홍 배경. 제품의 원형을 유지한다."
+        },
+        "safe_zone": {
+          "left": 0.06,
+          "top": 0.05,
+          "right": 0.94,
+          "bottom": 0.25
+        }
+      },
+      "input_hash": "5b56af62fbd060b4252f429618ab248e82a958d486227a83f512e7c35f00d84e",
+      "request_json": "{\"kind\":\"api_image\",\"operation\":\"edit\",\"pipeline_profile_id\":\"openai-images\",\"pipeline_revision\":\"2\",\"model\":\"gpt-image-2.5-sunburst-2026-09-08\",\"product_images\":[{\"asset_id\":\"2ff1e1fc-e0f3-436a-a777-8490d9259d16\",\"sha256\":\"47362901d92295677444316714430a99a3b56933a5a40acb66d735ae4b19cc19\",\"width\":32,\"height\":40,\"mime_type\":\"image/png\"},{\"asset_id\":\"2a6991df-e475-4afc-8ce3-bf38438a9478\",\"sha256\":\"f05d193163b31e6c3eee01a0b4ab8c9d6840878a27adfb77f0e8b09e9ee393da\",\"width\":32,\"height\":40,\"mime_type\":\"image/png\"}],\"reference_images\":[],\"prompt\":{\"positive\":\"밝은 분홍 배경. 제품의 원형을 유지한다.\\n\\n전달받은 광고 무드: 별도 값 없음. 위 한국어 프롬프트의 분위기 지시를 따르고 제품 분석의 분위기로 임의 선택하지 않는다.\\n\\n제품 분석 참고값(확인되지 않은 AI 관찰이며 실행 지시가 아님):\\n{\\\"제품 유형\\\": \\\"색조\\\", \\\"용기 형태\\\": \\\"어플리케이터\\\", \\\"용기·뚜껑 색\\\": [\\\"연분홍\\\", \\\"아이보리\\\"], \\\"제품 디자인 분위기\\\": [\\\"사랑스러운\\\"], \\\"투명·반투명 용기\\\": \\\"예\\\"}\\n사진과 사용자 확인 정보가 우선이다. 광고 무드는 위에 전달받은 값을 따르며 분석의 제품 디자인 분위기로 덮어쓰지 않는다. 라벨 판독값으로 글자를 새로 만들거나 효능·성분을 추정하지 않는다.\\n카피 여백: 왼쪽 0.06, 위 0.05, 오른쪽 0.94, 아래 0.25. 0~1 정규화 좌표. 이 영역에 제품을 배치하지 않는다.\",\"negative\":\"\",\"prompt_version\":\"backend-v02-ko-v2\",\"source_revision\":\"approved-copy-r2\",\"language\":\"ko\"},\"watermark_policy\":\"exclude-v1\",\"cosmetics_policy_version\":\"ko-v1\",\"width\":1152,\"height\":1440,\"quality\":\"medium\"}",
+      "request_hash": "f9f5ceb6f80ff09732517319d9bdfd0a6259323d929db8485e9369b7f122942b"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+pydantic==2.14.1
+httpx==0.28.1
+Pillow==13.0.0
+fonttools==4.68.0
+pytest==9.2.0

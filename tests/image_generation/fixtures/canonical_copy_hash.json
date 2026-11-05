@@ -1,0 +1,32 @@
+{
+  "schema": "image-copy-hash-contract-vector-v1",
+  "reference": {
+    "source_revision": "6f7090c",
+    "source_file": "docs/contracts/validation.py",
+    "function": "canonical_copy_hash",
+    "function_sha256": "488aed4ad5ad2b35af139e968087da0b1f4b7dbf1dfeac4b4f7c9356a545b429",
+    "purpose": "Frozen team canonical full-copy digest; no dependency on a serving checkout."
+  },
+  "copy_output": {
+    "plan": {
+      "target": "성인",
+      "concept": "데일리 루틴",
+      "key_message": "간결한 일상",
+      "tone": "차분한",
+      "mood": [
+        "청량"
+      ]
+    },
+    "ad_copy": {
+      "headline": "오늘의 간결한 루틴",
+      "subline": "매일 편안하게 만나는 나만의 시간",
+      "cta": "제품 알아보기"
+    },
+    "caption": "내 일상에 어울리는 데일리 루틴.",
+    "hashtags": [
+      "#화장품",
+      "#데일리루틴"
+    ]
+  },
+  "copy_sha256": "1de0b88f0874f96e6b6cf75e8b18c0500d9faf300dfe3b5d7a9f1c6bd56cf0a0"
+}
