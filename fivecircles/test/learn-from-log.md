@@ -16,3 +16,8 @@
 
 ## 2026-11-03 · work capture
 SDK parse 전에 raw 사용량을 관측한다. 저장복구와 모델 재호출은 분리하고 terminal 요청 재등록도 원장 transaction에서 막는다. local receipt는 시도 등록 전에 검증한다. [원인/수정](errorlogs/backend/2026-11-03-ad-work-capture.md).
+
+
+## 2026-11-05 · 2트랙 이미지
+
+공통 카피 검증과 폰트/좌표 검증을 분리해야 자유형 export가 가짜 합성 박스에 의존하지 않는다. GatewayError 시험은 사용자 메시지 대신 .code를 확인한다. checkout별 시험 workdir와 실행 환경을 고정한다. 상세: errorlogs/backend/2026-11-05-two-track-validation.md.

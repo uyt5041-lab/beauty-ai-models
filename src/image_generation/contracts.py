@@ -96,6 +96,7 @@ class LayoutSelection(Contract):
 class ExternalImageRequest(Contract):
     """One Korean API operation; input order is part of the snapshot hash."""
     layout_selection: LayoutSelection | None = None
+    text_rendering: Literal["freeform-v1"] | None = None
     kind: Literal["api_image"] = "api_image"
     operation: ImageOperation
     pipeline_profile_id: Literal["openai-images"] = "openai-images"
@@ -114,6 +115,8 @@ class ExternalImageRequest(Contract):
     @model_serializer(mode="wrap")
     def serialize_request(self, handler):
         data = handler(self)
+        if self.text_rendering is None:
+            data.pop("text_rendering", None)
         if self.layout_selection is None:
             data.pop("layout_selection", None)  # Keep pre-layout saved bytes/hashes.
         if self.complexity is None:
@@ -123,6 +126,8 @@ class ExternalImageRequest(Contract):
     @model_validator(mode="after")
     def valid_operation(self):
         self.complexity = resolve_image_complexity(self.model, self.complexity)
+        if self.text_rendering is not None and self.operation != "edit":
+            raise ValueError("Freeform ads require editing product photographs")
         if self.layout_selection is not None:
             from .layout_profiles import get_layout
             profile = get_layout(self.layout_selection.aspect_ratio, self.layout_selection.placement)

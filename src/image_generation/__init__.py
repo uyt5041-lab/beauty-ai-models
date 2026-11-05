@@ -57,3 +57,6 @@ __all__ = ["make_a_template", "BackendGeneratedImage", "BackendImageAdapter", "B
 from .contracts import LayoutSelection
 from .layout_profiles import get_layout, make_placement_layout
 __all__ += ["LayoutSelection", "get_layout", "make_placement_layout"]
+
+from .candidate_export import export_candidate
+__all__ += ["export_candidate"]

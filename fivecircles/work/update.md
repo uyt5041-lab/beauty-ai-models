@@ -265,3 +265,13 @@ W&B·실험별 상태는 유지하고 계정 예산만 별도 SQLite로 공유�
 
 ## 2026-11-03 · AD-WORK-COSTS Git 완료
 - [PR #1](https://github.com/uyt5041-lab/beauty-ai-models/pull/1) merged → feature/image-model, merge f3bf03977ce2cf0f63b9b4ab4c3a4d5d34b7dab6. 완료 체크·영수증 갱신. 전체2335 tests PASS/원격CI미설정/W&B 재조회2회. 배포는 수행하지 않았다.
+
+
+## 2026-11-05 · 이미지 2트랙 Python 경계
+
+- 범위: 사용자 보류 해제 후 이미지 파트만 구현. 기존 src/image_generation의 opt-in 자유형/합성형 입력과 정책·export를 추가했다. 기본 단일 합성·n=1·기존 원장/성공 재사용/UNKNOWN 유지.
+- EGM: fivecircles-egm-v3-risk-scoped HIGH/FULL fresh 5단계와 수리 확인 후 착수. 대상 설계와 원문 리뷰는 작업 산출물 reports/image-two-track-20261105, 새 Python 경계 설명은 docs/imageTwoTrack.md. 전체 팀 계약 확정/인수로 쓰지 않는다.
+- 검증: 기존395 PASS 기준으로 계약12→전송8→export10 순차 통과 후 추가 회귀7개를 포함한 전체432 PASS. 네트워크 차단·MockTransport·SQLite/로컬 폰트. 실제 API0, SDK 우회/팀 예산 중복writer0.
+- 수리: 테스트 오류 코드 비교 방식7건·태그 단독 caption 빈줄1건 수정. 자유형에 합성 전용 레이아웃을 요구하지 않도록 설계 단계에서 검증을 분리했다. 구 테스트env pytest 누락은 기존 프로젝트 venv로 전환했다.
+- 남음: 서빙 총장수/배치·고유후보·권한/승인/공통 예산 연결, 프론트/UI, 텍스트 모드별 문안, 실제품 품질/과금/배포. 이미지 자동 OCR/제품검출은 추가하지 않았다.
+- 게시: 로컬 codex/image-two-track-20261105 격리 작업. 원격 push·PR·병합·배포/팀 메시지는 이번 구현에서 수행하지 않았다.

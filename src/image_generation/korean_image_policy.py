@@ -10,7 +10,7 @@ WATERMARK_POLICY_KO = (
     "입력 사진 위에 덧씌워진 워터마크는 결과에 복제하지 않는다. "
     "실제 제품에 인쇄된 브랜드 로고·라벨 글자·포장 그림은 워터마크가 아니므로 보존한다."
 )
-PRESERVE_KO = (
+PRODUCT_PRESERVATION_KO = (
     "제품 보존 조건\n"
     "원본 제품의 전체 폭·길이·세로 가로 비율, 뚜껑과 본체의 비율, "
     "펌프·노즐·목 부분과 세부 모양을 유지한다. "
@@ -19,7 +19,18 @@ PRESERVE_KO = (
     "제품 전체가 보이게 하고 작은 부품을 자르거나 늘이지 않는다. "
     "사진에 없는 효능·성분·인증 표시·포장 정보를 만들어 넣지 않는다. "
     "색감 변경은 배경과 주변 연출에만 적용한다. "
+)
+BACKGROUND_ONLY_KO = (
     "광고 문구·가격·배지를 새로 그리지 않는다. 요청한 카피 영역은 별도 한글 합성을 위해 비운다."
+)
+PRESERVE_KO = PRODUCT_PRESERVATION_KO + BACKGROUND_ONLY_KO
+FREEFORM_KO = (
+    "자유형 광고 제작 조건\n"
+    "승인된 광고 문구 JSON에 있는 헤드·서브·CTA만 광고 안에 그릴 수 있다. "
+    "문구의 철자·의미·명시한 줄바꿈을 바꾸거나 다른 문구를 추가하지 않는다. "
+    "제품에 어울리는 글꼴·대비·위계로 읽기 쉽게 배치하며 제품과 라벨을 가리지 않는다. "
+    "고정된 합성용 제품/문구 박스나 빈 카피 영역을 강제하지 않는다. "
+    "실제 결과의 제품·문구 정확성과 모바일 가독성은 사람이 확인해야 한다."
 )
 CUTOUT_KO = (
     "첫 번째 화장품 사진의 배경만 제거한다. 원본 시점과 모든 보이는 부품을 유지한다. "
@@ -39,7 +50,9 @@ def render_korean_image_policy(request: ExternalImageRequest) -> str:
     parts = [request.prompt.positive]
     if request.prompt.negative:
         parts.append("피해야 할 내용\n" + request.prompt.negative)
-    parts.extend((PRESERVE_KO, WATERMARK_POLICY_KO))
+    freeform = request.text_rendering == "freeform-v1"
+    parts.extend(((PRODUCT_PRESERVATION_KO + FREEFORM_KO) if freeform else PRESERVE_KO,
+                  WATERMARK_POLICY_KO))
     products, references = len(request.product_images), len(request.reference_images)
     if products:
         parts.append("제품 사진의 역할\n1번 사진이 주 제품과 정면 시점의 기준이다. "
@@ -53,11 +66,19 @@ def render_korean_image_policy(request: ExternalImageRequest) -> str:
     if references:
         parts.append(f"배경 참고 사진의 역할\n{products + 1}번부터 {products + references}번은 "
             "배경 구도와 조명만 참고한다. 해당 사진의 제품·글자·로고는 복제하지 않는다. "
-            "원본 제품 보존과 카피 여백을 우선한다.")
+            + ("원본 제품 보존과 문구 가독성을 우선한다." if freeform
+               else "원본 제품 보존과 카피 여백을 우선한다."))
     if request.layout_selection is not None:
         from .layout_profiles import get_layout, render_layout_instruction
         selection = request.layout_selection
-        parts.append(render_layout_instruction(get_layout(selection.aspect_ratio, selection.placement)))
+        profile = get_layout(selection.aspect_ratio, selection.placement)
+        if freeform:
+            parts.append(f"최종 출력 용도: 인스타그램 {selection.placement}, "
+                         f"비율 {selection.aspect_ratio}. 앱 UI와 겹치지 않게 주요 내용을 읽기 쉽게 배치한다.")
+            if "cta" not in dict(profile.text):
+                parts.append("CTA는 인스타그램 플랫폼 버튼을 사용한다. 이미지 안에 CTA를 추가하지 않는다.")
+        else:
+            parts.append(render_layout_instruction(profile))
     return "\n\n".join(parts)
 
 
