@@ -56,6 +56,13 @@
     "legacy_raw": 82
   },
   "api_calls": 0,
-  "remote_readback": "PENDING",
-  "browser_readback": "PENDING"
+  "remote_readback": "PASS: exact three branch SHAs and canonical/shared TODO plus journal progress file bytes",
+  "browser_readback": "PASS: GitHub README date-specific link -> 8-section journal -> all active items -> preserved 220-item original; plan/models totals and remaining items checked; progress SVG loaded",
+  "browser_task_space": 42,
+  "remote_commits_verified": {
+    "beauty-actual-log-20261105": "1419e6e10be7261f5cfb56124a4eccebc9819c53",
+    "beauty-plan-log-20261105": "e3435c5f6b6ae36ce6a7512e360fa133575ee4e6",
+    "beauty-journal-log-20261105": "31ce85f271c3c1992516138bc44d0f5ad6609174"
+  },
+  "browser_initial_navigation": "First generic today-link selected older date; recovered using observed 2026-11-05 href and verified correct journal."
 }
