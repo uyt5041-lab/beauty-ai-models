@@ -160,6 +160,8 @@ class OpenAIImagesAdapter:
             "quality": snapshot.quality,
             "output_format": "png",
         }
+        if snapshot.complexity is not None:
+            payload["complexity"] = snapshot.complexity
         if snapshot.operation == "cutout":
             payload["background"] = "transparent"
         if snapshot.operation == "generate" and not reference_images:

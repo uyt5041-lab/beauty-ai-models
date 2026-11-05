@@ -111,7 +111,8 @@ def test_generate_is_one_fixed_url_json_call_without_real_key(monkeypatch):
         assert len(req.headers["x-client-request-id"]) == 36
         payload = json.loads(req.content)
         assert payload["n"] == 1 and payload["output_format"] == "png"
-        assert payload["model"] == "gpt-image-2.5-sunburst-2026-09-08"
+        assert payload["model"] == "gpt-image-2.6-sunburst"
+        assert payload["complexity"] == "high"
         assert payload["size"] == "1152x1440" and payload["quality"] == "medium"
         assert "피해야 할 내용\n추가 제품, 추가 뚜껑, 글자" in payload["prompt"]
         assert "input_fidelity" not in payload and "negative_prompt" not in payload
@@ -157,6 +158,8 @@ def test_edits_multipart_preserves_all_reference_roles_and_order(operation, prod
         assert [content for name, content, _, _ in parts if name == "image[]"] == images
         fields = {name: content.decode() for name, content, filename, _ in parts if filename is None}
         assert fields["n"] == "1" and fields["output_format"] == "png"
+        assert fields["model"] == "gpt-image-2.6-sunburst"
+        assert fields["complexity"] == "high" and fields["quality"] == "medium"
         if operation == "cutout":
             assert fields["background"] == "transparent"
             assert "배경만 제거한다" in fields["prompt"]

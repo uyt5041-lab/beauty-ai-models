@@ -1,7 +1,7 @@
 """Versioned Korean service policy for the image MVP."""
 from typing import Literal
 
-from .contracts import AssetRef, ExternalImageRequest, ImageProviderModel
+from .contracts import AssetRef, ExternalImageRequest, ImageComplexity, ImageProviderModel
 
 KOREAN_POLICY_VERSION = "ko-v1"
 WATERMARK_POLICY_KO = (
@@ -62,9 +62,10 @@ def render_korean_image_policy(request: ExternalImageRequest) -> str:
 
 
 def build_korean_cutout_request(product_image: AssetRef, *,
-        model: ImageProviderModel = "gpt-image-2.5-sunburst-2026-09-08",
-        quality: Literal["low", "medium", "high"] = "medium") -> ExternalImageRequest:
+        model: ImageProviderModel = "gpt-image-2.6-sunburst",
+        quality: Literal["low", "medium", "high"] = "medium",
+        complexity: ImageComplexity | None = None) -> ExternalImageRequest:
     """Build a Korean API cutout request; product fidelity still requires review."""
     return ExternalImageRequest(operation="cutout", pipeline_revision="2",
         watermark_policy="exclude-v1", cosmetics_policy_version=KOREAN_POLICY_VERSION,
-        product_images=[product_image], model=model, quality=quality)
+        product_images=[product_image], model=model, quality=quality, complexity=complexity)

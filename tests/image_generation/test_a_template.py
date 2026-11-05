@@ -129,7 +129,8 @@ def test_pre_v3_safe_zone_binding_replays_exact_stored_request(tmp_path, monkeyp
     assert fixture["source_commit"] == "b9d00152de352499ce7773ac398fe8efb5408e8e"
     record = fixture["cases"][case]
     project = uuid4()
-    adapter = backend.setup(tmp_path, lambda req: pytest.fail("No provider call is allowed"))
+    adapter = backend.setup(tmp_path, lambda req: pytest.fail("No provider call is allowed"),
+                            model="gpt-image-2.5-sunburst-2026-09-08")
     payload = backend.body(**record["changes"])
     with adapter._connect() as db:
         db.execute("INSERT INTO backend_image_bindings VALUES (?,?,?,?,?)",

@@ -11,7 +11,7 @@
 
 ## 비율·세이프존·큰 글자 합성
 
-2026-11-05 검증한 이미지 모듈은 [src/image_generation](src/image_generation)에 있습니다. 잇템 이미지 모듈과 같은 소스를 이 브랜치에 모았습니다. 기존 `beauty_ai` 실험 래퍼와 구분해 저장소 루트에서 `src.image_generation`을 사용합니다. [비율·세이프존 선택과 합성 방법](docs/imagePlacementLayouts.md), [호출 없는 배치 미리보기](scripts/preview_image_layout.py), [실행 가능한 이미지 테스트](tests/image_generation)를 참고하세요. 선택을 생략하면 기존 4:5 경로를 유지하며, 프론트·서빙 선택 UI 연결과 실 API·실기기 인수는 후속 작업입니다.
+2026-11-05 검증한 이미지 모듈은 [src/image_generation](src/image_generation)에 있습니다. 잇템 이미지 모듈과 같은 소스를 이 브랜치에 모았습니다. 기존 `beauty_ai` 실험 래퍼와 구분해 저장소 루트에서 `src.image_generation`을 사용합니다. 신규 서비스 이미지 기본값은 `gpt-image-2.6-sunburst`, `complexity=high`, `quality=medium`입니다. 제품 글자 일관성 개선은 향후 실제 결과로 확인합니다. [비율·세이프존 선택과 합성 방법](docs/imagePlacementLayouts.md), [호출 없는 배치 미리보기](scripts/preview_image_layout.py), [실행 가능한 이미지 테스트](tests/image_generation)를 참고하세요. 선택을 생략하면 기존 4:5 경로를 유지하며, 프론트·서빙 선택 UI 연결과 실 API·실기기 인수는 후속 작업입니다.
 
 ## 실제품 실험 실행기
 

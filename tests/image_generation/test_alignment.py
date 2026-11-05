@@ -121,7 +121,8 @@ def test_old_published_binding_replays_without_another_call(tmp_path, case):
     fixture = json.loads((Path(__file__).parent / 'fixtures/legacy_d99dee0.json').read_text())
     assert fixture['source_commit'] == 'd99dee0d056e1fc91ab57d1b3817cb9e1dd27f03'
     record = fixture['cases'][case]
-    adapter = backend.setup(tmp_path, lambda request: pytest.fail('Existing paid attempt was resubmitted'))
+    adapter = backend.setup(tmp_path, lambda request: pytest.fail('Existing paid attempt was resubmitted'),
+                            model="gpt-image-2.5-sunburst-2026-09-08")
     for db_path, tables in record['databases'].items():
         with closing(sqlite3.connect(tmp_path / db_path)) as db, db:
             for table, saved in tables.items():

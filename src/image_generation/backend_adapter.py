@@ -19,7 +19,9 @@ from uuid import UUID, uuid5
 from pydantic import Field, field_validator, model_validator
 
 from .api_image_processor import ExternalImageProcessor
-from .contracts import Contract, CopyRevision, ExternalImageRequest, ImagePrompt, LayoutSelection, content_hash
+from .contracts import (Contract, CopyRevision, ExternalImageRequest, ImageComplexity,
+                        ImagePrompt, ImageProviderModel, LayoutSelection, content_hash,
+                        resolve_image_complexity)
 from .errors import GatewayError
 from .product_analysis import ProductAnalysisResult
 
@@ -122,10 +124,12 @@ class BackendImageAdapter:
     """
 
     def __init__(self, processor: ExternalImageProcessor, binding_path: str | Path, *,
-                 model: str = "gpt-image-2.5-sunburst-2026-09-08",
-                 quality: Literal["low", "medium", "high"] = "medium"):
+                 model: ImageProviderModel = "gpt-image-2.6-sunburst",
+                 quality: Literal["low", "medium", "high"] = "medium",
+                 complexity: ImageComplexity | None = None):
         self.processor = processor
         self.model, self.quality = model, quality
+        self.complexity = resolve_image_complexity(model, complexity)
         self.path = Path(binding_path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as db:
@@ -201,6 +205,8 @@ class BackendImageAdapter:
             metadata.pop("layout_selection", None)  # Preserve old input fingerprints.
         metadata.update(model=self.model, quality=self.quality, adapter_version=version,
                         mock=self.processor.adapter.offline)
+        if self.complexity is not None:
+            metadata["complexity"] = self.complexity
         for role in ("product_images", "reference_images"):
             metadata[role] = [hashlib.sha256(data).hexdigest() for data in getattr(body, role)]
         fingerprint = content_hash(metadata)
@@ -230,7 +236,7 @@ class BackendImageAdapter:
                     profile = get_layout(body.layout_selection.aspect_ratio, body.layout_selection.placement)
                     selected = dict(layout_selection=body.layout_selection, width=profile.native[0], height=profile.native[1])
                 request = ExternalImageRequest(**selected, operation="edit", pipeline_revision="2",
-                    model=self.model, quality=self.quality, prompt=prompt,
+                    model=self.model, quality=self.quality, complexity=self.complexity, prompt=prompt,
                     product_images=products, reference_images=references,
                     watermark_policy="exclude-v1", cosmetics_policy_version="ko-v1")
                 self.processor.validate_request(request)
@@ -291,7 +297,7 @@ class BackendImageAdapter:
                        - datetime.fromisoformat(record["created_at"])).total_seconds()
             if seconds >= 0:
                 elapsed = round(seconds * 1000)
-        return {"provider": record["provider"], "model": stored.model, "request_sha256": row[1],
+        receipt = {"provider": record["provider"], "model": stored.model, "request_sha256": row[1],
                 "attempt_id": record["attempt_id"],
                 "provider_request_id": record["provider_request_id"],
                 "model_job_id": str(internal_job), "state": record["state"],
@@ -299,3 +305,6 @@ class BackendImageAdapter:
                 "usage": record["usage"], "billing_status": record["billing_status"],
                 "actual_cost_usd": None, "reservation_usd": record["reservation_usd"],
                 "error_code": record["error_code"]}
+        if stored.complexity is not None:
+            receipt["complexity"] = stored.complexity
+        return receipt

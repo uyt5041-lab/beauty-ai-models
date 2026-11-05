@@ -48,13 +48,13 @@ def analysis_result(**updates):
     return result
 
 
-def setup(tmp_path, handler, *, budget="10"):
+def setup(tmp_path, handler, *, budget="10", **model_options):
     assets = LocalAssetStore(tmp_path / "assets")
     adapter = OpenAIImagesAdapter(OpenAIImagesConfig(),
                                  transport=httpx.MockTransport(handler) if handler else None)
     proc = ExternalImageProcessor(assets, adapter, ProviderAttemptStore(tmp_path / "attempts.sqlite3"),
                                   budget_limit_usd=budget)
-    return BackendImageAdapter(proc, tmp_path / "bindings.sqlite3")
+    return BackendImageAdapter(proc, tmp_path / "bindings.sqlite3", **model_options)
 
 
 def response():
@@ -83,6 +83,8 @@ def test_real_boundary_order_metadata_and_restart_replay(tmp_path, counts):
     assert hashlib.sha256(first.image_bytes).hexdigest() == first.sha256
     assert first.receipt["usage"]["total_tokens"] == 30
     assert first.receipt["elapsed_ms"] >= 0 and first.receipt["actual_cost_usd"] is None
+    assert first.receipt["model"] == "gpt-image-2.6-sunburst"
+    assert first.receipt["complexity"] == "high"
     assert first.copy_hash == payload.copy_hash
     files = [part.get_payload(decode=True) for part in calls[0]
              if part.get_param("name", header="content-disposition") == "image[]"]
@@ -148,7 +150,8 @@ def test_uncertain_submission_does_not_retry_after_restart(tmp_path):
     assert calls == [1]
     receipt = setup(tmp_path, handler).get_receipt("service-001", project_id=project)
     assert receipt["actual_cost_usd"] is None and receipt["error_code"] is not None
-    assert receipt["model"] == "gpt-image-2.5-sunburst-2026-09-08"
+    assert receipt["model"] == "gpt-image-2.6-sunburst"
+    assert receipt["complexity"] == "high"
 
 
 def test_handoff_to_final_resize_keeps_source_and_real_dimensions(tmp_path):
