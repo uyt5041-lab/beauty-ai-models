@@ -9,6 +9,8 @@
 
 현재 통합 소스의 자동 테스트는 **1,321개 PASS**입니다. 팀 UI·텍스트·최종 렌더러의 실제 E2E 인수는 [LINK-01~05](docs/imageTodo.md)에 남아 있습니다.
 
+2026-11-04 작성한 [이미지 프롬프트 규칙·17개 검토 항목](docs/imagePromptRules.md), [복사용 한국어 예시](examples/prompts/daylight-roomy.v1.txt)와 [입력 manifest](examples/prompts/daylight-roomy.v1.manifest.json), [제품 라벨 보존 금붕어 리뷰](docs/imagePromptReview-20261104.md)를 공유합니다. 자유구도 실험 초안과 기존 리뷰의 게시본이며, 사진은 별도로 준비해야 합니다. 새 이미지 실행·서비스 MVP 변경·품질 승인을 뜻하지 않습니다.
+
 ## 실제품 실험 실행기
 
 제품 사진 2~5장과 참고 사진 0~5장을 받습니다. 프리셋·버전·호출 상한을 정한 뒤 호출 전 한글 HTML을 확인합니다. 실제 실행은 저장한 계획과 해시를 사용합니다. 실패·미확인 결과 뒤에는 다음 호출을 멈춥니다. [실행 방법](docs/experimentRunner.md) · [단계별 판정](fivecircles/work/experiment-runner-stages.md).

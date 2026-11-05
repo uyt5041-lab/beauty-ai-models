@@ -1,0 +1,255 @@
+{
+  "schema_version": "beautyai-required-image-dimensions-v1",
+  "status": "REVIEW_CONTRACT_ACTIVE_NOT_SERVICE_ADAPTER_BINDING",
+  "date_kst": "2026-11-04",
+  "purpose_ko": "기존 아트디렉션 축을 유지하며 필수 하위 항목이 사례별 평가에서 사라지지 않도록 한다.",
+  "legacy_axes": [
+    {
+      "id": "color_tone",
+      "label_ko": "색·톤"
+    },
+    {
+      "id": "product_form_relationship",
+      "label_ko": "제품과 주변 요소의 형태 관계"
+    },
+    {
+      "id": "typography",
+      "label_ko": "서체·가독성"
+    },
+    {
+      "id": "copy_aligned_concept",
+      "label_ko": "카피에 맞는 콘셉트"
+    },
+    {
+      "id": "copy_aligned_props",
+      "label_ko": "카피에 맞는 소품"
+    }
+  ],
+  "allowed_statuses": [
+    "적합",
+    "보완",
+    "미확인",
+    "비해당"
+  ],
+  "required_cell_fields": [
+    "status",
+    "observation_ko",
+    "fix_ko",
+    "setting_prompt_ko",
+    "evidence_paths"
+  ],
+  "rules": {
+    "all_cases_all_checks_required": true,
+    "missing_check_blocks_review_completion": true,
+    "not_applicable_requires_reason": true,
+    "unknown_is_not_pass": true,
+    "visual_suitability_is_not_metrology_pass": true,
+    "score_average_cannot_cancel_required_concern": true,
+    "preserve_user_mood_and_received_copy": true,
+    "flowers_are_not_a_global_default_or_global_ban": true,
+    "no_fixed_A_layout_inheritance_for_freeform_experiments": true,
+    "model_gaze_has_no_forced_target": true
+  },
+  "checks": [
+    {
+      "id": "palette",
+      "label_ko": "배색·색의 관계",
+      "axes": [
+        "color_tone"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "제품·배경·문구의 색 관계와 강조색 면적. 명도 차이와 색 구분을 혼동하지 않는다."
+    },
+    {
+      "id": "product_color",
+      "label_ko": "제품 고유색",
+      "axes": [
+        "color_tone",
+        "product_form_relationship"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "원본 제품의 흰색·검정·라벨색과 장면의 환경 반사를 구분한다. 조명 정규화 없는 육안 관찰로 색차 일치를 확정하지 않는다."
+    },
+    {
+      "id": "tone",
+      "label_ko": "톤·명도·채도",
+      "axes": [
+        "color_tone"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "밝은 화장품 톤, 회색기·탁함·탈채도, 제품과 배경의 밝기 차이. 따뜻한 테마 자체를 실패로 보지 않는다."
+    },
+    {
+      "id": "lighting",
+      "label_ko": "광원·노출·그림자",
+      "axes": [
+        "color_tone",
+        "product_form_relationship"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "빛의 방향·부드러움·주광/보조광·전면 노출·접촉 그림자·환경 일관성을 관찰한다. 배경이 밝다고 제품 조명까지 적합하다고 처리하지 않는다."
+    },
+    {
+      "id": "material",
+      "label_ko": "재질·표면 질감",
+      "axes": [
+        "product_form_relationship"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "불투명 본체·종이 라벨·유리 소품·피부·의상·바닥의 질감을 구분한다."
+    },
+    {
+      "id": "gloss",
+      "label_ko": "광택·정반사",
+      "axes": [
+        "product_form_relationship"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "부품별 무광/새틴/유광 차이, 하이라이트 크기·경계·위치·반사 분포. 검은 유광 뚜껑의 넓은 반사를 무광화·재도색으로 오판하지 않는다."
+    },
+    {
+      "id": "geometry",
+      "label_ko": "각도·폭·비율",
+      "axes": [
+        "product_form_relationship"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "원본의 촬영 각도·폭/높이·뚜껑/본체 비율·라벨 곡면과 제품 주변의 자세 관계. 육안과 정량 보존 검사를 구분한다."
+    },
+    {
+      "id": "concept",
+      "label_ko": "카피·무드·테마·장면",
+      "axes": [
+        "copy_aligned_concept",
+        "color_tone"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "수신 카피/콘셉트/무드의 의미를 장면·분위기·표현 스타일로 연결한다. 색만 바꿔 테마 완성으로 처리하지 않는다."
+    },
+    {
+      "id": "props",
+      "label_ko": "소품의 의미·배치",
+      "axes": [
+        "copy_aligned_props",
+        "product_form_relationship"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "소품의 필요 이유, 크기·접지·위치·제품 주목도·카피와의 관계. 소품 없음도 이유를 기록한 유효한 선택이다."
+    },
+    {
+      "id": "place_truth",
+      "label_ko": "지역·소재·사실 관계",
+      "axes": [
+        "copy_aligned_concept",
+        "copy_aligned_props"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "장면의 지역·원료·연구 도구가 확인되지 않은 산지·성분·효능을 주장하는지 구분한다. 광고 연출 자체를 실제 함유 성분의 증거로 보지 않는다."
+    },
+    {
+      "id": "composition",
+      "label_ko": "배치·여백·크기 관계",
+      "axes": [
+        "product_form_relationship",
+        "typography"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "제품·인물·문구의 크기, 가림·잘림·안전 여백. 자유 배치 실험에 옛 A 좌표를 강제하지 않는다."
+    },
+    {
+      "id": "attention",
+      "label_ko": "보는 사람의 시선 흐름",
+      "axes": [
+        "product_form_relationship",
+        "typography",
+        "copy_aligned_props"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "헤드→제품→설명/CTA 등 읽는 흐름, 얼굴·소품·반짝임의 경쟁. 모델의 실제 눈 방향과 구분한다."
+    },
+    {
+      "id": "model_gaze",
+      "label_ko": "모델의 눈 방향",
+      "axes": [
+        "product_form_relationship",
+        "copy_aligned_concept"
+      ],
+      "applies_to": "human_only",
+      "origin": "CURRENT_USER_CLARIFICATION_EXPLICIT_SUBCHECK_NOT_PROVEN_PRIOR_UNIVERSAL_RULE",
+      "criteria_ko": "카메라·제품·화면 밖 응시와 광고 목적의 관계. 카메라 응시 자체는 결함이 아니고 인물 없는 정물은 이유를 적어 비해당으로 처리한다."
+    },
+    {
+      "id": "interaction",
+      "label_ko": "사용 연상·손·제품 관계",
+      "axes": [
+        "product_form_relationship",
+        "copy_aligned_concept"
+      ],
+      "applies_to": "human_only",
+      "criteria_ko": "제품 종류에 맞는 얼굴/손/사용 부위 관계, 라벨 가림·손 관절. 닫힌 패드 통을 든 모습과 실제 사용하는 모습을 혼동하지 않는다."
+    },
+    {
+      "id": "wardrobe",
+      "label_ko": "의상·피부·제품색 관계",
+      "axes": [
+        "color_tone",
+        "copy_aligned_concept"
+      ],
+      "applies_to": "human_only",
+      "criteria_ko": "피부·의상·제품의 색과 재질 구분, 강조색 반복 면적. 모든 의상을 제품색으로 칠하지 않는다."
+    },
+    {
+      "id": "typography",
+      "label_ko": "글자 모양·굵기·제품 인상",
+      "axes": [
+        "typography",
+        "product_form_relationship"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "서체의 형태·굵기·기울기·리듬이 제품 폭·자세·테마와 맞는지 확인한다. 실제 폰트 파일 이름이나 권리를 픽셀로 확정하지 않는다."
+    },
+    {
+      "id": "mobile",
+      "label_ko": "모바일 크기·대비·줄바꿈",
+      "axes": [
+        "typography"
+      ],
+      "applies_to": "all",
+      "criteria_ko": "360px 문구 식별·크기·대비·줄바꿈·시선 위계. 대표 픽셀 대비나 육안 식별을 전체 OCR/접근성 인증으로 확대하지 않는다."
+    }
+  ],
+  "source_refs": [
+    {
+      "line": 7,
+      "role": "장면·재질·조명을 먼저 결정",
+      "historical_source_name": "imageArtDirectionWorkflowPlan.md",
+      "bundled_in_this_publication": false
+    },
+    {
+      "line": 17,
+      "role": "기존 다섯 검토 축",
+      "historical_source_name": "imageArtDirectionWorkflowPlan.md",
+      "bundled_in_this_publication": false
+    },
+    {
+      "line": 116,
+      "role": "축별 검토 질문",
+      "historical_source_name": "peach-glow.v2.json",
+      "bundled_in_this_publication": false
+    },
+    {
+      "line": 183,
+      "role": "밝은 유채색 톤과 제품 고유색 구분",
+      "historical_source_name": "palette-bank.json",
+      "bundled_in_this_publication": false
+    },
+    {
+      "role": "소품·지역/소재·스타일·배치·의상 확장 축",
+      "historical_source_name": "catalog.json",
+      "bundled_in_this_publication": false
+    }
+  ],
+  "integration_boundary_ko": "이 파일은 검토 계약이며, 서비스 이미지 어댑터가 이 설정을 자동으로 프롬프트에 반영한다는 뜻은 아니다. 이번 리뷰 빌더에서 사례×필수항목의 누락을 검증한다.",
+  "publication_note_ko": "17개 checks와 rules는 2026-11-04 원본 그대로다. source_refs는 당시 작성 근거의 이름이며 이 게시에 포함되지 않는다. 운영 서비스 연결을 뜻하지 않는다.",
+  "historical_source_sha256": "2a5fefec804266a98f11c4afd4871ba94844e4274bde92f9c062229b367adb07"
+}

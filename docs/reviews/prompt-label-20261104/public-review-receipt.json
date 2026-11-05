@@ -1,0 +1,79 @@
+{
+  "schema_version": "beautyai-public-targeted-review-receipt-v1",
+  "review_date_kst": "2026-11-04",
+  "review_status": "COMPLETED_TARGETED_REQUEST_CHANGES",
+  "policy": "fivecircles-egm-v3-risk-scoped",
+  "bundle_version": "0.1.0",
+  "execution": "FRESH",
+  "required_scope": "TARGETED",
+  "selected": [
+    {
+      "stage": 3,
+      "persona_id": "design_critic",
+      "reviewer_id": "prompt_label_design_goldfish",
+      "status": "COMPLETED"
+    },
+    {
+      "stage": 3,
+      "persona_id": "structural",
+      "reviewer_id": "prompt_label_structure_goldfish",
+      "status": "COMPLETED_WITH_S1_WITHDRAWN_AFTER_ADDITIONAL_READ"
+    }
+  ],
+  "not_selected": {
+    "initial_zoom_out": "No whole-goal or system redesign",
+    "comprehension": "No self-contained new design approval requested",
+    "style": "No language/style change scope beyond explicit semantic audit",
+    "intermediate_zoom_out": "No full design flow or remediated design to reevaluate",
+    "implementation_readiness": "No implementation plan to approve",
+    "codebase_details": "No code change; narrow source boundary checked by structural with supplemental source reads"
+  },
+  "findings": {
+    "F1": "OPEN_MAJOR",
+    "F2": "OPEN_MAJOR",
+    "F3": "OPEN_NIT_ROOT_ADJUDICATED_FROM_D3_NIT_S2_MAJOR",
+    "F4": "OPEN_NIT",
+    "S1": "WITHDRAWN_LOCAL_VALIDATION_COUNTEREVIDENCE"
+  },
+  "team_actual_execution_cause": "UNKNOWN",
+  "image_api_calls_during_review": 0,
+  "review_model_tokens": null,
+  "review_model_cost_usd": null,
+  "original_record_sha256": {
+    "review.md": "33b0a226ef97f3778164bea331f184c5e1bde772c6781757d925b04bf8b0578e",
+    "team-prompt.txt": "d98f55f59bd6d31c1b78d055acf035bc17967ce6967357c4305273f60f03c7da",
+    "design-reviewer-final.txt": "c32cbe53383dca402c95b098e2c6d008108440a14ea39257710bdcf44f7b5cd6",
+    "structure-reviewer-final.txt": "84b03630c3ad1653a11c2b30610966ac42cd41170c86a80a327ed82db18c39a5",
+    "evidence.json": "7621b7b8251e1088e05be90bea2edac6875cc86bdef3c17e534ded8178f0ca5d",
+    "reading-audit.json": "2809509e2c06e2e1ecd57403fe8f7ccf6ba4a152a8deef17510879d00077d628"
+  },
+  "historical_source_sha256": {
+    "contracts.py": "3ea7b411075be05fb61174a18480fd6be255fde0da6dde998f759656dd983efa",
+    "openai_images.py": "69fef0cae5dc0cfc87fcdc5a5adfffd3dedbdfed9acc9dafbc8999347c1c5362",
+    "design_critic.md": "cee6294735ce2bd4fea19245852b6eb07cbe8ede7e72a4bfc829f586e4a39d0f",
+    "structural.md": "f0d4fe6faee4e388366b7d653fe353a9b09f45ca1bf5dae29280e351cda7da87",
+    "feature-spec-standard.md": "8e9821e7bfd7c074dd1cec7ba02e3ea09a3fd32e35b91a1463a37c1ee3b9d6a4",
+    "engineering-review-standard.md": "d6c3046cba7511fba675d3276225488ae238e414c642b6bc2317ac0ccab947c4"
+  },
+  "published_copies": [
+    {
+      "file_name": "team-prompt.txt",
+      "sha256": "16b03a4c04fa26866ba2ea2e4f8eac3cc5cad1cf95f4c4b00a9218dc0d11a12d",
+      "adaptation": "APPENDED_PUBLICATION_NOTICE_NO_LOCAL_PREFIX_IN_ORIGINAL"
+    },
+    {
+      "file_name": "design-reviewer-final.txt",
+      "sha256": "e655a287ce1a0ba790ce89338bb8db7a166d48de1260dc44e343a7c266162899",
+      "adaptation": "HISTORICAL_AUDIT_REFERENCE_AND_PUBLICATION_NOTICE_NO_LOCAL_PREFIX_IN_ORIGINAL"
+    },
+    {
+      "file_name": "structure-reviewer-final.txt",
+      "sha256": "a7bd510d4ba3d4530e83624cf93a7a5ab08f1fc5dee707380d26fc43f742e2a9",
+      "adaptation": "LOCAL_CHECKOUT_PREFIX_REDACTED_AND_PUBLICATION_NOTICE"
+    }
+  ],
+  "source_snapshots_bundled": false,
+  "images_bundled": false,
+  "audit_boundary_ko": "검토자 도구 로그 자체는 root에 노출되지 않았다. 읽기 범위·전후 해시는 완료 응답의 보고이며 root는 현재 파일 해시와 고정 입력의 일치를 교차 확인했다.",
+  "publication_note_ko": "기존 리뷰의 판정과 해시를 옮긴 게시용 영수증이다. 원본 경로·사진·미게시 fixture 링크를 포함하지 않는다. 원본 기록은 로컬에 보존하고 이 게시용 사본만 수정했다. 새 독립 검토·이미지 실행·서비스 인수 증거가 아니다."
+}

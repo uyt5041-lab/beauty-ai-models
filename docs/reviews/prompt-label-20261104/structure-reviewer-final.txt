@@ -1,0 +1,17 @@
+S1 철회: 현재 로컬 코드의 제품 첨부 누락 결함은 반증됐다. `openai_images.py:233→189→184→172-173`에서 재검증하며, `contracts.py:343-348`은 generate+제품 이미지를 거부하고 edit에는 제품 이미지를 요구한다. 바이트 목록 길이도 `191-194`에서 검사한다. 검증 우회 증거는 없다. 팀원 실제 runtime은 UNKNOWN이다.
+
+S2 유지(Major·모호함): `team-prompt.txt:65`의 기존 라벨 인쇄를 “지정 카피 외 글자 금지”에서 명시적으로 제외할 필요가 있다. 인과 효과는 UNKNOWN.
+
+S3 유지(Nit): `team-prompt.txt:36,57`의 안전영역과 `36,39,63`의 CTA 규칙이 반복된다. 최종 조립문 충돌은 UNKNOWN.
+
+누락·잘림·변경·외부 호출 없음. 아래 해시는 읽기 전후 동일하다.
+
+```json
+[
+ {"path":"beauty_ai/contracts.py","ranges":[[281,352]],"sha256_before_after":"3ea7b411075be05fb61174a18480fd6be255fde0da6dde998f759656dd983efa"},
+ {"path":"beauty_ai/openai_images.py","ranges":[[145,202],[224,258]],"sha256_before_after":"69fef0cae5dc0cfc87fcdc5a5adfffd3dedbdfed9acc9dafbc8999347c1c5362"}
+]
+```
+
+[게시용 사본 안내]
+local-prefix redaction(로컬 경로 접두사 비공개 처리)을 적용해 JSON의 두 path에서 당시 로컬 체크아웃 접두사를 삭제했다. 남은 beauty_ai 파일명·줄범위·SHA256은 2026-11-04에 읽은 소스를 식별하며 현재 브랜치나 팀원 배포본의 동일성은 뜻하지 않는다. 이 소스 스냅샷과 원본 감사 기록은 포함하지 않는다. 위 읽기·불변 해시 보고는 당시 검토자의 보고이며 새 검토가 아니다.
