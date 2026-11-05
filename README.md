@@ -119,12 +119,12 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 보고 기준은11/03 19:28 KST다. 기존 구현 원본096053e를 유지해 전체 체크는11/02와 같다. 오늘의 R2·FinOps 로컬 코드는 미게시라 완료 수에 더하지 않았다. W&B 기록 게시·실험·사용자 선호와 서비스 품질/팀 인수는 구분한다. 공유 계획7개+추가4개는 중복 합산하지 않는다.11/04 이후 일정은 미체크이며 과거 날짜 기록은 보존한다.
 
 
-## 전체 TODO 진행률 · 2026-11-05
+## 활성 TODO 진행률 · 2026-11-05
 
-**공유용 일지 체크: 75/220개 · 34.1%. 일별 마일스톤:3/13 전체 확인·10개 부분 완료/미인수.**
+**활성 체크12/28 · 42.9%. 현행 MVP 모듈10/10, 고도화7개를 나눈 작업2/9, 공동 검증/인수0/9.** 제품 전체 완성률이 아니다.
 
-![전체 TODO 진행률](worklogs/2026-11-05/progress.svg)
+![활성 체크 진행률](worklogs/2026-11-05/progress.svg)
 
-[협업일지](worklogs/2026-11-05/park-jisoo-worklog.md) · [HTML](worklogs/2026-11-05/park-jisoo-worklog.html) · [전체 TODO](worklogs/2026-11-05/full-todo.md) · [전체 목록 HTML](worklogs/2026-11-05/full-todo.html) · [마일스톤](worklogs/2026-11-05/milestones.md) · [근거](worklogs/2026-11-05/evidence.md)
+[오늘 협업일지](worklogs/2026-11-05/park-jisoo-worklog.md) · [HTML](worklogs/2026-11-05/park-jisoo-worklog.html) · [전체 활성 TODO](worklogs/2026-11-05/full-todo.md) · [전체 목록 HTML](worklogs/2026-11-05/full-todo.html) · [220개 이관표](worklogs/2026-11-05/reclassification.md) · [재분류 전75/220 기록](worklogs/2026-11-05/archive/before-active-reclassification/park-jisoo-worklog.md) · [근거](worklogs/2026-11-05/evidence.md).
 
-기준:2026-11-05 14:48 KST. 고정원본ed9f4fa에서14개를추가한220개중75개를일지기준으로체크했다. 비율/합성·모델설정게시,시안선택·협업설계와서비스인수를구분했다. 자유형:합성형1:1·2:1·3:1기능구현은보류다. 이전기록은보존했다.
+과거·비적용·보류·중복 요약은 활성 분모에서 제외한다. 원본220개와원시82개/일지75개 체크·일정·완료일을 보존했다. 다른 집계 기준이므로 이전34.1%와 증감 비교하지 않는다. 자유형 다수+합성형1장은 보류이며 공동 서비스 검증/청구/인수는 활성으로 남긴다.

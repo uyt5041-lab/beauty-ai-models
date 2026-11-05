@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "date": "2026-11-05",
+  "official_sections": 8,
+  "md_html_headings_match": true,
+  "todo_items": 220,
+  "checked": 75,
+  "percent": 34.1,
+  "future_prechecked": 0,
+  "private_absolute_paths": 0,
+  "links_exist": true,
+  "progress_generator_tests": 7,
+  "published_code_test_record": 395,
+  "image_api_calls_in_recording": 0,
+  "git_readback": "VERIFIED",
+  "checked_remote_files": 15,
+  "initial_journal_commit": "81f5cbd8785ea2b426b1ddf4933fd63873552acd",
+  "browser_checks": {
+    "readme_daily_link_clicked": true,
+    "exact_journal_url_match": true,
+    "no_trailing_characters": true,
+    "page_and_title_match": true,
+    "official_sections": 8,
+    "full_todo_link_clicked": true,
+    "rendered_total": 220,
+    "rendered_checked": 75,
+    "plan_today_and_hold_visible": true
+  }
+}

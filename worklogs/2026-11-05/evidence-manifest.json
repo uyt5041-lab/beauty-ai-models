@@ -1,16 +1,44 @@
 {
-  "report_date": "2026-11-05",
-  "cutoff": "2026-11-05 14:48 KST",
-  "source_commit": "ed9f4faec0d054f6c6ec7549a17516c16b483988",
-  "source_sha256": "10b609f0490597ef077c546a950472e6e05bf9dac2ac647f3de5f396bd1af4c2",
-  "feature_code": "758cca9bae2889aded2d215c66f30d96b3b33b12",
-  "team_code": "59b0fd3f0c72156e56a74c9c21944bc4a701286c",
-  "progress": {
-    "total": 220,
-    "completed": 75,
-    "percent": 34.1
+  "observed_at": "2026-11-05 16:58 KST",
+  "parents": {
+    "beauty-actual-log-20261105": "ed9f4faec0d054f6c6ec7549a17516c16b483988",
+    "beauty-plan-log-20261105": "f451e4b51b1672a83dfe1324948c088ef2910a70",
+    "beauty-journal-log-20261105": "ee3380aa93291811a084a817a78747718682b89b"
   },
-  "model_calls": 0,
-  "published_code_tests": "395 recorded; not rerun for journal",
-  "mixed_feature": "IMPLEMENTATION_ON_HOLD"
+  "legacy_source_sha256": "10b609f0490597ef077c546a950472e6e05bf9dac2ac647f3de5f396bd1af4c2",
+  "active_source_sha256": "b1e5b8eb5ac0393cb2a3e12ed68f63e3cf87b42bd7277d363fed63fd260ec397",
+  "active_summary": [
+    {
+      "title": "현행 MVP · 이미지 모듈 구현",
+      "total": 10,
+      "completed": 10,
+      "remaining": 0
+    },
+    {
+      "title": "고도화 7개 · 구현/연결",
+      "total": 9,
+      "completed": 2,
+      "remaining": 7
+    },
+    {
+      "title": "공동 검증/인수",
+      "total": 9,
+      "completed": 0,
+      "remaining": 9
+    }
+  ],
+  "total": 28,
+  "completed": 12,
+  "api_calls": 0,
+  "code_evidence": {
+    "beauty": "758cca9bae2889aded2d215c66f30d96b3b33b12",
+    "team": "59b0fd3f0c72156e56a74c9c21944bc4a701286c",
+    "tests": "395 recorded PASS; not rerun in this documentation change",
+    "api_calls": 0
+  },
+  "old_records": "archive/before-active-reclassification/",
+  "published_todo_commits": {
+    "beauty-actual-log-20261105": "1419e6e10be7261f5cfb56124a4eccebc9819c53",
+    "beauty-plan-log-20261105": "e3435c5f6b6ae36ce6a7512e360fa133575ee4e6"
+  }
 }
