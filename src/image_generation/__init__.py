@@ -33,6 +33,8 @@ same selection for generation and make_placement_layout() during composition.
 Omitting it preserves the historical 4:5 generation path. Placement coordinates
 are targets; review actual product bounds before passing protected_regions.
 Use make_a_template() for paired upper safe-zone / centered A layout settings.
+Optional ittem_hotfix helpers bundle 14D generation and separate, centered
+vertical-only A composition. See docs/ittemHotfix.md for approval boundaries.
 Layout coordinates use the final canvas. Supply product protection regions
 to prevent text overlap; absent regions require manual product/layout review.
 The full copy hash includes plan, ad_copy, caption and hashtags. Hash matching
@@ -60,3 +62,7 @@ __all__ += ["LayoutSelection", "get_layout", "make_placement_layout"]
 
 from .candidate_export import export_candidate
 __all__ += ["export_candidate"]
+
+from .adaptive_typography import AdaptiveTypographyOptions
+from .ittem_hotfix import build_ittem_image_adapter, compose_ittem_ad
+__all__ += ["AdaptiveTypographyOptions", "build_ittem_image_adapter", "compose_ittem_ad"]

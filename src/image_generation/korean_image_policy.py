@@ -2,6 +2,7 @@
 from typing import Literal
 
 from .contracts import AssetRef, ExternalImageRequest, ImageComplexity, ImageProviderModel
+from .composed_dimensions import DIMENSIONS14_VERSION, render_dimensions14_policy
 
 KOREAN_POLICY_VERSION = "ko-v1"
 WATERMARK_POLICY_KO = (
@@ -51,8 +52,13 @@ def render_korean_image_policy(request: ExternalImageRequest) -> str:
     if request.prompt.negative:
         parts.append("피해야 할 내용\n" + request.prompt.negative)
     freeform = request.text_rendering == "freeform-v1"
-    parts.extend(((PRODUCT_PRESERVATION_KO + FREEFORM_KO) if freeform else PRESERVE_KO,
-                  WATERMARK_POLICY_KO))
+    if request.prompt.prompt_version == DIMENSIONS14_VERSION:
+        if freeform or request.operation != "edit" or request.layout_selection is not None:
+            raise ValueError("14 dimensions require a product edit with the A layout")
+        parts.extend((render_dimensions14_policy(), WATERMARK_POLICY_KO))
+    else:
+        parts.extend(((PRODUCT_PRESERVATION_KO + FREEFORM_KO) if freeform else PRESERVE_KO,
+                      WATERMARK_POLICY_KO))
     products, references = len(request.product_images), len(request.reference_images)
     if products:
         parts.append("제품 사진의 역할\n1번 사진이 주 제품과 정면 시점의 기준이다. "

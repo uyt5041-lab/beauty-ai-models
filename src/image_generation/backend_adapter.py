@@ -24,6 +24,7 @@ from .contracts import (Contract, CopyRevision, ExternalImageRequest, ImageCompl
                         resolve_image_complexity)
 from .errors import GatewayError
 from .product_analysis import ProductAnalysisResult
+from .composed_dimensions import ComposedSceneMode, DIMENSIONS14_VERSION, validate_dimensions14_layout
 
 
 Text = Annotated[str, Field(strict=True, min_length=1, max_length=600)]
@@ -131,7 +132,11 @@ class BackendImageAdapter:
     def __init__(self, processor: ExternalImageProcessor, binding_path: str | Path, *,
                  model: ImageProviderModel = "gpt-image-2.6-sunburst",
                  quality: Literal["low", "medium", "high"] = "medium",
-                 complexity: ImageComplexity | None = None):
+                 complexity: ImageComplexity | None = None,
+                 scene_mode: ComposedSceneMode = "standard"):
+        if scene_mode not in ("standard", "dimensions14"):
+            raise ValueError("Choose standard or dimensions14 for scene_mode")
+        self.scene_mode = scene_mode
         self.processor = processor
         self.model, self.quality = model, quality
         self.complexity = resolve_image_complexity(model, complexity)
@@ -229,6 +234,8 @@ class BackendImageAdapter:
             metadata.pop("layout_selection", None)  # Preserve old input fingerprints.
         metadata.update(model=self.model, quality=self.quality, adapter_version=version,
                         mock=self.processor.adapter.offline)
+        if self.scene_mode == "dimensions14":
+            metadata["scene_policy_version"] = DIMENSIONS14_VERSION
         if self.complexity is not None:
             metadata["complexity"] = self.complexity
         for role in ("product_images", "reference_images"):
@@ -247,7 +254,13 @@ class BackendImageAdapter:
                     if content_hash(request) != row[2]:
                         raise ValueError("Stored request integrity failed")
                     return request
+                if self.scene_mode == "dimensions14":
+                    if body.generation_mode == "freeform":
+                        raise GatewayError("DIMENSIONS_LAYOUT_CONFLICT", "14디멘션 모드는 A 합성형 전용입니다.")
+                    validate_dimensions14_layout(body)
                 prompt = self._build_prompt(body, version)
+                if self.scene_mode == "dimensions14":
+                    prompt = prompt.model_copy(update={"prompt_version": DIMENSIONS14_VERSION})
                 # Assets are immutable. A crash may leave unreferenced assets,
                 # but no provider call occurs until this binding is committed.
                 products = [self.processor.assets.put_upload(data, project_id=project_id)
@@ -342,4 +355,6 @@ class BackendImageAdapter:
                 "error_code": record["error_code"]}
         if stored.complexity is not None:
             receipt["complexity"] = stored.complexity
+        if stored.prompt is not None and stored.prompt.prompt_version == DIMENSIONS14_VERSION:
+            receipt.update(scene_mode="dimensions14", scene_policy_version=DIMENSIONS14_VERSION)
         return receipt

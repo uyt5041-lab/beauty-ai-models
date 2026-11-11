@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-12",
+  "source_images_uploaded_to_git": false,
+  "actual_image_billing_usd": 0,
+  "cases": [
+    {
+      "case": "P1",
+      "pixels_and_png_identical_to_approved_composition": true,
+      "horizontal_movement_px": 0,
+      "image_api_calls": 0,
+      "clearance_search_px": [
+        12,
+        4
+      ],
+      "forced_fields": [
+        "cta"
+      ],
+      "minimum_contrast": 4.637152083828666
+    },
+    {
+      "case": "P2",
+      "pixels_and_png_identical_to_approved_composition": true,
+      "horizontal_movement_px": 0,
+      "image_api_calls": 0,
+      "clearance_search_px": [
+        12
+      ],
+      "forced_fields": [],
+      "minimum_contrast": 4.523914080698812
+    },
+    {
+      "case": "P3",
+      "pixels_and_png_identical_to_approved_composition": true,
+      "horizontal_movement_px": 0,
+      "image_api_calls": 0,
+      "clearance_search_px": [
+        12,
+        4
+      ],
+      "forced_fields": [
+        "cta"
+      ],
+      "minimum_contrast": 4.29403664488863
+    },
+    {
+      "case": "P4",
+      "pixels_and_png_identical_to_approved_composition": true,
+      "horizontal_movement_px": 0,
+      "image_api_calls": 0,
+      "clearance_search_px": [
+        12
+      ],
+      "forced_fields": [],
+      "minimum_contrast": 4.541782631143269
+    },
+    {
+      "case": "P5",
+      "pixels_and_png_identical_to_approved_composition": true,
+      "horizontal_movement_px": 0,
+      "image_api_calls": 0,
+      "clearance_search_px": [
+        12
+      ],
+      "forced_fields": [],
+      "minimum_contrast": 4.784601742029408
+    }
+  ]
+}

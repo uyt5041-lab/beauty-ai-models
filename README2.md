@@ -1,5 +1,14 @@
 # 추가 사용 예제와 기존 안내
 
+## 2026-11-12 잇템핫픽스 · 14디멘션 생성과 중앙 고정 합성
+
+`잇템핫픽스` 브랜치는 `src.image_generation`에 승인한 14디멘션 선택 생성과
+배경판 없는 중앙 고정·상하 조절 합성을 묶었습니다. `build_ittem_image_adapter()`로
+2.6/complexity high 생성 모듈을 조립하고, 이미지 승인 후 `compose_ittem_ad()`로
+API 재호출 없이 합성합니다. [설치·연결 예제·조절 옵션·검증](docs/ittemHotfix.md)을 참고하세요.
+이미지 테스트 475개·전체 회귀 2,810개가 통과했고 승인한 5장과 동일 PNG를 재현했습니다.
+프론트·서빙 연결 및 배포는 포함하지 않습니다. 아래 문서는 기존 브랜치의 이력을 보존한 안내입니다.
+
 > 현재 팀 연결은 [ProductAnalysisResult·한국어 입력 계약](docs/textImageHandoff.md)을 따릅니다. 이 문서의 OpenAITextGateway·ReviewService·영어 SDXL 예제는 과거 참고 구현이며 이미지 서비스에서 텍스트 생성기를 별도로 연결하라는 뜻이 아닙니다.
 
 

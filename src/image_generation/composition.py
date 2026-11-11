@@ -26,8 +26,10 @@ from pydantic import ConfigDict, Field, JsonValue, model_validator
 from .ad_resize import FINAL_SIZE, resize_ad_png
 from .contracts import Contract, CopyRevision, content_hash
 from .errors import GatewayError
+from .typography_color import resolve_typography_color
+from .adaptive_typography import AdaptiveTypographyOptions, place_text
 
-VERSION = "korean-composition-v1"
+VERSION = "korean-composition-v2-auto-tone"
 Digest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 CopyField = Literal["headline", "subline", "cta"]
 
@@ -237,14 +239,26 @@ def _fit(text: str, region: CompositionTextRegion, data: bytes, index: int,
 
 
 def compose_ad_png(body: CompositionInput, *, font_path: str | Path,
-                   font_index: int = 0) -> ComposedAd:
+                   font_index: int = 0,
+                   color_mode: Literal["auto", "fixed"] = "auto",
+                   adaptive: AdaptiveTypographyOptions | None = None) -> ComposedAd:
     """Render an approved snapshot locally. Caller owns approval/authentication.
 
     font_path is trusted server configuration, never an HTTP user-supplied path.
-    No fallback font, truncation, model retry or file write is performed.
+    Auto color measures the actual glyph background after resizing. It preserves
+    a readable explicit color, otherwise chooses a tonal color and, if necessary,
+    a local backing inside the supplied text region. Fixed mode retains caller
+    colors but still reports contrast. No font/layout/copy changes or model calls.
     """
     started = time.monotonic()
+    if color_mode not in {"auto", "fixed"}:
+        raise _reject("COMPOSITION_COLOR_MODE_INVALID")
     body = CompositionInput.model_validate(body.model_dump(warnings=False))
+    if adaptive is not None:
+        if not isinstance(adaptive, AdaptiveTypographyOptions) or color_mode != "auto":
+            raise _reject("COMPOSITION_ADAPTIVE_OPTIONS_INVALID")
+        if any(region.background is not None for region in body.layout.text_regions.values()):
+            raise _reject("COMPOSITION_ADAPTIVE_BACKGROUND_FORBIDDEN")
     ad, caption, tags = _copy_fields(body)
     rendered_copy = {name: text for name, text in ad.items()
                      if text and not (name == "cta" and body.layout.cta_placement == "platform")}
@@ -260,13 +274,15 @@ def compose_ad_png(body: CompositionInput, *, font_path: str | Path,
     placements = {}
     with Image.open(BytesIO(baseline.image_bytes)) as source:
         source.load()
-        overlay = Image.new("RGBA", canvas_size)
-        draw = ImageDraw.Draw(overlay)
+        final = source.convert("RGBA")
         for name, (font, lines, boxes, pitch, size) in prepared.items():
             region = body.layout.text_regions[name]
             l,t,r,b = region.pixels(canvas_size)
+            backing = source.crop((l,t,r,b)).convert("RGBA")
             if region.background:
-                draw.rectangle((l,t,r-1,b-1), fill=region.background)
+                backing = Image.new("RGBA", backing.size, region.background)
+            mask = Image.new("L", backing.size)
+            mask_draw = ImageDraw.Draw(mask)
             ink = []
             used=(len(boxes)-1)*pitch+(boxes[-1][3]-boxes[-1][1] if boxes else 0)
             offset=(b-t-2*region.padding-used)//2 if region.vertical_align == "center" else 0
@@ -279,12 +295,36 @@ def compose_ad_png(body: CompositionInput, *, font_path: str | Path,
                 if not (l+region.padding <= x and x+width <= r-region.padding
                         and t+region.padding <= y and y+box[3]-box[1] <= b-region.padding):
                     raise _reject("COMPOSITION_TEXT_OVERFLOW")
-                draw.text((x-box[0],y-box[1]), line, fill=region.color, font=font)
+                position = (x-box[0], y-box[1])
+                mask_draw.text((position[0]-l,position[1]-t), line, fill=255, font=font)
                 ink.append([x,y,x+width,y+box[3]-box[1]])
+            placement_check = None
+            if adaptive is not None:
+                mask, colors, placement_check = place_text(source, (l,t,r,b), mask, options=adaptive)
+                dx, dy = placement_check["offset_px"]
+                ink = [[x+dx,y+dy,right+dx,bottom+dy] for x,y,right,bottom in ink]
+            else:
+                colors = resolve_typography_color(backing, mask, preferred_color=region.color,
+                                                   fixed=color_mode == "fixed")
+            if (color_mode == "auto" and text.strip()
+                    and colors.receipt.get("passed") is False
+                    and not (placement_check and placement_check.get("forced_lower_fallback"))):
+                raise _reject("COMPOSITION_CONTRAST_FAILED")
+            if colors.background_overlay is not None:
+                scrim = Image.new("RGBA", backing.size, colors.background_overlay)
+                backing = Image.alpha_composite(backing, scrim)
+            # Match the measured compositing order exactly. Drawing text onto
+            # a translucent overlay interpolates straight RGBA channels and can
+            # disagree with the glyph/background contrast measurement.
+            ink_layer = Image.new("RGBA", backing.size, colors.color)
+            ink_layer.putalpha(mask)
+            final.paste(Image.alpha_composite(backing, ink_layer), (l,t))
             placements[name] = {"region": [l,t,r,b], "font_size":size,
                                 "line_count":len(lines), "ink_boxes":ink,
+                                "color_check":colors.receipt,
                                 "text_sha256":sha256(ad[name].encode("utf-8")).hexdigest()}
-        final = Image.alpha_composite(source.convert("RGBA"), overlay)
+            if placement_check is not None:
+                placements[name]["position_check"] = placement_check
         if source.mode == "RGB": final = final.convert("RGB")
         output = BytesIO()
         final.save(output, "PNG", compress_level=6,
@@ -297,7 +337,11 @@ def compose_ad_png(body: CompositionInput, *, font_path: str | Path,
         width,height = decoded.size
     caption_text = caption + ("\n\n" if caption and tags else "") + " ".join(tags)
     fingerprint = body.model_dump(exclude={"image_bytes"})
-    fingerprint.update(renderer=VERSION,font_sha256=font_hash,font_index=font_index)
+    fingerprint.update(renderer=VERSION,font_sha256=font_hash,font_index=font_index,
+                       color_mode=color_mode)
+    if adaptive is not None:
+        from dataclasses import asdict
+        fingerprint.update(adaptive=asdict(adaptive), adaptive_version="local-adaptive-typography-v1")
     receipt = {"renderer":VERSION,"pillow_version":pillow_version,
                "font_sha256":font_hash,"font_index":font_index,
                "input_sha256":content_hash(fingerprint),"baseline_sha256":baseline.sha256,
@@ -306,8 +350,22 @@ def compose_ad_png(body: CompositionInput, *, font_path: str | Path,
                "needs_manual_check":True,"provider_calls":0,"provider_cost_usd":"0",
                "elapsed_ms":round((time.monotonic()-started)*1000),
                "cta_placement":body.layout.cta_placement,
+               "color_mode":color_mode,
+               "text_contrast_passed":all(p["color_check"].get("passed") is True
+                                          for name,p in placements.items()
+                                          if ad[name].strip()),
                "omitted_image_fields":["cta"] if body.layout.cta_placement == "platform" else [],
                "warnings":[] if body.layout.protected_regions else ["PRODUCT_REGION_NOT_PROVIDED"]}
+    if not receipt["text_contrast_passed"]:
+        receipt["warnings"].append("TEXT_CONTRAST_BELOW_TARGET")
+    if any(p.get("position_check", {}).get("forced_lower_fallback") for p in placements.values()):
+        receipt["warnings"].append("FORCED_LOWER_PLACEMENT")
+    if any(p.get("position_check", {}).get("forced_lower_fallback")
+           and not p["position_check"]["clearance_passed"] for p in placements.values()):
+        receipt["warnings"].append("PLACEMENT_CLEARANCE_BELOW_TARGET")
+    if adaptive is not None:
+        receipt.update(adaptive_options=asdict(adaptive), background_overlays_allowed=False,
+                       placement_policy="local-adaptive-typography-v1")
     return ComposedAd(image_bytes,caption_text.encode("utf-8"),caption,tuple(tags),
                       "image/png",width,height,sha256(image_bytes).hexdigest(),
                       body.image_sha256,body.copy_hash,body.copy_revision,body.job_id,receipt)

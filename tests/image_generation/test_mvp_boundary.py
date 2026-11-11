@@ -1,4 +1,5 @@
 import sys
+import subprocess
 from pathlib import Path
 import pytest
 from pydantic import ValidationError
@@ -13,8 +14,21 @@ def prompt():
 def test_only_team_package_loaded():
     import src.image_generation as package
     assert Path(package.__file__).resolve().parent == Path(__file__).resolve().parents[2] / "src/image_generation"
-    assert not any(n == "beauty_ai" or n.startswith("beauty_ai.") for n in sys.modules)
-    assert not any(n in sys.modules for n in ["langfuse", "wandb", "torch", "diffusers"])
+    # The Beauty repository legitimately tests beauty_ai in the same session.
+    # Inspect a fresh import rather than modules imported by unrelated tests.
+    root = Path(__file__).resolve().parents[2]
+    check = """
+import sys
+from pathlib import Path
+root = Path(sys.argv[1])
+sys.path.insert(0, str(root))
+import src.image_generation as package
+assert Path(package.__file__).resolve().parent == root / 'src/image_generation'
+assert not any(n == 'beauty_ai' or n.startswith('beauty_ai.') for n in sys.modules)
+assert not any(n in sys.modules for n in ['langfuse', 'wandb', 'torch', 'diffusers'])
+"""
+    subprocess.run([sys.executable, "-I", "-c", check, str(root)],
+                   check=True, capture_output=True, text=True, timeout=30)
 
 def test_korean_request_is_default_and_original_is_prefix():
     request = ExternalImageRequest(operation="generate", prompt=prompt())
