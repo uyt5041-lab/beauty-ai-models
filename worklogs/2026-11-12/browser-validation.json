@@ -1,6 +1,6 @@
 {
+  "status": "BROWSER_PASS",
   "journal": {
-    "title": "박지수 협업일지 · 2026-11-12",
     "headings": [
       "1. 날짜·이름·팀명",
       "2. 오늘의 역할과 구체적인 작업",
@@ -11,16 +11,20 @@
       "7. 발표·커뮤니케이션 기여",
       "8. 다음 목표"
     ],
-    "progress": {
-      "value": 12,
-      "max": 28
-    },
-    "image": 760
+    "value": 14,
+    "max": 15,
+    "image": 760,
+    "decision": true,
+    "recorded": true
   },
   "full": {
-    "total": 28,
-    "checked": 12,
-    "value": 12,
-    "max": 28
-  }
+    "total": 15,
+    "checked": 14,
+    "value": 14,
+    "max": 15,
+    "other_owner": true,
+    "additional": true,
+    "e07": true
+  },
+  "new_api_calls": 0
 }

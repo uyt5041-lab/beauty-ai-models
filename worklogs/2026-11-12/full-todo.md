@@ -1,56 +1,84 @@
-# 전체 이미지 TODO와 진행률
+# 전체 이미지 담당 TODO와 진행률
 
-기준일: 2026-11-12 · 원본 커밋: ccaa64a1cd6c1e253061e95b1dc8c3139f25b213
+기준일: 2026-11-12 · 원본 커밋: 0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1
 
-**일지 체크 진행률: 12/28개 · 42.9%**
+**일지 체크 진행률: 14/15개 · 93.3%**
 
-![전체 TODO 진행률 12/28개 · 42.9%](progress.svg)
+![전체 TODO 진행률 14/15개 · 93.3%](progress.svg)
 
 분모는 원본 문서의 전체 체크 항목이다. 분자는 보고일까지 계획된 항목 중 완료 근거가 있는 체크다. 이후 계획도 모두 보여주지만 미리 체크하지 않는다. 이후의 빈 체크는 구현 미완료를 단정하는 표시가 아니다. 일정 미정은 완료 수에 넣지 않으며 이 수치는 제품 완성률이 아니다.
 
-[원본 TODO](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md) · [진행률 데이터](progress.json)
+[원본 TODO](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md) · [진행률 데이터](progress.json)
 
 ## 묶음별 진행률
 
 | 계획 묶음 | 일지 체크 / 전체 |
 | --- | --- |
 | 현행 MVP · 이미지 모듈 구현 | 10 / 10 |
-| 고도화 7개 · 구현/연결 | 2 / 9 |
-| 공동 검증/인수 | 0 / 9 |
+| 고도화 7개 중 이미지 담당 5개 | 4 / 5 |
 
 ## 현행 MVP · 이미지 모듈 구현
 
-- [x] T001 · M01 제품·참고 사진 수신과 자산 검증 — 담당: pi. 제품 2\~5장·참고 0\~5장 계약, 순서/역할·decode·hash·EXIF/ICC·MPO 대표 프레임 정규화. 동일 제품 여부와 실제 사진 적합성은 J04/J05에서 확인. 게시 근거 (계획 시작 2026-11-05) ([원본 L22](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L22))
-- [x] T002 · M02 제품 분석 수신·실패 우선 차단 — 담당: pi. ProductAnalysisResult 실패·비화장품·success/error 모순은 호출·예약·저장 전에 차단한다. 게시 근거 (계획 시작 2026-11-05) ([원본 L23](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L23))
-- [x] T003 · M03 한국어 이미지 프롬프트 수신 — 담당: pi. 한국어 원문을 번역 없이 수신한다. 구조형 concept/prompt/mood·문자열·prompt-only를 지원하고 사진 순서·제품 보존·추가 워터마크 제외 지시를 결속한다. 제품 인쇄 라벨/로고는 보존한다. 게시 근거 (계획 시작 2026-11-05) ([원본 L24](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L24))
-- [x] T004 · M04 외부 이미지 API 요청·응답 어댑터 — 담당: pi. 모델/옵션 검증, 단일 PNG 응답 decode·형식·크기 검사, 결과 자산 저장과 오류 분류. 기본 모델 변경은 품질 향상 실측과 구분한다. 생성형 누끼 지원 기록을 필수 레이어/픽셀 보존 계약으로 확대하지 않는다. 게시 근거 (계획 시작 2026-11-05) ([원본 L25](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L25))
-- [x] T005 · M05 같은 작업 재조회·중복 제출 방지 — 담당: pi. 프로젝트/job/요청 hash를 결속하고 같은 성공 결과를 재사용한다. 다른 입력은 충돌로 거절하며 live OFF·예산0에서도 성공 결과 재조회는 가능하다. 게시 근거 (계획 시작 2026-11-05) ([원본 L26](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L26))
-- [x] T006 · M06 기본 호출 차단·예약·미확인 호출 처리 — 담당: pi. 기본 live OFF·예산0, 프로젝트 예약 가드와 자동 유료 재시도 금지. timeout/응답 미확인은 무료·실패로 단정하거나 새 요청으로 자동 재전송하지 않는다. 계정 전체 운영 검증은 J07이다. 게시 근거 (계획 시작 2026-11-05) ([원본 L27](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L27))
-- [x] T007 · M07 4:5 고품질 PNG 리사이즈 — 담당: pi. 생성본 원본 보존, 확대/크롭 금지, 비율 유지·LANCZOS 축소·PNG·실제 크기/hash 반환. PNG 저장은 무손실이지만 축소 픽셀 변화가 없다는 뜻은 아니다. 게시 근거 (계획 시작 2026-11-05) ([원본 L28](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L28))
-- [x] T008 · M08 승인 카피 기반 한글 최종 합성 — 담당: pi. 전체 카피/이미지 hash 결속, 실제 글리프·명시 줄바꿈·넘침·지정 보호 박스 검사, 최종 PNG와 별도 캡션/태그 반환. 보호 박스 검사는 실제 제품 검출이 아니며 서비스 승인/다운로드는 J02다. 게시 근거 (계획 시작 2026-11-05) ([원본 L29](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L29))
-- [x] T009 · M09 생성 사용량·시간·실행 증거 반환 — 담당: pi. 외부 요청 ID·usage·경과시간·상태·오류·receipt를 남긴다. 모르는 실제 비용은 null. 기획부터 완료까지 운영 누적 대조는 E06-A/J08에 분리한다. 게시 근거 (계획 시작 2026-11-05) ([원본 L30](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L30))
-- [x] T010 · M10 기존 입력·저장 결과 호환 — 담당: pi. 문자열/정수 copy_revision·과거 요청 직렬화와 hash를 유지한다. 새 모델/프로필 옵션이 과거 결과 재사용을 깨지 않는다. 게시 근거 (계획 시작 2026-11-05) ([원본 L31](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L31))
+- [x] T001 · M01 제품·참고 사진 수신과 자산 검증 — 담당: pi. 제품 2\~5장·참고 0\~5장 계약, 순서/역할·decode·hash·EXIF/ICC·MPO 대표 프레임 정규화. 동일 제품 여부와 실제 사진 적합성은 J04/J05에서 확인. 근거 (계획 시작 2026-11-12) ([원본 L20](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L20))
+- [x] T002 · M02 제품 분석 수신·실패 우선 차단 — 담당: pi. ProductAnalysisResult 실패·비화장품·success/error 모순은 호출·예약·저장 전에 차단한다. 근거 (계획 시작 2026-11-12) ([원본 L21](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L21))
+- [x] T003 · M03 한국어 이미지 프롬프트 수신 — 담당: pi. 한국어 원문을 번역 없이 수신한다. 구조형 concept/prompt/mood·문자열·prompt-only를 지원하고 사진 순서·제품 보존·추가 워터마크 제외 지시를 결속한다. 제품 인쇄 라벨/로고는 보존한다. 근거 (계획 시작 2026-11-12) ([원본 L22](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L22))
+- [x] T004 · M04 외부 이미지 API 요청·응답 어댑터 — 담당: pi. 모델/옵션 검증, 단일 PNG 응답 decode·형식·크기 검사, 결과 자산 저장과 오류 분류. 기본 모델 변경은 품질 향상 실측과 구분한다. 생성형 누끼 지원 기록을 필수 레이어/픽셀 보존 계약으로 확대하지 않는다. 근거 (계획 시작 2026-11-12) ([원본 L23](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L23))
+- [x] T005 · M05 같은 작업 재조회·중복 제출 방지 — 담당: pi. 프로젝트/job/요청 hash를 결속하고 같은 성공 결과를 재사용한다. 다른 입력은 충돌로 거절하며 live OFF·예산0에서도 성공 결과 재조회는 가능하다. 근거 (계획 시작 2026-11-12) ([원본 L24](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L24))
+- [x] T006 · M06 기본 호출 차단·예약·미확인 호출 처리 — 담당: pi. 기본 live OFF·예산0, 프로젝트 예약 가드와 자동 유료 재시도 금지. timeout/응답 미확인은 무료·실패로 단정하거나 새 요청으로 자동 재전송하지 않는다. 계정 전체 운영 검증은 J07이다. 근거 (계획 시작 2026-11-12) ([원본 L25](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L25))
+- [x] T007 · M07 4:5 고품질 PNG 리사이즈 — 담당: pi. 생성본 원본 보존, 확대/크롭 금지, 비율 유지·LANCZOS 축소·PNG·실제 크기/hash 반환. PNG 저장은 무손실이지만 축소 픽셀 변화가 없다는 뜻은 아니다. 근거 (계획 시작 2026-11-12) ([원본 L26](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L26))
+- [x] T008 · M08 승인 카피 기반 한글 최종 합성 — 담당: pi. 전체 카피/이미지 hash 결속, 실제 글리프·명시 줄바꿈·넘침·지정 보호 박스 검사, 최종 PNG와 별도 캡션/태그 반환. 보호 박스 검사는 실제 제품 검출이 아니며 서비스 승인/다운로드는 J02다. 근거 (계획 시작 2026-11-12) ([원본 L27](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L27))
+- [x] T009 · M09 생성 사용량·시간·실행 증거 반환 — 담당: pi. 외부 요청 ID·usage·경과시간·상태·오류·receipt를 남긴다. 모르는 실제 비용은 null. 기획부터 완료까지 운영 누적 대조는 E06-A/J08에 분리한다. 근거 (계획 시작 2026-11-12) ([원본 L28](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L28))
+- [x] T010 · M10 기존 입력·저장 결과 호환 — 담당: pi. 문자열/정수 copy_revision·과거 요청 직렬화와 hash를 유지한다. 새 모델/프로필 옵션이 과거 결과 재사용을 깨지 않는다. 근거 (계획 시작 2026-11-12) ([원본 L29](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L29))
 
-## 고도화 7개 · 구현/연결
+## 고도화 7개 중 이미지 담당 5개
 
-- [ ] T011 · E01 ① 기능성 종류 세분화 — 담당: 텍스트·UI·서빙 / pi 입력 호환 확인. 텍스트가 만드는 기능성 세부 값과 사용자 입력·저장 계약을 맞추고 이미지 수신 호환을 확인한다. 다른 파트의 현재 구현 여부는 미확인이다. (계획 시작 2026-11-05) ([원본 L35](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L35))
-- [ ] T012 · E02 ② 글자 수 초과 차단 기준 연결 — 담당: 텍스트·UI·서빙·pi. 팀 글자 수 기준과 이미지 박스/줄 수/의미 단위 줄바꿈을 함께 시험한다. 기존 렌더러 넘침 거절이 서비스의 헤드15·서브25·CTA10 입력 제한 완료를 뜻하지 않는다. 비율별 확정 기준과 UI 차단을 확인한다. (계획 시작 2026-11-05) ([원본 L36](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L36))
-- [ ] T013 · E03 ③ 이미지 단독 다운로드 — 담당: UI·서빙 / pi 자산 전달. 무문구 생성 이미지를 별도 내려받을 수 있는 서비스 경로를 확인한다. 모듈의 PNG 반환은 있으나 사용자 다운로드 인수는 미확인이다. (계획 시작 2026-11-05) ([원본 L37](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L37))
-- [ ] T014 · E04 ④ 이모티콘 지원 — 담당: 텍스트·pi·UI. 실제 사용할 이모티콘 범위와 렌더링 방식을 정하고 출력한다. 글리프 누락 거절이나 플랫폼 CTA 글리프 검사 제외만으로 지원 완료 처리하지 않는다. (계획 시작 2026-11-05) ([원본 L38](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L38))
-- [x] T015 · E05-A ⑤ 비율·릴스/스토리 B 모듈 구현 — 담당: pi. 3:4·4:5·9:16 크기·safe zone·제품/문구 영역 자동 지시, 선택별 합성/리사이즈와 CTA 정책. 실제 서비스 선택 연결은 J01이다. 게시 근거 (계획 시작 2026-11-05) ([원본 L39](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L39))
-- [ ] T016 · E05-B ⑤ 채택한 상단 중앙 한 줄 배치 반영 — 담당: pi. 선택된 9:16 상단 중앙 시안의 프롬프트·합성 프로필을 함께 변경하고 회귀한다. 현재 게시된 왼쪽 두 줄 프로필과 구분한다. (계획 시작 2026-11-05) ([원본 L40](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L40))
-- [x] T017 · E06-A ⑥ 예상 절감 계산·실험 화면·W&B — 담당: pi. work_id 누적 토큰/비용과 생성당 비교·비교/제외 수·사유·추정치를 모델 측 보고서/W&B에 표시한다. 생성당1.22%와 아벤느 누적 수정 대비 재사용49.6% 회고 추정은 구분한다. 실제 청구 절감 확정이 아니다. 게시 근거 (계획 시작 2026-11-05) ([원본 L41](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L41))
-- [ ] T018 · E06-B ⑥ 서비스 예상 절감 표시 연결 — 담당: 서빙·UI / pi 계산 결과 제공. 사용자 서비스에서 비교 단위·건수·제외 사유·추정/실비 구분을 표시한다. 실험용 HTML/W&B 게시를 서비스 화면 적용 완료로 쓰지 않는다. (계획 시작 2026-11-05) ([원본 L42](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L42))
-- [ ] T019 · E07 ⑦ 거절 후 수정·이전 상태 복귀·임시 저장 — 담당: UI·서빙·텍스트 / pi 재수신·재사용. 카피/이미지 거절 후 처음으로 돌아가지 않고 수정 요청·재요청·이전 상태 복귀를 수행한다. 저장 revision/hash와 이미지 재사용 기반은 있지만 서비스 사용자 흐름은 별도 확인한다. (계획 시작 2026-11-05) ([원본 L43](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L43))
+- [x] T011 · E02 ② 합성 글자 넘침·줄 수·줄바꿈 검사 — 담당: pi · 이미지 모듈. 이미지 담당 범위는 합성 박스의 글리프·줄 수·넘침 검사와 명시 줄바꿈 수신이다. 기존 렌더러가 길이를 맞추려고 문구를 자르지 않고 넘침을 거절한다. 헤드15·서브25·CTA10의 카피 생성/입력 제한은 텍스트·UI 담당이며 이 모듈 완료 판정에 넣지 않는다. 근거 (계획 시작 2026-11-12) ([원본 L32](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L32))
+- [x] T012 · E03 ③ 문구 없는 생성 이미지 전달 — 담당: pi · 이미지 모듈. BackendGeneratedImage가 합성 전 image_bytes·MIME·크기·SHA를 반환하고 자산 저장/조회가 가능하다. 이미지 단독 다운로드 버튼·HTTP 라우트는 UI·서빙 담당으로 별도 확인한다. 근거 (계획 시작 2026-11-12) ([원본 L33](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L33))
+- [x] T013 · E05 ⑤ 사진 비율 추가 · 3:4·4:5·9:16 — 담당: pi. 세 비율의 생성 크기·안전 영역·제품/문구 배치·합성/리사이즈를 이미지 모듈이 지원한다. 기존 모듈 검증과 로컬 비율 수신 시험을 근거로 한다. 특정 중앙 시안 추가와 팀 배포 인수는 별도 추가 항목이다. 근거 (계획 시작 2026-11-12) ([원본 L34](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L34))
+- [x] T014 · E06 ⑥ 예상 절감 계산·모델 측 비교 표시 — 담당: pi · 이미지 모듈. work_id 누적 토큰/추정비용·비교/제외 건수·사유를 계산하고 실험 보고서와 W&B에 표시하는 이미지 측 구현은 완료다. 실제 청구 절감 확정과 사용자 서비스 화면 연결은 별도다. 생성당1.22%와 아벤느49.6% 회고 추정은 구분한다. 근거 (계획 시작 2026-11-12) ([원본 L35](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L35))
+- [ ] T015 · E07 ⑦ 수정 버전 수신·기존 결과 재사용 — 담당: pi · 이미지 모듈. revision/hash 수신·저장, 같은 입력 성공 결과 재사용과 다른 입력 충돌 차단은 구현됐다. 새 작업ID/수정 revision으로 생성→기존 결과 재조회→합성만 재실행을 묶은 모듈 회귀 근거는 아직 미확인이다. 이미지 측 남은 검증1개로 둔다. 이전 화면 복귀·임시 저장 UX는 UI·서빙 담당이며 이 항목의 완료 조건에서 제외한다. 근거 (계획 시작 2026-11-12) ([원본 L36](https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md#L36))
 
-## 공동 검증/인수
+범위 기준: 2026-11-02 고도화 논의로 기본 범위를 MVP+고도화7개까지로 변경. 2026-11-12 사용자 재확인 후 기록. 이미지 담당14/15개·93.3%. 기능성 세분화·이모티콘 설정2개는 다른 담당으로 제외하며 서비스 연동·팀 인수는 별도다. 각 항목의 11/12 표시는 집계 관측일이며 실제 완료일이 아니다.
 
-- [ ] T020 · J01 스키마·사진·비율·승인 스냅샷 계약 연결 — 담당: 서빙·UI·텍스트·pi. 외부 size 값 수신/저장→내부 프로필→합성 진입점을 연결한다. 사진 수/순서·분석·prompt-only/구조형·revision/hash·검수·운영 입력 상한을 실제 요청/응답으로 일치시킨다. 기존 서빙 업로드/JobStore를 새로 만들라고 요구하지 않는다. (계획 시작 2026-11-05) ([원본 L47](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L47))
-- [ ] T021 · J02 서비스 전체 흐름·검토·최종 다운로드 — 담당: 서빙·UI·텍스트·pi. 입력→기획/카피 검토→이미지 검토→한글 합성→최종 광고/본문/태그 다운로드를 현재 서비스에서 실행한다. 텍스트 생성/검수 로직은 텍스트 담당이다. (계획 시작 2026-11-05) ([원본 L48](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L48))
-- [ ] T022 · J03 실서비스 장애·권한·재시작·오래된 결과 검증 — 담당: 서빙·pi·UI. 같은 ID/다른 입력, 응답 유실·재시작·429·저장 실패·늦은 결과, 사용자/프로젝트 권한을 실제 배포 경로에서 확인한다. 디렉터리 sync 이식 수정은 완료 기록이지만 실제 Windows 동작은 미시험이다. Linux 서비스 검증과 구분한다. (계획 시작 2026-11-05) ([원본 L49](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L49))
-- [ ] T023 · J04 평가 자료 권리·분할·판정 기준 합의 — 담당: pi·자료 담당·텍스트·PM. 권리 있는 제품/참고 자료, 개발/독립 검증 분리와 사람 판정 기준·담당을 확정한다. 과거10제품·2인·20결과 등은 임시 계획이며 날짜 경과로 미달/완료 처리하지 않는다. (계획 시작 2026-11-05) ([원본 L50](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L50))
-- [ ] T024 · J05 실제품·신규 모델·비율 품질 검수 — 담당: pi·텍스트·판정자. 실제 API 결과의 형태/굵기/각도·라벨·색/재질·배경 구도/소품·문구 여백과 최종 축소 가독성을 평가한다. 박스 겹침 검사·과거 단일 품목 예비 점수·395개 단위 시험은 최종 품질 인수가 아니다. (계획 시작 2026-11-05) ([원본 L51](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L51))
-- [ ] T025 · J06 기기·Instagram UI·사용성·전체 시간 검증 — 담당: UI·서빙·pi·PM. 피드/릴스/스토리에서 실제 기기와 UI 가림·대비·모바일 가독성·완주·전체 지연을 확인한다. 로컬 UI 모의 가림0건과 API 생성시간만으로 대체하지 않는다. (계획 시작 2026-11-05) ([원본 L52](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L52))
-- [ ] T026 · J07 계정 공통 예산·예약·실제 청구 대조 — 담당: 운영·서빙·pi·PM. 실사용 계정과 모든 적용 호출의 기초 사용액·진행중 예약·공유 한도·잔액·공급자 청구를 대조한다. SQLite 예약은 공급자 과금 상한이 아니며 외부 직호출도 자동 포괄하지 않는다. 임시80/90% 기준을 팀과 확정한다. (계획 시작 2026-11-05) ([원본 L53](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L53))
-- [ ] T027 · J08 완성 광고 누적 총원가·절감 효과 검증 — 담당: pi·서빙·텍스트·PM. work_id별 기획·생성·검수·실패/반복 수정 비용을 끝까지 기록하고 채택 광고 기준으로 비교한다. 연구비/생산 낭비·부분합/전체·실측/회고 추정과 품질 동등성을 구분한다. (계획 시작 2026-11-05) ([원본 L54](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L54))
-- [ ] T028 · J09 팀 재현·인수·M1/M2 판정 — 담당: 전 파트·PM. 팀원이 현재 코드/테스트/사용법으로 재현하고 미완료·한계·회귀 담당·인수 버전을 확인한다. 게시·문서·사용자 시안 선택을 PM 인수로 바꾸지 않는다. 최종 제출·백업은 팀 운영 일정에서 관리한다. (계획 시작 2026-11-05) ([원본 L55](https://github.com/uyt5041-lab/beauty-ai-models/blob/ccaa64a1cd6c1e253061e95b1dc8c3139f25b213/docs/imageTodo.md#L55))
+## 고도화7개 전체의 담당 구분 · 이미지 분모 제외 2개
+
+| ID | 기능 | 담당·판정 |
+|---|---|---|
+| E01 | ① 기능성 종류 세분화 | 기능성 종류의 입력·분석·규제 검수는 텍스트·UI 담당. 이미지 모듈은 분석 결과를 받으며 기능성 분류 로직을 새로 만들지 않는다. |
+| E04 | ④ 이모티콘 지원 | 현재 범위의 이모티콘 정도는 텍스트 카피/캡션·UI 설정이다. 이미지 합성의 컬러 이모티콘 렌더러를 필수로 추가하지 않는다. 해당 렌더러는 후속 요청 시 별도 범위다. |
+
+이모티콘이 들어간 별도 캡션 전달과 이미지 위 컬러 이모티콘 렌더링은 다르다. 후자는 현행 필수 기능으로 확대하지 않는다.
+
+## 추가 요소·공동 연동/검증 · 이미지 기본 분모 제외
+
+| ID | 요소 | 관측 상태 | 확인할 조건 |
+|---|---|---|---|
+| E05-B | ⑤ 채택한 상단 중앙 한 줄 배치 반영 | NOT_VERIFIED | 선택된 9:16 상단 중앙 시안의 프롬프트·합성 프로필을 함께 변경하고 회귀한다. 현재 게시된 왼쪽 두 줄 프로필과 구분한다. |
+| J01 | 스키마·사진·비율·승인 스냅샷 계약 연결 | PARTIAL | 외부 size 값 수신/저장→내부 프로필→합성 진입점을 연결한다. 사진 수/순서·분석·prompt-only/구조형·revision/hash·검수·운영 입력 상한을 실제 요청/응답으로 일치시킨다. 기존 서빙 업로드/JobStore를 새로 만들라고 요구하지 않는다. |
+| J02 | 서비스 전체 흐름·검토·최종 다운로드 | PARTIAL | 입력→기획/카피 검토→이미지 검토→한글 합성→최종 광고/본문/태그 다운로드를 현재 서비스에서 실행한다. 텍스트 생성/검수 로직은 텍스트 담당이다. |
+| J03 | 실서비스 장애·권한·재시작·오래된 결과 검증 | NOT_VERIFIED | 같은 ID/다른 입력, 응답 유실·재시작·429·저장 실패·늦은 결과, 사용자/프로젝트 권한을 실제 배포 경로에서 확인한다. 디렉터리 sync 이식 수정은 완료 기록이지만 실제 Windows 동작은 미시험이다. Linux 서비스 검증과 구분한다. |
+| J04 | 평가 자료 권리·분할·판정 기준 합의 | NOT_VERIFIED | 권리 있는 제품/참고 자료, 개발/독립 검증 분리와 사람 판정 기준·담당을 확정한다. 과거10제품·2인·20결과 등은 임시 계획이며 날짜 경과로 미달/완료 처리하지 않는다. |
+| J05 | 실제품·신규 모델·비율 품질 검수 | PARTIAL | 실제 API 결과의 형태/굵기/각도·라벨·색/재질·배경 구도/소품·문구 여백과 최종 축소 가독성을 평가한다. 박스 겹침 검사·과거 단일 품목 예비 점수·395개 단위 시험은 최종 품질 인수가 아니다. |
+| J06 | 기기·Instagram UI·사용성·전체 시간 검증 | NOT_VERIFIED | 피드/릴스/스토리에서 실제 기기와 UI 가림·대비·모바일 가독성·완주·전체 지연을 확인한다. 로컬 UI 모의 가림0건과 API 생성시간만으로 대체하지 않는다. |
+| J07 | 계정 공통 예산·예약·실제 청구 대조 | NOT_VERIFIED | 실사용 계정과 모든 적용 호출의 기초 사용액·진행중 예약·공유 한도·잔액·공급자 청구를 대조한다. SQLite 예약은 공급자 과금 상한이 아니며 외부 직호출도 자동 포괄하지 않는다. 임시80/90% 기준을 팀과 확정한다. |
+| J08 | 완성 광고 누적 총원가·절감 효과 검증 | NOT_VERIFIED | work_id별 기획·생성·검수·실패/반복 수정 비용을 끝까지 기록하고 채택 광고 기준으로 비교한다. 연구비/생산 낭비·부분합/전체·실측/회고 추정과 품질 동등성을 구분한다. |
+| J09 | 팀 재현·인수·M1/M2 판정 | NOT_VERIFIED | 팀원이 현재 코드/테스트/사용법으로 재현하고 미완료·한계·회귀 담당·인수 버전을 확인한다. 게시·문서·사용자 시안 선택을 PM 인수로 바꾸지 않는다. 최종 제출·백업은 팀 운영 일정에서 관리한다. |
+| A14 | 14디멘션 연출·A 중앙 고정 적응형 합성 | IMPLEMENTED_LOCAL_E2E | Sunburst2.6 medium/high와 14디멘션 생성, 글자 색·세로 위치 조절과 A합성. 로컬4:5 한 건 실제 E2E 및 PNG 다운로드 확인. GCP·팀 인수는 별도. |
+
+공동 검증이 분모 밖이어도 배포에 불필요하다는 뜻은 아니다. 별도 인수 상태로 남긴다. 추가 연출·폰트 선택·테마·다중 후보 등 보고서의 Future Plan도 기본 상한을 늘리지 않는다.
+
+## 2026-11-12 후속 관측 · 기본 기능과 추가 검증 분리
+현재 기본 체크는 **14/15 · 93.3% (이미지 모듈 담당)**다. 아래 공동 검증 상태는 추가 요소로 보고 기본 분모에는 넣지 않는다. 공동 인수 완료로 바꾸지 않는다.
+
+| 관련 항목 | 새로 확인한 내용 | 아직 확인할 내용 |
+|---|---|---|
+| M04/M08/M10 | 뷰티 `6735e97`에 Sunburst 2.6·14디멘션·중앙 고정 적응형 합성 및 dev 비용 모니터링 호환 게시. 기존 입력/기본 예산 가드 유지 | 새 이미지 모듈을 잇템 서빙에 적용하는 두 진입점 변경은 사용자 요청으로 보류 |
+| J01 | dev c6820f0 기반 격리 로컬에서 세 비율 입력 저장 200, 기존 4:5 입력 해시 유지·생성/합성 연결 시험 | 팀 공통 브랜치·배포본 반영, 릴스/스토리 별도 UI 선택과 다른 계약 전체 인수 |
+| J02 | 로컬에서 실제 사진 2장→기획/검수→승인→이미지 생성→승인→한글 합성→완료 화면→최종 PNG 다운로드. COMPLETED/LIVE, 서버 파일과 다운로드 SHA 일치 | 팀 배포 경로의 재현, 본문/태그 다운로드와 공동 인수. 로컬 한 건을 서비스 전체 인수로 확대하지 않음 |
+| J05/J06 | 실제 4:5 한 건의 시각 비교 및 최종 1080×1350 확인. 원본 생성은1152×1440 | 다른 품목/비율·독립 판정자·실제 Instagram 기기 가림/가독성 검수 |
+| J07/J08 | 입력/출력 사용량·실행 상태 기록. image Provider attempt 1건 succeeded. 이미지 큐 단계 약34초 | 실제 청구액은 null. 계정 전체 잔액/청구 대조와 품질 동등 조건 누적 절감 검증 |
+| E03/E07 | 이미지 단독 저장·수정/복구 관련 UI/모듈의 존재와 일부 연결 확인 | 이번 E2E는 최종 광고 PNG만 내려받음. 무문구 이미지 다운로드와 거절/복귀는 별도 시험 필요 |
+
+검증은 최신 모듈+dev 통합567개 PASS, 모니터링 호환5개 별도 PASS다(중복 가능 범위라 합산하지 않음). Python3.13의 기존 SQLite 연결 ResourceWarning만 제외했고 독립 EGM은 곁대화 서브에이전트 금지로 미실행이다. 이번 문서 갱신에서는 API 호출·서버 재시작·GCP 배포를 하지 않았다.
+
+[게시된 이미지 모듈](https://github.com/uyt5041-lab/beauty-ai-models/tree/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation) · [로컬 dev 적용 차이·한계](https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/integrations/ittem_dev/README.md) · [11/12 협업일지](https://github.com/uyt5041-lab/beauty-ai-models/blob/박지수_협업일지/worklogs/2026-11-12/park-jisoo-worklog.md)

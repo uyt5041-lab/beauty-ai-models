@@ -2,10 +2,15 @@
   "date": "2026-11-12",
   "status": "PASS",
   "sections": 8,
-  "todo_total": 28,
-  "todo_completed": 12,
-  "percent": 42.9,
+  "todo_total": 15,
+  "todo_completed": 14,
+  "percent": 93.3,
+  "non_image_count": 2,
+  "additional_count": 11,
+  "additional_excluded_from_primary": true,
   "html_markdown_equal": true,
-  "full_checklist_complete": true,
-  "new_api_calls": 0
+  "new_api_calls": 0,
+  "scope_effective_date": "2026-11-02",
+  "policy_recorded_on": "2026-11-12",
+  "historical_journals_preserved": true
 }
