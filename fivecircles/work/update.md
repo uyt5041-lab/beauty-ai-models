@@ -280,3 +280,10 @@ W&B·실험별 상태는 유지하고 계정 예산만 별도 SQLite로 공유�
 ## 2026-11-05 · 2트랙 게시 요청 후속
 
 사용자가 뷰티 feature/image-model·잇템 feat/image-generation 푸시와 PR 생성을 새로 요청했다. 앞의 로컬 전용 기록은 당시 상태로 보존한다. 담당별 전달문 docs/imageTwoTrackHandoff.md를 추가하고 일반 fast-forward 게시를 준비했다. 잇템 PR 대상은 CONTRIBUTING의 dev. 뷰티는 문서 기본브랜치 plan/models로의 PR 여부를 확인 중이며 코드 브랜치 푸시는 진행한다. 실제 원격 SHA·PR/게시 결과는 작업 receipt에 별도 기록한다. 런타임 소스는432 PASS 당시 hash와 동일하므로 문서 변경 때문에 이미지 API나 전체 시험을 반복하지 않는다.
+
+## 2026-11-12 로컬 dev 비율·Sunburst 2.6 연결 게시
+
+- 사용자 요청으로 기존 21be751 핫픽스를 이미지 통합 브랜치에 포함한다. dev c6820f0용 비율 저장·생성·합성·2.6 워커 변경은 integrations/ittem_dev에 적용 가능한 패치로 보존한다.
+- `git apply --check` PASS. 현재 이미지 모듈 475개 PASS(외부 소켓 차단). Python 3.13 기존 SQLite 연결 ResourceWarning만 제외했다. 최초 경고 실패를 기능 실패 해결로 표시하지 않는다. FiveCircles 검사 PASS.
+- 기존 로컬 시험: Python 480개, React 39개·lint/build PASS. 2.6 대상 시험 144개 PASS는 중복 포함 범위라 합산하지 않는다.
+- 키·사진·DB·생성물·초대코드는 게시하지 않는다. 독립 EGM은 곁대화의 서브에이전트 금지 조건으로 미실행. 실제 Provider E2E는 이 기록 시점 대기이며 이후 별도 로컬 실행한다. GCP 배포 없음.

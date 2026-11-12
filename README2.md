@@ -426,3 +426,7 @@ MPS allocated/driver 및 CUDA allocated/reserved는 작업 후 프로세스 메�
 ## 2026-10-27 · 백엔드 연결과 리사이즈
 
 [모델팀 Python 경계](docs/backendModelAdapter.md)를 따른다. 오프라인 예제: `python -m examples.backend_handoff --output outputs/backend-demo` (새 폴더). 실제 API 호출0, 원본 source.png와 최종 final.png를 따로 보존한다.
+
+### 2026-11-12 dev 비율·2.6 연결
+
+[dev 적용 패치와 검증 범위](integrations/ittem_dev/README.md). 이미지 패키지는 `src/image_generation`, dev 전용 서빙·React 차이는 패치로 구분한다. 실제 생성 E2E 결과는 별도 검증 후 기록한다.

@@ -1,0 +1,495 @@
+diff --git a/demo_staging/live/image_settings.py b/demo_staging/live/image_settings.py
+new file mode 100644
+--- /dev/null
++++ b/demo_staging/live/image_settings.py
+@@ -0,0 +1,19 @@
++"""Selected output ratio; geometry stays owned by the image module."""
++from typing import Literal
++
++ImageSize = Literal["3:4", "4:5", "9:16"]
++
++
++def image_size(snapshot: dict) -> ImageSize:
++    value = snapshot.get("image_size", "4:5")
++    if value not in ("3:4", "4:5", "9:16"):
++        raise ValueError("Unsupported image ratio")
++    return value
++
++
++def image_profile(snapshot: dict):
++    from src.image_generation.layout_profiles import get_layout
++    ratio = image_size(snapshot)
++    # The current UI has one combined story/reels choice. Use existing Story B;
++    # a separate placement selector is deliberately outside this ratio repair.
++    return get_layout(ratio, "story" if ratio == "9:16" else "feed")
+diff --git a/demo_staging/live/contracts.py b/demo_staging/live/contracts.py
+--- a/demo_staging/live/contracts.py
++++ b/demo_staging/live/contracts.py
+@@ -6,6 +6,7 @@
+ from typing import Any
+ 
+ from pydantic import BaseModel, ConfigDict, Field
++from .image_settings import ImageSize
+ 
+ from src.text_generation.schemas import (
+     AdCopyOutput, ImagePromptOutput, ProductAnalysisResult, ProductInput, ResearchResult,
+@@ -33,6 +34,7 @@
+     product: ProductInput
+     # Not a product fact: photo/provenance are checked against stored B0 uploads.
+     customer_request_id: str=Field(min_length=10,max_length=128)
++    image_size: ImageSize = "4:5"
+ 
+ 
+ def validate_input(value: dict, asset_rows: list[dict]) -> tuple[dict,str]:
+@@ -55,6 +57,9 @@
+         if not product.product_name.strip() or not product.features.strip() or not product.ad_purpose.strip():
+             raise LiveGateError("PRODUCT_INPUT_INCOMPLETE")
+         snapshot=incoming.model_dump(mode="json")
++        if incoming.image_size == "4:5":
++            # Explicit default and legacy omission must identify the same work.
++            snapshot.pop("image_size")
+         snapshot["ordered_asset_hashes"]=[
+             {"asset_id":a["asset_id"],"role":a["role"],"sha256":a["sha256"]}
+             for a in asset_rows]
+diff --git a/demo_staging/live/http_api.py b/demo_staging/live/http_api.py
+--- a/demo_staging/live/http_api.py
++++ b/demo_staging/live/http_api.py
+@@ -14,6 +14,7 @@
+ from pydantic import BaseModel,ConfigDict,Field
+ 
+ from .contracts import LiveGateError
++from .image_settings import ImageSize, image_size, image_profile
+ from .pipeline import LivePipeline
+ from .queue import LiveQueue
+ from .reviews import LiveShares
+@@ -25,6 +26,7 @@
+     model_config=ConfigDict(extra="forbid",strict=True)
+     product: dict
+     customer_request_id: str
++    image_size: ImageSize = "4:5"
+ 
+ 
+ class CopyUpdate(BaseModel):
+@@ -46,7 +48,7 @@
+ 
+ class ComposeRequest(BaseModel):
+     model_config=ConfigDict(extra="forbid",strict=True)
+-    layout:dict
++    layout:dict | None = None
+ 
+ 
+ def web_queue_policy() -> dict:
+@@ -111,6 +113,11 @@
+              "copy_sha":job["copy_sha"],"review_sha":job["review_sha"],
+              "image_sha":job["image_sha"],"final_sha":job["final_sha"],"caption_sha":job["caption_sha"],
+              "approval_current":bool(job["approval_sha"])}
++        snapshot = json.loads(job["input_json"])
++        out["image_size"] = image_size(snapshot)
++        if job["state"] == "COMPLETED":
++            width, height = image_profile(snapshot).final
++            out["output_size"] = {"width": width, "height": height}
+         for stored,key in (("research_display_json","research_display"),
+                            ("analysis_json","analysis"),
+                            ("copy_json","copy"),
+diff --git a/demo_staging/live/store.py b/demo_staging/live/store.py
+--- a/demo_staging/live/store.py
++++ b/demo_staging/live/store.py
+@@ -220,7 +220,17 @@
+             if job["state"]!="PROMPT_READY":
+                 raise LiveGateError("IMAGE_REQUIRES_PROMPT")
+             self._approved(job)
++            from .image_settings import image_size, image_profile
++            snapshot = json.loads(job["input_json"])
++            selected = {}
++            if image_size(snapshot) != "4:5":
++                profile = image_profile(snapshot)
++                selected["layout_selection"] = {
++                    "aspect_ratio": image_size(snapshot),
++                    "placement": profile.key.split("-", 1)[0],
++                }
+             owner=BackendImageInput.model_validate({
++                **selected,
+                 "job_id":job_id,"copy_revision":job["generation"],
+                 "copy_hash":job["copy_sha"],
+                 "product_analysis":json.loads(job["analysis_json"]),
+diff --git a/demo_staging/live/pipeline.py b/demo_staging/live/pipeline.py
+--- a/demo_staging/live/pipeline.py
++++ b/demo_staging/live/pipeline.py
+@@ -27,6 +27,7 @@
+ from .contracts import LiveGateError,digest
+ from .store import LiveStore
+ from .checkpoints import LiveCheckpoints
++from .image_settings import image_size, image_profile
+ 
+ 
+ class TextProvider(Protocol):
+@@ -251,7 +252,8 @@
+         if sha!=output.sha256:
+             raise LiveGateError("IMAGE_HASH_MISMATCH")
+         with Image.open(BytesIO(output.image_bytes)) as im:
+-            if (im.format!="PNG" or im.size!=(1152,1440)
++            expected_size = image_profile(json.loads(job["input_json"])).native
++            if (im.format!="PNG" or im.size!=expected_size
+                     or (output.width,output.height)!=im.size):
+                 raise LiveGateError("OWNER_IMAGE_SIZE_INVALID")
+         atomic_write(self.image_path(job_id),output.image_bytes)
+@@ -274,6 +276,14 @@
+         if image_sha!=job["image_sha"]:
+             raise LiveGateError("IMAGE_BYTES_CHANGED")
+         cp=json.loads(job["copy_json"])
++        snapshot = json.loads(job["input_json"])
++        profile = image_profile(snapshot)
++        if image_size(snapshot) != "4:5" or layout is None:
++            from src.image_generation.layout_profiles import make_placement_layout
++            selected = make_placement_layout(image_size(snapshot), profile.key.split("-", 1)[0])
++            if layout is not None and layout != selected.model_dump(mode="json"):
++                raise LiveGateError("COMPOSE_LAYOUT_RATIO_MISMATCH")
++            layout = selected
+         input_obj=CompositionInput(
+             job_id=job_id,image_bytes=raw,image_sha256=image_sha,
+             copy_revision=job["generation"],copy_hash=job["copy_sha"],
+@@ -282,7 +292,7 @@
+         if (result.copy_hash!=job["copy_sha"] or result.copy_revision!=job["generation"]
+             or result.source_image_sha256!=image_sha
+             or hashlib.sha256(result.image_bytes).hexdigest()!=result.sha256
+-            or (result.width,result.height)!=(1080,1350)):
++            or (result.width,result.height)!=profile.final):
+             raise LiveGateError("COMPOSED_RESULT_BINDING_FAILED")
+         directory=self.root/"outputs"/job_id
+         atomic_write(directory/"final.png",result.image_bytes)
+diff --git a/demo_staging/live/worker.py b/demo_staging/live/worker.py
+--- a/demo_staging/live/worker.py
++++ b/demo_staging/live/worker.py
+@@ -48,9 +48,9 @@
+ 
+     price_cap="0"
+     reserve="0"
+-    model=os.environ.get("IT_TEM_IMAGE_MODEL","gpt-image-2.5-sunburst-2026-09-08")
+-    # Exact two models permitted by official Image Owner DTO at PR #17.
+-    if model not in ("gpt-image-2.5-sunburst-2026-09-08","gpt-image-2-2026-04-21"):
++    model=os.environ.get("IT_TEM_IMAGE_MODEL","gpt-image-2.6-sunburst")
++    # Match the current Image Owner DTO, including Sunburst 2.6.
++    if model not in ("gpt-image-2.6-sunburst","gpt-image-2.5-sunburst-2026-09-08","gpt-image-2-2026-04-21"):
+         raise LiveGateError("UNAPPROVED_IMAGE_MODEL")
+     transport=OpenAIImagesAdapter(OpenAIImagesConfig(
+         live_calls=True,api_key=os.environ["OPENAI_API_KEY"],timeout_seconds=120))
+diff --git a/app/src/api/liveMapping.ts b/app/src/api/liveMapping.ts
+--- a/app/src/api/liveMapping.ts
++++ b/app/src/api/liveMapping.ts
+@@ -5,6 +5,7 @@
+ export type LiveState='INPUT_STORED'|'COPY_REVIEW_REQUIRED'|'COPY_APPROVED'|'COPY_REJECTED'|
+   'PROMPT_READY'|'IMAGE_REVIEW_REQUIRED'|'IMAGE_APPROVED'|'IMAGE_REJECTED'|'COMPLETED'
+ export type LiveSnapshot={
++  image_size?:'3:4'|'4:5'|'9:16'
+   job_id:string;state:LiveState;mode:string;generation:number;
+   input_sha:string;copy_sha:string|null;review_sha:string|null;
+   image_sha:string|null;final_sha:string|null;caption_sha:string|null;
+@@ -17,6 +18,11 @@
+ }
+ export type LiveTask={task_id:string;job_id:string;stage:string;state:
+   'QUEUED'|'RUNNING'|'SUCCEEDED'|'BILLING_UNKNOWN';error_code?:string|null}
++
++// Non-default ratios use the image owner's server-side layout, not the legacy
++// 4:5 A box. Omitted ratio retains compatibility with an older server response.
++export const usesServerRatioLayout=(s:Pick<LiveSnapshot,'image_size'>)=>
++  s.image_size!==undefined&&s.image_size!=='4:5'
+ export type LivePerformance={
+   mode:'LIVE';timings:Array<{stage:string;state:string;server_elapsed_s:number|null}>;
+   provider_attempts:Array<{stage:string;state:string;model:string|null;
+diff --git a/app/src/api/liveFlow.ts b/app/src/api/liveFlow.ts
+--- a/app/src/api/liveFlow.ts
++++ b/app/src/api/liveFlow.ts
+@@ -3,14 +3,19 @@
+ import {useProjectStore} from '../store/projectStore'
+ import {approveLiveCopy,rejectLiveCopy,queueLive,waitLiveTask,approveLiveImage,
+   rejectLiveImage,composeLive,getLiveSnapshot,reviseLiveCopy,restoreLiveCopy} from './liveJobs'
+-import {guardCopyApproval,guardImageApproval,sameCopyReview,sameImageCandidate,type LiveSnapshot} from './liveMapping'
++import {guardCopyApproval,guardImageApproval,sameCopyReview,sameImageCandidate,usesServerRatioLayout,type LiveSnapshot} from './liveMapping'
+ import {AD_LAYOUT} from '../config'
+ import {ApiError} from './client'
+ // The generic HTTP messages (e.g. 422 = photo input) are wrong for a compose failure; the image is kept.
+-const compose=(id:string)=>composeLive(id,AD_LAYOUT).catch(e=>{
+-  throw Error('광고 합성에 실패했습니다. 승인한 이미지는 그대로 있으니 원인을 확인한 뒤 합성만 다시 시도하세요.'+
+-    (e instanceof ApiError&&e.status>0?` (오류 ${e.status})`:''))
+-})
++async function compose(id:string){
++  try{
++    const current=await getLiveSnapshot(id)
++    return await composeLive(id,usesServerRatioLayout(current)?undefined:AD_LAYOUT)
++  }catch(e){
++    throw Error('광고 합성에 실패했습니다. 승인한 이미지는 그대로 있으니 원인을 확인한 뒤 합성만 다시 시도하세요.'+
++      (e instanceof ApiError&&e.status>0?` (오류 ${e.status})`:''))
++  }
++}
+ const refresh=async(id:string)=>{
+   await queryClient.invalidateQueries({queryKey:['job',id]})
+   await queryClient.invalidateQueries({queryKey:['live-snapshot',id]})
+diff --git a/tests/demo_live/test_image_size.py b/tests/demo_live/test_image_size.py
+new file mode 100644
+--- /dev/null
++++ b/tests/demo_live/test_image_size.py
+@@ -0,0 +1,208 @@
++"""Local ratio repair: no external network or paid providers."""
++import json
++import socket
++import base64
++from email import policy
++from email.parser import BytesParser
++from pathlib import Path
++from PIL import Image
++import httpx
++
++import pytest
++from fastapi.testclient import TestClient
++
++from demo_staging.live.contracts import validate_input, digest, LiveGateError
++from demo_staging.live.store import LiveStore
++from src.text_generation.schemas import ProductInput
++from tests.demo_live.test_live_contracts import sample_input, assets
++from tests.demo_live.test_http_gateway import setup, login, photo
++from tests.demo_live.test_pipeline import prepare_service, FakeOwner, png
++from src.image_generation.backend_adapter import BackendGeneratedImage
++from hashlib import sha256
++
++
++@pytest.fixture(autouse=True)
++def no_network(monkeypatch):
++    def blocked(*args, **kwargs):
++        pytest.fail("No external connection is allowed in ratio tests")
++    monkeypatch.setattr(socket, "create_connection", blocked)
++    monkeypatch.setattr(socket.socket, "connect", blocked)
++
++
++def uploaded(client):
++    response = client.post("/api/v1/jobs", files=[
++        ("product_images", ("front.png", photo((120, 130, 140)), "image/png")),
++        ("product_images", ("side.png", photo((150, 160, 170)), "image/png")),
++    ], headers={"Origin": "http://testserver"})
++    assert response.status_code == 201, response.text
++    return response.json()["job_id"]
++
++
++@pytest.mark.parametrize("ratio", ["3:4", "4:5", "9:16"])
++def test_input_http_accepts_frontend_size_and_persists(tmp_path, ratio):
++    app, codes = setup(tmp_path)
++    with TestClient(app) as client:
++        login(client, codes["alice"])
++        jid = uploaded(client)
++        payload = {**sample_input(), "image_size": ratio}
++        response = client.post(f"/demo/api/live/jobs/{jid}/input", json=payload,
++                               headers={"Origin": "http://testserver"})
++        assert response.status_code == 200, response.text
++        assert response.json()["image_size"] == ratio
++        assert client.get(f"/demo/api/live/jobs/{jid}").json()["image_size"] == ratio
++        stored = app.state.live_pipeline.state.get("alice", jid)
++        assert json.loads(stored["input_json"]).get("image_size", "4:5") == ratio
++        assert stored["state"] == "INPUT_STORED"  # No analysis/generation dispatched.
++
++
++@pytest.mark.parametrize("ratio", ["1:1", "1152x1440", "", None, True, ["4:5"]])
++def test_input_http_rejects_invalid_ratio(tmp_path, ratio):
++    app, codes = setup(tmp_path)
++    with TestClient(app) as client:
++        login(client, codes["alice"])
++        jid = uploaded(client)
++        response = client.post(f"/demo/api/live/jobs/{jid}/input",
++                               json={**sample_input(), "image_size": ratio},
++                               headers={"Origin": "http://testserver"})
++        assert response.status_code == 422
++
++
++def test_input_legacy_and_explicit_default_preserve_exact_snapshot_hash(tmp_path):
++    payload = sample_input()
++    old = {"product": ProductInput.model_validate(payload["product"]).model_dump(mode="json"),
++           "customer_request_id": payload["customer_request_id"],
++           "ordered_asset_hashes": assets()}
++    one, sha_one = validate_input(payload, assets())
++    two, sha_two = validate_input({**payload, "image_size": "4:5"}, assets())
++    assert one == two == old and sha_one == sha_two == digest(old)
++    store = LiveStore(tmp_path / "live.sqlite")
++    first = store.create("alice", "a" * 32, payload, assets())
++    second = store.create("alice", "a" * 32, {**payload, "image_size": "4:5"}, assets())
++    assert first["input_sha"] == second["input_sha"]
++    with pytest.raises(LiveGateError, match="LIVE_INPUT_CONFLICT"):
++        store.create("alice", "a" * 32, {**payload, "image_size": "9:16"}, assets())
++
++
++def ready_image(tmp_path, ratio):
++    pipe, jid = prepare_service(tmp_path)
++    pipe.prepare("alice", jid, {**sample_input(), "image_size": ratio})
++    provider = FakeOwner()
++    copy = pipe.text("alice", jid, provider, offline=True)
++    pipe.state.approve_copy("alice", jid, copy["generation"], copy["review_sha"])
++    pipe.prompt("alice", jid, provider, offline=True)
++    return pipe, jid
++
++
++@pytest.mark.parametrize("ratio,native,placement", [
++    ("3:4", (1152, 1536), "feed"),
++    ("4:5", (1152, 1440), "feed"),
++    ("9:16", (1152, 2048), "story"),
++])
++def test_generation_selection_and_native_result_validation(tmp_path, ratio, native, placement):
++    pipe, jid = ready_image(tmp_path, ratio)
++    owner = pipe.image_input("alice", jid)
++    if ratio == "4:5":
++        assert owner.layout_selection is None  # Historical paid request stays identical.
++    else:
++        assert owner.layout_selection.aspect_ratio == ratio
++        assert owner.layout_selection.placement == placement
++    raw = png((227, 228, 229), size=native)
++    output = BackendGeneratedImage(raw, "image/png", *native, sha256(raw).hexdigest(),
++                                  jid, owner.copy_revision, owner.copy_hash, True,
++                                  {"provider_calls": 0, "mode": "OFFLINE_MOCK_TRANSPORT"})
++    assert pipe.accept_image_result("alice", jid, output, offline=True)["state"] == "IMAGE_REVIEW_REQUIRED"
++
++
++@pytest.mark.parametrize("ratio", ["3:4", "9:16"])
++def test_generation_rejects_old_fixed_4_5_result_for_other_ratio(tmp_path, ratio):
++    pipe, jid = ready_image(tmp_path, ratio)
++    owner = pipe.image_input("alice", jid)
++    raw = png((227, 228, 229), size=(1152, 1440))
++    output = BackendGeneratedImage(raw, "image/png", 1152, 1440, sha256(raw).hexdigest(),
++                                  jid, owner.copy_revision, owner.copy_hash, True,
++                                  {"provider_calls": 0, "mode": "OFFLINE_MOCK_TRANSPORT"})
++    with pytest.raises(LiveGateError, match="OWNER_IMAGE_SIZE_INVALID"):
++        pipe.accept_image_result("alice", jid, output, offline=True)
++
++
++@pytest.mark.parametrize("ratio,native,final", [
++    ("3:4", (1152, 1536), (1080, 1440)),
++    ("4:5", (1152, 1440), (1080, 1350)),
++    ("9:16", (1152, 2048), (1080, 1920)),
++])
++def test_export_mock_owner_roundtrip_and_approved_final_size(tmp_path, ratio, native, final):
++    from src.image_generation.assets import LocalAssetStore
++    from src.image_generation.api_image_processor import ExternalImageProcessor
++    from src.image_generation.backend_adapter import BackendImageAdapter
++    from src.image_generation.openai_images import OpenAIImagesAdapter, OpenAIImagesConfig
++    from src.image_generation.provider_attempts import ProviderAttemptStore
++    from tests.demo_live.test_pipeline import layout
++
++    pipe, jid = ready_image(tmp_path, ratio)
++    calls = []
++    raw = png((219, 224, 236), size=native)
++    def handler(request):
++        message = BytesParser(policy=policy.default).parsebytes(
++            b"Content-Type: " + request.headers["content-type"].encode() + b"\r\n\r\n" + request.read())
++        fields = {part.get_param("name", header="content-disposition"):part.get_payload(decode=True)
++                  for part in message.iter_parts()
++                  if part.get_param("name", header="content-disposition") != "image[]"}
++        calls.append(fields)
++        return httpx.Response(200, json={"data":[{"b64_json":base64.b64encode(raw).decode()}]})
++    processor = ExternalImageProcessor(LocalAssetStore(tmp_path / "owner-assets"),
++        OpenAIImagesAdapter(OpenAIImagesConfig(), transport=httpx.MockTransport(handler)),
++        ProviderAttemptStore(tmp_path / "owner-attempts.sqlite"), budget_limit_usd="2", reservation_usd="1")
++    owner = BackendImageAdapter(processor, tmp_path / "owner-bindings.sqlite")
++    requested = pipe.image_input("alice", jid)
++    generated = owner.generate(requested, project_id=pipe.project_id)
++    assert calls[0]["size"].decode() == f"{native[0]}x{native[1]}"
++    assert calls[0]["n"] == b"1"
++    assert owner.generate(requested, project_id=pipe.project_id) == generated
++    assert len(calls) == 1
++    pipe.accept_image_result("alice", jid, generated, offline=True)
++    pipe.state.approve_image("alice", jid, generated.sha256)
++    if ratio != "4:5":
++        with pytest.raises(LiveGateError, match="COMPOSE_LAYOUT_RATIO_MISMATCH"):
++            pipe.compose("alice", jid, layout=layout(), font_path="unused.ttf")
++    font = Path(__file__).parents[1] / "image_generation/fixtures/fonts/NanumGothic-Regular.ttf"
++    complete = pipe.compose("alice", jid, layout=layout() if ratio == "4:5" else None, font_path=font)
++    assert complete["state"] == "COMPLETED" and len(calls) == 1
++    with Image.open(pipe.root / "outputs" / jid / "final.png") as image:
++        assert image.size == final
++    assert (pipe.root / "outputs" / jid / "caption.txt").read_text()
++
++
++@pytest.mark.parametrize("ratio,native,final", [
++    ("3:4", (1152, 1536), (1080, 1440)),
++    ("4:5", (1152, 1440), (1080, 1350)),
++    ("9:16", (1152, 2048), (1080, 1920)),
++])
++def test_export_http_snapshot_reports_validated_actual_final_size(tmp_path, ratio, native, final):
++    app, codes = setup(tmp_path)
++    with TestClient(app) as client:
++        login(client, codes["alice"])
++        jid = uploaded(client)
++        endpoint = f"/demo/api/live/jobs/{jid}"
++        accepted = client.post(endpoint + "/input", json={**sample_input(), "image_size": ratio},
++                               headers={"Origin": "http://testserver"})
++        assert accepted.status_code == 200
++        pipe = app.state.live_pipeline
++        provider = FakeOwner()
++        copy = pipe.text("alice", jid, provider, offline=True)
++        pipe.state.approve_copy("alice", jid, copy["generation"], copy["review_sha"])
++        pipe.prompt("alice", jid, provider, offline=True)
++        owner_input = pipe.image_input("alice", jid)
++        raw = png((210, 220, 230), size=native)
++        output = BackendGeneratedImage(raw, "image/png", *native, sha256(raw).hexdigest(),
++            jid, owner_input.copy_revision, owner_input.copy_hash, True, {"provider_calls": 0})
++        pipe.accept_image_result("alice", jid, output, offline=True)
++        pipe.state.approve_image("alice", jid, output.sha256)
++        font = Path(__file__).parents[1] / "image_generation/fixtures/fonts/NanumGothic-Regular.ttf"
++        pipe.compose("alice", jid, layout=None, font_path=font)
++        current = client.get(endpoint)
++        assert current.status_code == 200
++        data = current.json()
++        assert data["output_size"] == {"width": final[0], "height": final[1]}
++        assert data["image_size"] == ratio
++        assert data["mode"] == "OFFLINE_FIXTURE"  # Never publish a fake result as LIVE.
++        assert "product" not in data and "ordered_asset_hashes" not in data
+diff --git a/tests/demo_live/test_worker_guard.py b/tests/demo_live/test_worker_guard.py
+--- a/tests/demo_live/test_worker_guard.py
++++ b/tests/demo_live/test_worker_guard.py
+@@ -2,6 +2,28 @@
+ from demo_staging.live.worker import run_once,policy_from_env
+ from demo_staging.live.queue import LiveQueue
+ from demo_staging.live_safety import LiveNotAuthorized
++
++@pytest.mark.parametrize("model", [None, "gpt-image-2.6-sunburst",
++    "gpt-image-2.5-sunburst-2026-09-08", "gpt-image-2-2026-04-21"])
++def test_image_worker_model_matches_owner_dto(tmp_path, monkeypatch, model):
++    from demo_staging.live.worker import live_image_adapter
++    monkeypatch.setenv("OPENAI_API_KEY", "TEST_ONLY_NO_REAL_CALL")
++    if model is None:
++        monkeypatch.delenv("IT_TEM_IMAGE_MODEL", raising=False)
++    else:
++        monkeypatch.setenv("IT_TEM_IMAGE_MODEL", model)
++    adapter = live_image_adapter(tmp_path, None)
++    expected = model or "gpt-image-2.6-sunburst"
++    assert adapter.model == expected
++    assert adapter.quality == "medium"
++    assert adapter.complexity == ("high" if expected == "gpt-image-2.6-sunburst" else None)
++
++def test_image_worker_rejects_unknown_model(tmp_path, monkeypatch):
++    from demo_staging.live.worker import live_image_adapter
++    from demo_staging.live.contracts import LiveGateError
++    monkeypatch.setenv("IT_TEM_IMAGE_MODEL", "unknown-model")
++    with pytest.raises(LiveGateError, match="UNAPPROVED_IMAGE_MODEL"):
++        live_image_adapter(tmp_path, None)
+ 
+ def test_worker_denied_by_default_and_does_not_consume_queue(tmp_path,monkeypatch):
+     for key in ("IT_TEM_LIVE_ENABLED","IT_TEM_LIVE_EXECUTION_APPROVED",
+diff --git a/app/tests/liveMapping.test.ts b/app/tests/liveMapping.test.ts
+--- a/app/tests/liveMapping.test.ts
++++ b/app/tests/liveMapping.test.ts
+@@ -1,6 +1,6 @@
+ import test from 'node:test'
+ import assert from 'node:assert/strict'
+-import {asProductJob,guardCopyApproval,guardCopyRevision,guardImageApproval,isPublishedFinal,sameCopyReview,sameImageCandidate,type LiveSnapshot} from '../src/api/liveMapping.ts'
++import {asProductJob,guardCopyApproval,guardCopyRevision,guardImageApproval,isPublishedFinal,sameCopyReview,sameImageCandidate,usesServerRatioLayout,type LiveSnapshot} from '../src/api/liveMapping.ts'
+ import type {Job} from '../src/types/draft.ts'
+ const raw:Job={job_id:'a'.repeat(32),status:'INPUTS_VALIDATED',assets:[{
+   asset_id:'A',role:'product',original_filename:'a.png',content_type:'image/png',
+@@ -9,6 +9,12 @@
+ const example:LiveSnapshot={job_id:raw.job_id,state:'INPUT_STORED',mode:'INPUT_ONLY',
+   generation:0,input_sha:'c'.repeat(64),copy_sha:null,review_sha:null,
+   image_sha:null,final_sha:null,caption_sha:null,approval_current:false}
++test('non-default ratios use owner server layout; legacy 4:5 keeps A layout',()=>{
++  assert.equal(usesServerRatioLayout({}),false)
++  assert.equal(usesServerRatioLayout({image_size:'4:5'}),false)
++  assert.equal(usesServerRatioLayout({image_size:'3:4'}),true)
++  assert.equal(usesServerRatioLayout({image_size:'9:16'}),true)
++})
+ test('Live snapshot remains independently typed; no synthetic mock stage',()=>{
+   const input=asProductJob(example,raw)
+   assert.equal(input.status,'INPUTS_VALIDATED')
