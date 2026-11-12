@@ -23,6 +23,7 @@
 | 2026-11-09 | [합성형 연출·광고 글꼴 저장 실험 검토](worklogs/2026-11-09/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-09/park-jisoo-worklog.html) |
 | 2026-11-10 | [활성 범위 유지·당일 구현 근거 미확인](worklogs/2026-11-10/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-10/park-jisoo-worklog.html) |
 | 2026-11-11 | [14디멘션·중앙 고정 글자·기존 계약 재사용](worklogs/2026-11-11/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-11/park-jisoo-worklog.html) |
+| 2026-11-12 | [최신 이미지 모듈 게시·Sunburst 2.6 실제 E2E](worklogs/2026-11-12/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-12/park-jisoo-worklog.html) |
 
 HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
@@ -191,3 +192,11 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 ![활성 체크 12/28개 · 42.9%](worklogs/2026-11-11/progress.svg)
 
 작업일 2026-11-11 / 기록일 2026-11-12. 당일 자기평가와 팀 인수는 확인된 근거만 기록한다.
+
+### 누락 보완 · 2026-11-12
+
+활성 체크 **12/28개 · 42.9%** · [당일 전체 목록](worklogs/2026-11-12/full-todo.md) · [HTML](worklogs/2026-11-12/full-todo.html)
+
+![활성 체크 12/28개 · 42.9%](worklogs/2026-11-12/progress.svg)
+
+작업일 2026-11-12 / 기록일 2026-11-12. 당일 자기평가와 팀 인수는 확인된 근거만 기록한다.

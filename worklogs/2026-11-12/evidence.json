@@ -1,0 +1,29 @@
+{
+  "work_date": "2026-11-12",
+  "recorded_on": "2026-11-12",
+  "timezone": "Asia/Seoul",
+  "backfill": true,
+  "author": "박지수",
+  "team": "고급프로젝트 2팀",
+  "source_commit": "ccaa64a1cd6c1e253061e95b1dc8c3139f25b213",
+  "canonical_source": "docs/imageTodo.md",
+  "evidence": [
+    {
+      "label": "최신 이미지 소스·검증 게시",
+      "reference": "git:6735e979c46626597034c99fa4aec8151517c9ee:integrations/ittem_dev/README.md",
+      "sha256": "1879bd1113df5e8019dd10ddc9df7b696a1842a0474ef0626ec0b513b67e5ad7",
+      "public_url": "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/integrations/ittem_dev/README.md"
+    },
+    {
+      "label": "실제 E2E 상태와 사용량",
+      "reference": "local evidence retained privately",
+      "sha256": "b7cf1d00c257a5e725837703c654ec5e2350afa779400029f146c1eb30e8d9cd",
+      "public_url": null
+    }
+  ],
+  "self_assessment": null,
+  "self_assessment_reason": "당일 본인 자기평가 미제공. 확인 불가를 0%로 바꾸지 않음.",
+  "new_model_calls_in_documentation_task": 0,
+  "milestones": "10/30 M1, 11/06 M2: 목표일 이력; 날짜 경과로 완료 체크하지 않음",
+  "shared_acceptance": "not established by this journal"
+}
