@@ -5,7 +5,7 @@
   "backfill": true,
   "author": "박지수",
   "team": "고급프로젝트 2팀",
-  "source_commit": "0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1",
+  "source_commit": "fc31c793e5145f61316918c2aa46144e2ea72ec0",
   "canonical_source": "docs/imageTodo.md",
   "evidence": [
     {
@@ -38,5 +38,8 @@
     "6.2",
     "7.1~7.4",
     "11.1~11.2"
-  ]
+  ],
+  "extension_catalog_version": "image-extension-intro-20261112-v1",
+  "extension_code_commit": "6735e979c46626597034c99fa4aec8151517c9ee",
+  "extension_review_new_calls": 0
 }

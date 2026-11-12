@@ -157,10 +157,10 @@
       ]
     }
   ],
-  "source_commit": "0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1",
+  "source_commit": "fc31c793e5145f61316918c2aa46144e2ea72ec0",
   "source_path": "docs/imageTodo.md",
-  "source_sha256": "ebd13879a7ea3c5516b062123a90cdcb41e13fc43690b1b3d27a1cd886afca50",
-  "source_url": "https://github.com/uyt5041-lab/beauty-ai-models/blob/0f8d7cf44ac7ff1bc699c0abf7feb601c7a8aef1/docs/imageTodo.md",
+  "source_sha256": "01fa5d12e4e2dad26528443ffcd3d4d9ccab550d30d389c10a3c146fef4d675c",
+  "source_url": "https://github.com/uyt5041-lab/beauty-ai-models/blob/fc31c793e5145f61316918c2aa46144e2ea72ec0/docs/imageTodo.md",
   "policy_version": "image-module-scope-20261102-recorded-20261112-v2",
   "scope_effective_date": "2026-11-02",
   "policy_recorded_on": "2026-11-12",
@@ -459,5 +459,21 @@
   "additional_count": 11,
   "additional_excluded_from_primary": true,
   "counting_rationale": "팀 고도화7개는 유지. 그중 기능성 세분화·이모티콘 설정2개는 다른 담당으로 분모 제외. 남은5개도 이미지 모듈 의무만 판정한다. 서비스 연결·팀 인수·추가 연출은 별도이며 기능 취소가 아니다.",
+  "extension_progress": {
+    "catalog_version": "image-extension-intro-20261112-v1",
+    "observed_on": "2026-11-12",
+    "total": 6,
+    "completed": 5,
+    "remaining": 1,
+    "percent": 83.3,
+    "unit": "현재 소개한 추가 기능6개 중 공개 이미지 모듈 구현 수",
+    "experimental_count": 1,
+    "primary_total_unchanged": 15,
+    "primary_completed_unchanged": 14,
+    "excluded_from_primary": true,
+    "combined_percentage": null,
+    "scope_note": "공통 정책 보강·14D선택·색·위치·자유형·라벨을 각1개로 센다. 구현 여부와 실험·배포·인수를 구분한다. 카탈로그가 늘면 버전/분모를 갱신한다. 기본93.3%와 합산하지 않는다."
+  },
+  "extension_catalog": "additional-features.json",
   "previous_snapshot": "archive/before-core17/progress.json"
 }

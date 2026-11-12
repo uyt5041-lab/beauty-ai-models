@@ -1,30 +1,44 @@
 {
   "status": "BROWSER_PASS",
   "journal": {
-    "headings": [
-      "1. 날짜·이름·팀명",
-      "2. 오늘의 역할과 구체적인 작업",
-      "3. 오늘 작업 완료도",
-      "4. 협업 제안·피드백",
-      "5. 인사이트·문제",
-      "6. 일정·협업의 어려움",
-      "7. 발표·커뮤니케이션 기여",
-      "8. 다음 목표"
+    "headings": 8,
+    "bars": [
+      [
+        14,
+        15
+      ],
+      [
+        5,
+        6
+      ]
     ],
-    "value": 14,
-    "max": 15,
-    "image": 760,
-    "decision": true,
-    "recorded": true
+    "images": [
+      {
+        "src": "progress.svg",
+        "width": 760
+      },
+      {
+        "src": "additional-progress.svg",
+        "width": 760
+      }
+    ],
+    "label_status": true
   },
   "full": {
-    "total": 15,
+    "checks": 15,
     "checked": 14,
-    "value": 14,
-    "max": 15,
-    "other_owner": true,
-    "additional": true,
-    "e07": true
+    "bars": [
+      [
+        14,
+        15
+      ],
+      [
+        5,
+        6
+      ]
+    ]
   },
+  "extension_percent": 83.3,
+  "primary_percent": 93.3,
   "new_api_calls": 0
 }

@@ -12,5 +12,10 @@
   "new_api_calls": 0,
   "scope_effective_date": "2026-11-02",
   "policy_recorded_on": "2026-11-12",
-  "historical_journals_preserved": true
+  "historical_journals_preserved": true,
+  "extension_total": 6,
+  "extension_completed": 5,
+  "extension_percent": 83.3,
+  "extension_experimental": 1,
+  "percentages_not_added": true
 }
