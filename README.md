@@ -14,6 +14,7 @@
 | 2026-10-27 | [한국어·연결 어댑터·리사이즈 완료 기록](worklogs/2026-10-27/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-27/park-jisoo-worklog.html) |
 | 2026-10-28 | [이미지 MVP·한글 합성·301개 테스트 전달](worklogs/2026-10-28/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-28/park-jisoo-worklog.html) |
 | 2026-10-29 | [연동 보고·텍스트 리뷰·광고 표현 실험](worklogs/2026-10-29/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-29/park-jisoo-worklog.html) |
+| 2026-10-30 | [M1·MPO 저장 호환·A 합성·원장 검증](worklogs/2026-10-30/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-30/park-jisoo-worklog.html) |
 | 2026-11-02 | [이미지 경계·A 배치·직접 API 실험](worklogs/2026-11-02/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-02/park-jisoo-worklog.html) |
 | 2026-11-03 | [6테마 R2·W&B·FinOps·고도화7개](worklogs/2026-11-03/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-03/park-jisoo-worklog.html) |
 | 2026-11-05 | [비율·합성 게시와 협업/보류 안건](worklogs/2026-11-05/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-05/park-jisoo-worklog.html) |
@@ -137,3 +138,11 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 ![당시 원본 전체 일지 체크 0/109개 · 0.0%](worklogs/2026-10-21/progress.svg)
 
 작업일 2026-10-21 / 기록일 2026-11-12. 당일 자기평가와 팀 인수는 확인된 근거만 기록한다.
+
+### 누락 보완 · 2026-10-30
+
+당시 원본 전체 일지 체크 **42/197개 · 21.3%** · [당일 전체 목록](worklogs/2026-10-30/full-todo.md) · [HTML](worklogs/2026-10-30/full-todo.html)
+
+![당시 원본 전체 일지 체크 42/197개 · 21.3%](worklogs/2026-10-30/progress.svg)
+
+작업일 2026-10-30 / 기록일 2026-11-12. 당일 자기평가와 팀 인수는 확인된 근거만 기록한다.
