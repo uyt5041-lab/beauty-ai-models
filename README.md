@@ -19,6 +19,7 @@
 | 2026-11-03 | [6테마 R2·W&B·FinOps·고도화7개](worklogs/2026-11-03/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-03/park-jisoo-worklog.html) |
 | 2026-11-04 | [세 비율 실제 생성·재배치·공유 시안](worklogs/2026-11-04/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-04/park-jisoo-worklog.html) |
 | 2026-11-05 | [비율·합성 게시와 협업/보류 안건](worklogs/2026-11-05/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-05/park-jisoo-worklog.html) |
+| 2026-11-06 | [M2 목표일·인수 근거 미확인](worklogs/2026-11-06/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-11-06/park-jisoo-worklog.html) |
 
 HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 
@@ -155,3 +156,11 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 ![당시 원본 전체 일지 체크 42/208개 · 20.2%](worklogs/2026-11-04/progress.svg)
 
 작업일 2026-11-04 / 기록일 2026-11-12. 당일 자기평가와 팀 인수는 확인된 근거만 기록한다.
+
+### 누락 보완 · 2026-11-06
+
+활성 체크 **12/28개 · 42.9%** · [당일 전체 목록](worklogs/2026-11-06/full-todo.md) · [HTML](worklogs/2026-11-06/full-todo.html)
+
+![활성 체크 12/28개 · 42.9%](worklogs/2026-11-06/progress.svg)
+
+작업일 2026-11-06 / 기록일 2026-11-12. 당일 자기평가와 팀 인수는 확인된 근거만 기록한다.
