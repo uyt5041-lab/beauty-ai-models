@@ -46,7 +46,7 @@ class ProviderAttemptStore:
                     job_id TEXT PRIMARY KEY, project_id TEXT NOT NULL,
                     request_hash TEXT NOT NULL, attempt_id TEXT NOT NULL UNIQUE,
                     state TEXT NOT NULL CHECK(state IN ('submitting','succeeded','failed','unknown')),
-                    reservation_units INTEGER NOT NULL CHECK(reservation_units > 0),
+                    reservation_units INTEGER NOT NULL CHECK(reservation_units >= 0),
                     provider_request_id TEXT, usage_json TEXT, result_json TEXT,
                     error_code TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
                 )""")
@@ -92,12 +92,15 @@ class ProviderAttemptStore:
             db.close()
 
     def begin(self, job_id: UUID, project_id: UUID, request_hash: str, *,
-              budget_limit_usd, reservation_usd) -> UUID:
+              budget_limit_usd, reservation_usd, monitoring_only: bool=False) -> UUID:
         self._ids(job_id, project_id)
         if not isinstance(request_hash, str) or not re.fullmatch(r"[a-f0-9]{64}", request_hash):
             raise ValueError("A canonical request hash is required.")
+        if type(monitoring_only) is not bool:
+            raise ValueError("MONITORING_POLICY_INVALID")
         limit = money_units(budget_limit_usd)
-        reservation = money_units(reservation_usd, positive=True)
+        reservation = (0 if monitoring_only else
+                       money_units(reservation_usd, positive=True))
         attempt_id = uuid4()
         now = datetime.now(timezone.utc).isoformat()
         try:
@@ -107,7 +110,7 @@ class ProviderAttemptStore:
                     raise self._conflict()
                 held = db.execute("SELECT COALESCE(SUM(reservation_units),0) FROM provider_attempts WHERE project_id=?",
                                   (str(project_id),)).fetchone()[0]
-                if held + reservation > limit:
+                if not monitoring_only and held + reservation > limit:
                     raise GatewayError("PROVIDER_BUDGET_EXCEEDED", "Image reservation allowance is exhausted.")
                 db.execute("""INSERT INTO provider_attempts
                     (job_id,project_id,request_hash,attempt_id,state,reservation_units,created_at,updated_at)

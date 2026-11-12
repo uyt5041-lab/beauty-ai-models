@@ -16,9 +16,12 @@ from .provider_attempts import ProviderAttemptStore, money_units
 
 class ExternalImageProcessor:
     def __init__(self, assets: LocalAssetStore, adapter: OpenAIImagesAdapter,
-                 attempts: ProviderAttemptStore, *, budget_limit_usd="0", reservation_usd="1"):
+                 attempts: ProviderAttemptStore, *, budget_limit_usd="0", reservation_usd="1",
+                 monitoring_only=False):
         money_units(budget_limit_usd)
-        money_units(reservation_usd, positive=True)
+        if type(monitoring_only) is not bool:raise ValueError("MONITORING_POLICY_INVALID")
+        money_units(reservation_usd, positive=not monitoring_only)
+        self.monitoring_only=monitoring_only
         self.assets, self.adapter, self.attempts = assets, adapter, attempts
         self.budget_limit_usd, self.reservation_usd = budget_limit_usd, reservation_usd
 
@@ -79,7 +82,8 @@ class ExternalImageProcessor:
         # uncertain attempt; restarting never turns it into another POST.
         attempt_id = self.attempts.begin(job_id, project_id, snapshot_hash,
                                         budget_limit_usd=self.budget_limit_usd,
-                                        reservation_usd=self.reservation_usd)
+                                        reservation_usd=self.reservation_usd,
+                                        monitoring_only=self.monitoring_only)
         response = None
         try:
             response = self.adapter.execute(request, product_images, reference_images,

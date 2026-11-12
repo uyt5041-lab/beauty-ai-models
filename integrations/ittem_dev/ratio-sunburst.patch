@@ -133,7 +133,7 @@ diff --git a/demo_staging/live/pipeline.py b/demo_staging/live/pipeline.py
                      or (output.width,output.height)!=im.size):
                  raise LiveGateError("OWNER_IMAGE_SIZE_INVALID")
          atomic_write(self.image_path(job_id),output.image_bytes)
-@@ -274,6 +276,14 @@
+@@ -274,15 +276,28 @@
          if image_sha!=job["image_sha"]:
              raise LiveGateError("IMAGE_BYTES_CHANGED")
          cp=json.loads(job["copy_json"])
@@ -148,7 +148,14 @@ diff --git a/demo_staging/live/pipeline.py b/demo_staging/live/pipeline.py
          input_obj=CompositionInput(
              job_id=job_id,image_bytes=raw,image_sha256=image_sha,
              copy_revision=job["generation"],copy_hash=job["copy_sha"],
-@@ -282,7 +292,7 @@
+             copy_output=cp,layout=layout)
+-        result=compose_ad_png(input_obj,font_path=Path(font_path))
++        if (image_size(snapshot) == "4:5"
++                and os.environ.get("IT_TEM_IMAGE_SCENE_MODE") == "dimensions14"):
++            from src.image_generation.ittem_hotfix import compose_ittem_ad
++            result=compose_ittem_ad(input_obj,font_path=Path(font_path))
++        else:
++            result=compose_ad_png(input_obj,font_path=Path(font_path))
          if (result.copy_hash!=job["copy_sha"] or result.copy_revision!=job["generation"]
              or result.source_image_sha256!=image_sha
              or hashlib.sha256(result.image_bytes).hexdigest()!=result.sha256
@@ -173,6 +180,19 @@ diff --git a/demo_staging/live/worker.py b/demo_staging/live/worker.py
          raise LiveGateError("UNAPPROVED_IMAGE_MODEL")
      transport=OpenAIImagesAdapter(OpenAIImagesConfig(
          live_calls=True,api_key=os.environ["OPENAI_API_KEY"],timeout_seconds=120))
+@@ -58,6 +58,12 @@
+         LocalAssetStore(runtime/"image_assets"),transport,
+         ProviderAttemptStore(runtime/"image_attempts.sqlite"),
+         budget_limit_usd=price_cap,reservation_usd=reserve,monitoring_only=True)
++    if (os.environ.get("IT_TEM_IMAGE_SCENE_MODE") == "dimensions14"
++            and request.layout_selection is None):
++        from src.image_generation.ittem_hotfix import build_ittem_image_adapter
++        if model != "gpt-image-2.6-sunburst":
++            raise LiveGateError("HOTFIX_REQUIRES_SUNBURST_26")
++        return build_ittem_image_adapter(processor, runtime/"image_bindings.sqlite")
+     return BackendImageAdapter(processor,runtime/"image_bindings.sqlite",model=model)
+ 
+ 
 diff --git a/app/src/api/liveMapping.ts b/app/src/api/liveMapping.ts
 --- a/app/src/api/liveMapping.ts
 +++ b/app/src/api/liveMapping.ts
@@ -440,7 +460,7 @@ new file mode 100644
 diff --git a/tests/demo_live/test_worker_guard.py b/tests/demo_live/test_worker_guard.py
 --- a/tests/demo_live/test_worker_guard.py
 +++ b/tests/demo_live/test_worker_guard.py
-@@ -2,6 +2,28 @@
+@@ -2,6 +2,39 @@
  from demo_staging.live.worker import run_once,policy_from_env
  from demo_staging.live.queue import LiveQueue
  from demo_staging.live_safety import LiveNotAuthorized
@@ -466,6 +486,17 @@ diff --git a/tests/demo_live/test_worker_guard.py b/tests/demo_live/test_worker_
 +    monkeypatch.setenv("IT_TEM_IMAGE_MODEL", "unknown-model")
 +    with pytest.raises(LiveGateError, match="UNAPPROVED_IMAGE_MODEL"):
 +        live_image_adapter(tmp_path, None)
++
++@pytest.mark.parametrize("selection, expected", [(None, "dimensions14"), (object(), "standard")])
++def test_local_hotfix_only_applies_to_a_layout(tmp_path, monkeypatch, selection, expected):
++    from types import SimpleNamespace
++    from demo_staging.live.worker import live_image_adapter
++    monkeypatch.setenv("OPENAI_API_KEY", "TEST_ONLY_NO_REAL_CALL")
++    monkeypatch.setenv("IT_TEM_IMAGE_MODEL", "gpt-image-2.6-sunburst")
++    monkeypatch.setenv("IT_TEM_IMAGE_SCENE_MODE", "dimensions14")
++    adapter = live_image_adapter(tmp_path, SimpleNamespace(layout_selection=selection))
++    assert adapter.model == "gpt-image-2.6-sunburst"
++    assert adapter.scene_mode == expected
  
  def test_worker_denied_by_default_and_does_not_consume_queue(tmp_path,monkeypatch):
      for key in ("IT_TEM_LIVE_ENABLED","IT_TEM_LIVE_EXECUTION_APPROVED",
