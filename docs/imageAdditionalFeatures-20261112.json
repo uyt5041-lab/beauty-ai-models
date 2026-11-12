@@ -1,0 +1,137 @@
+{
+  "catalog_version": "image-extension-intro-20261112-v1",
+  "observed_on": "2026-11-12",
+  "total": 6,
+  "completed": 5,
+  "remaining": 1,
+  "percent": 83.3,
+  "unit": "현재 소개한 추가 기능6개 중 공개 이미지 모듈 구현 수",
+  "experimental_count": 1,
+  "primary_total_unchanged": 15,
+  "primary_completed_unchanged": 14,
+  "excluded_from_primary": true,
+  "combined_percentage": null,
+  "scope_note": "공통 정책 보강·14D선택·색·위치·자유형·라벨을 각1개로 센다. 구현 여부와 실험·배포·인수를 구분한다. 카탈로그가 늘면 버전/분모를 갱신한다. 기본93.3%와 합산하지 않는다.",
+  "features": [
+    {
+      "id": "X01",
+      "title": "한국어 공통 고정 프롬프트 보강",
+      "implemented": true,
+      "status": "모듈 구현",
+      "summary": "제품 원형·실제 로고/라벨 보존, 추가 워터마크 제외, 제품 사진과 참고 사진의 역할을 공통 지시로 붙인다. 기존 요청은 유지하고 버전별로 분기한다.",
+      "selection": "korean_image_policy.py의 버전 정책을 요청에 연결한다. text_generation의 한국어 원문은 번역하지 않는다.",
+      "limits": "생성 모델이 지시를 정확히 지켰다는 자동 인증은 아니다. 기본 M03 수신 기능과 구분한 정책 보강 소개이며 기본 완료 수에 중복 가산하지 않는다.",
+      "paths": [
+        "src/image_generation/korean_image_policy.py",
+        "tests/image_generation/test_composed_dimensions.py"
+      ],
+      "source_urls": [
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/korean_image_policy.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/tests/image_generation/test_composed_dimensions.py"
+      ]
+    },
+    {
+      "id": "X02",
+      "title": "14디멘션 연출 선택·보강",
+      "implemented": true,
+      "status": "모듈 구현",
+      "summary": "콘셉트, 배경색, 제품 고유색, 톤, 조명, 재질, 광택, 형태, 소품, 장소/사실, 구도, 시선, 글자 영역, 모바일 가독성을 한 규칙으로 정리한다. 사용자가 준 명시값을 우선하고 빈 부분만 조건부 기본값으로 보완한다.",
+      "selection": "scene_mode=\"standard\" 또는 \"dimensions14\"로 선택한다. 현재14D 버전은 기존4:5 A합성 전용이다.",
+      "limits": "14개 항목을 하나씩 켜고 끄는 UI가 아니다. 3:4·9:16이나 자유형에14D를 그대로 함께 적용하지 않는다. 추가 LLM 호출로 정책을 고르는 방식도 아니다.",
+      "paths": [
+        "src/image_generation/composed_dimensions.py",
+        "src/image_generation/DIMENSIONS14.md",
+        "tests/image_generation/test_composed_dimensions.py"
+      ],
+      "source_urls": [
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/composed_dimensions.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/DIMENSIONS14.md",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/tests/image_generation/test_composed_dimensions.py"
+      ]
+    },
+    {
+      "id": "X03",
+      "title": "합성기 글자색·대비 자동 조절",
+      "implemented": true,
+      "status": "모듈 구현",
+      "summary": "실제 글자 아래 배경을 읽어 장면과 어울리는 글자색을 고르고 대비를 기록한다. 일반 자동 색 경로는 필요할 때 글자 영역 안에 얇은 배경막을 더한다.",
+      "selection": "compose_ad_png의 color_mode=\"auto\" 또는 \"fixed\". 지정색 유지와 자동 조절을 구분한다.",
+      "limits": "최신 A 적응형 경로는 사각 박스를 추가하지 않는 별도 탐색을 사용한다. 모든 배경에서 대비 합격을 보장하지 않으며 실패 수치도 receipt에 남긴다.",
+      "paths": [
+        "src/image_generation/typography_color.py",
+        "src/image_generation/adaptive_typography.py",
+        "src/image_generation/composition.py"
+      ],
+      "source_urls": [
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/typography_color.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/adaptive_typography.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/composition.py"
+      ]
+    },
+    {
+      "id": "X04",
+      "title": "합성기 글자 위치·경계 회피 조절",
+      "implemented": true,
+      "status": "모듈 구현",
+      "summary": "이미지 경계 필터로 복잡한 곳을 찾고 지정 문구 박스 안에서 대비와 간격이 맞는 위치를 탐색한다. 최신 A합성은 가로 중앙을 유지하며 세로 위치를 조절한다.",
+      "selection": "compose_ittem_ad의 clearance_px=12, relaxed_clearance_px=4, fallback_lower, fallback_shift_px 설정을 사용한다.",
+      "limits": "안전 위치를 못 찾으면 설정에 따른 하단 대체 위치와 실패 여부를 기록한다. 실제 제품 위치를 AI로 검출·검증하는 기능은 아니다. 재합성 자체는 이미지 API를 다시 호출하지 않는다.",
+      "paths": [
+        "src/image_generation/adaptive_typography.py",
+        "src/image_generation/ittem_hotfix.py",
+        "src/image_generation/ADAPTIVE_TEXT.md",
+        "tests/image_generation/test_adaptive_typography.py"
+      ],
+      "source_urls": [
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/adaptive_typography.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/ittem_hotfix.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/ADAPTIVE_TEXT.md",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/tests/image_generation/test_adaptive_typography.py"
+      ]
+    },
+    {
+      "id": "X05",
+      "title": "자유형 프롬프트·생성 방식",
+      "implemented": true,
+      "status": "모듈 구현",
+      "summary": "고정 A합성과 구분해 이미지 API가 장면과 승인 광고 문구를 함께 그리는 자유형 경로를 제공한다. 완전한 승인 카피 스냅샷을 요구하고 결과 내보내기는 별도 글자 합성 없이 리사이즈한다.",
+      "selection": "BackendImageInput.generation_mode=\"freeform\". prompt 문자열/구조형 입력과 별도의 beauty_ai.freeform_image 실험 CLI도 있다.",
+      "limits": "자유형은 추가 이미지 호출이며 글자 정확성·제품 보존·가독성을 보장하지 않는다. 14D A 전용 정책과 섞지 않는다. 여러 후보 요청 정책과 서비스 화면 적용은 별도다.",
+      "paths": [
+        "src/image_generation/backend_adapter.py",
+        "src/image_generation/candidate_export.py",
+        "src/image_generation/korean_image_policy.py",
+        "tests/image_generation/test_two_track.py",
+        "beauty_ai/freeform_image.py"
+      ],
+      "source_urls": [
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/backend_adapter.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/candidate_export.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation/korean_image_policy.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/tests/image_generation/test_two_track.py",
+        "https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/beauty_ai/freeform_image.py"
+      ]
+    },
+    {
+      "id": "X06",
+      "title": "원본 사진 라벨 합성",
+      "implemented": false,
+      "status": "로컬 실험 · 공개 모듈 미포함",
+      "summary": "원본 사진의 보이는 인쇄 영역을 잘라 용기 곡면에 맞춰 옮기는 방식이다. AI가 라벨 글자를 새로 쓰는 방식과 비교했다.",
+      "selection": "로컬 reports/original-label-pixel-composite-20261105/compose.py의 수동 경계·곡면 앵커를 사용한 단일 사례다.",
+      "limits": "추가 이미지 API0회, 라벨 영역 밖 동일 픽셀·동일 재실행 해시를 확인했다. 라벨 내부는 보간·색 보정으로 픽셀이 바뀌고 가려진 글자는 복원하지 않는다. 자동 라벨 검출·일반화·서비스 연결은 미구현/미확인이다. 별도 AI 라벨 편집4건은 정확한 문자 복구 기준을 통과하지 못했다.",
+      "paths": [],
+      "local_evidence": [
+        "reports/original-label-pixel-composite-20261105/report.md",
+        "reports/original-label-pixel-composite-20261105/validation.json",
+        "reports/label-composite-trial-20261105/report.md"
+      ],
+      "source_urls": [],
+      "local_evidence_sha256": {
+        "reports/original-label-pixel-composite-20261105/report.md": "60a5756fe49bf5e66d1f653a38a80882f85b8729ef2c4d16eaf0c3cf217f6360",
+        "reports/original-label-pixel-composite-20261105/validation.json": "a3b4a2d91be460d240a1dcaf7d4205eef66d895a59d335662ee6a7ffd4a87a28",
+        "reports/label-composite-trial-20261105/report.md": "911747f86dceda9b5415c68a746630685a6be7eac7b620412714df4f7947c1ef"
+      }
+    }
+  ]
+}

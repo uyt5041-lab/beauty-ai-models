@@ -77,3 +77,9 @@
 검증은 최신 모듈+dev 통합567개 PASS, 모니터링 호환5개 별도 PASS다(중복 가능 범위라 합산하지 않음). Python3.13의 기존 SQLite 연결 ResourceWarning만 제외했고 독립 EGM은 곁대화 서브에이전트 금지로 미실행이다. 이번 문서 갱신에서는 API 호출·서버 재시작·GCP 배포를 하지 않았다.
 
 [게시된 이미지 모듈](https://github.com/uyt5041-lab/beauty-ai-models/tree/6735e979c46626597034c99fa4aec8151517c9ee/src/image_generation) · [로컬 dev 적용 차이·한계](https://github.com/uyt5041-lab/beauty-ai-models/blob/6735e979c46626597034c99fa4aec8151517c9ee/integrations/ittem_dev/README.md) · [11/12 협업일지](https://github.com/uyt5041-lab/beauty-ai-models/blob/박지수_협업일지/worklogs/2026-11-12/park-jisoo-worklog.md)
+
+## 추가 기능 소개·별도 완료율
+
+**기본14/15개·93.3% / 추가 기능 모듈 구현5/6개·83.3%. 합산하지 않는다.** 고정 프롬프트 보강·14디멘션 선택·합성 글자색·위치 조절·자유형 생성은 모듈 구현을 확인했다. 원본 라벨 합성은 수동 앵커를 쓰는 로컬 실험 상태다. 기존 A14와 새 소개 목록을 중복 집계하지 않는다.
+
+[기능별 소개·사용 위치·한계](imageAdditionalFeatures.md) · [추가 집계 데이터](imageAdditionalFeatures-20261112.json)
