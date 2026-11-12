@@ -1,0 +1,185 @@
+# 전체 이미지 TODO와 진행률
+
+기준일: 2026-10-21 · 원본 커밋: 00e455e979f3061b3a1aed9609d994bc713757e4
+
+**일지 체크 진행률: 0/109개 · 0.0%**
+
+![전체 TODO 진행률 0/109개 · 0.0%](progress.svg)
+
+분모는 원본 문서의 전체 체크 항목이다. 분자는 보고일까지 계획된 항목 중 완료 근거가 있는 체크다. 이후 계획도 모두 보여주지만 미리 체크하지 않는다. 이후의 빈 체크는 구현 미완료를 단정하는 표시가 아니다. 일정 미정은 완료 수에 넣지 않으며 이 수치는 제품 완성률이 아니다.
+
+[원본 TODO](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md) · [진행률 데이터](progress.json)
+
+## 묶음별 진행률
+
+| 계획 묶음 | 일지 체크 / 전체 |
+| --- | --- |
+| 최종 완료 체크 | 0 / 5 |
+| 먼저 확보할 선행조건과 역할 | 0 / 5 |
+| M1 · 10/30 통합 게이트 | 0 / 7 |
+| M2 · 11/06 디테일·고도화 완료 게이트 | 0 / 7 |
+| 단계 1-A. 지원 범위와 자산 계약 확정 | 0 / 8 |
+| 단계 1-B. 모델·파이프라인·GPU 환경 확정 | 0 / 8 |
+| 단계 2-A. 누끼와 제품 레이어 생성 | 0 / 7 |
+| 단계 2-B. 작업 캔버스와 마스크 정렬 | 0 / 7 |
+| 단계 2-C. 배경·씬 생성 | 0 / 7 |
+| 단계 2-D. 승인 제품 재합성과 출력 연결 | 0 / 8 |
+| 단계 3-A. 고정 평가셋과 이미지 품질 | 0 / 8 |
+| 단계 3-B. 성능·메모리·비용 측정 | 0 / 7 |
+| 단계 4-A. private inference 서버와 작업 신뢰성 | 0 / 11 |
+| 단계 4-B. API·캐시·편집 흐름 연결 및 인계 | 0 / 8 |
+| 8. 먼저 확정할 사항과 실행 순서 | 0 / 6 |
+
+## 최종 완료 체크
+
+- [ ] T001 · 필수 기능과 평가셋이 1\~4단계의 합의한 기준을 통과했다. (일정 미정) ([원본 L24](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L24))
+- [ ] T002 · 모델·파이프라인·프리셋·템플릿·실행 환경과 결과 자산의 버전이 기록돼 있다. (일정 미정) ([원본 L25](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L25))
+- [ ] T003 · 필수 품질·장애 항목에 미해결 오류가 없고, 지원하지 않는 입력은 명확하게 반환한다. (일정 미정) ([원본 L26](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L26))
+- [ ] T004 · 팀원이 문서와 샘플 입력으로 실제 누끼·배경 생성·상태 조회를 재현했다. (일정 미정) ([원본 L27](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L27))
+- [ ] T005 · API·자산·렌더링 담당이 결과 연결을 확인했고, PM이 이미지 담당 범위 완료를 확인했다. (일정 미정) ([원본 L28](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L28))
+
+## 먼저 확보할 선행조건과 역할
+
+- [ ] T006 · 10/21 오전까지 이미지(pi)·텍스트(팀원 문서상 김다혜)의 산출물 인수 창구와 API·작업 저장·자산·승인 UI·렌더러 담당의 이름·제공일을 확인한다. (일정 미정) ([원본 L57](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L57))
+- [ ] T007 · 10/21 오후까지 GPU 접근·모델 다운로드 권한·실행 환경을 확보하고 최소 기동을 확인한다. 필수 평가셋, 지원 후보, 품질·지연·VRAM·비용의 측정 방법과 목표값도 기록한다. (일정 미정) ([원본 L58](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L58))
+- [ ] T008 · 10/21 이미지 측 초안 → 10/23 팀 초안 대조 → 10/26 교차 계약 v1 순서로 영어 프롬프트/분석 JSON·VisualBrief·자산 ID/권한·좌표계·승인·hash/revision을 확인한다. 연결 쟁점은 modelIntegrationReview.md를 따른다. (일정 미정) ([원본 L59](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L59))
+- [ ] T009 · 10/23까지 예제 데이터로 API·자산·렌더러 연결을 확인한다. 10/27까지 이미지 서버·영속 작업 저장·자산 저장을 준비하고, 10/28 실제 LLM 산출물을 수신해 10/29–30 서비스 API를 연결한다. (일정 미정) ([원본 L60](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L60))
+- [ ] T010 · 10/26까지 합의 요청: 기본 Safe Zone·무드·카피 길이, 영어 프롬프트 필드/버전/길이 처리, 분석 실패·미확인 상태, M1의 1차 검수/내보내기 정책을 정한다. 미합의 상태는 통합 위험으로 표시한다. (일정 미정) ([원본 L61](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L61))
+
+## M1 · 10/30 통합 게이트
+
+- [ ] T011 · 합의한 초기 지원 입력에서 실제 모델로 누끼·배경·제품 재합성을 수행하고, 결과 파일을 저장한 뒤 조회·렌더러 전달까지 확인한다. (예정 2026-10-30) ([원본 L92](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L92))
+- [ ] T012 · 필수 품질 기준을 통과한다. 동일 캔버스 승인 RGBA의 불투명 영역 보존과 부분 투명 영역의 시각 품질을 구분해 확인한다. (예정 2026-10-30) ([원본 L93](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L93))
+- [ ] T013 · 실제 자산 파일과 접근 권한을 검사하고, 최종 출력에서 현재 문구 검수·제품 레이어 승인·이미지 품질 승인·레이아웃 일치를 함께 확인한다. 문구는 M1의 사전·정규식 검사 범위·버전·별도 승인 정책을 명시하며, LLM 포함 검수 완료나 no_flags로 자동 승격하지 않는다. (예정 2026-10-30) ([원본 L94](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L94))
+- [ ] T014 · 기본 Safe Zone·무드·카피 길이 계약으로 실제 출력이 맞는지 확인하고, 영어 프롬프트/버전 변경이 이미지 요청 hash에 반영되는지 검증한다. 분석 실패의 기본값은 확인된 제품 사실로 쓰지 않는다. (예정 2026-10-30) ([원본 L95](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L95))
+- [ ] T015 · 같은 작업 ID의 중복 실행 방지, 다른 요청 hash의 충돌, 제출 응답 유실 후 같은 ID 조회, 서버 재시작 뒤 상태 수습을 확인한다. 대기 시간 초과를 생성 실패로 바꾸거나 무조건 새 작업을 제출하지 않는다. (예정 2026-10-30) ([원본 L96](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L96))
+- [ ] T016 · OOM 등 작업 실패가 오류로 남고, 문구만 수정할 때 이미지가 재사용되며, 변경 전 작업의 늦은 결과가 현재 편집을 덮어쓰지 않는다. (예정 2026-10-30) ([원본 L97](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L97))
+- [ ] T017 · 대표 실행 증거·통합 회귀 결과·남은 품질/성능 개선 목록을 팀이 확인한다. 미통과 항목이 있으면 M1은 미완료로 표시한다. (예정 2026-10-30) ([원본 L98](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L98))
+
+## M2 · 11/06 디테일·고도화 완료 게이트
+
+- [ ] T018 · 확정 지원 범위에서 라벨·색·형태·경계·구도·문구 여백의 기준을 통과하고, 수동 확인·미지원 입력은 정해진 경로로 처리된다. (예정 2026-11-06) ([원본 L102](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L102))
+- [ ] T019 · 고정 평가셋 전체와 편집/캐시/승인 흐름의 최종 회귀를 통과하며, 필수 결함이 남아 있지 않다. (예정 2026-11-06) ([원본 L103](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L103))
+- [ ] T020 · 합의한 실행 환경에서 지연·VRAM·요청당 비용의 목표를 확인하고, 설정·모델 변경에 따른 품질 저하가 없는지 비교한다. (예정 2026-11-06) ([원본 L104](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L104))
+- [ ] T021 · 반복 실행·부하·응답 유실·워커/GPU 재시작·오래된 결과 시나리오를 검증한다. M1 기본 복구 기능을 이때 처음 만드는 일정으로 미루지 않는다. (예정 2026-11-06) ([원본 L105](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L105))
+- [ ] T022 · 다른 팀원이 고정된 버전으로 재현하고, 실행 방법·품질 평가·오류 의미·지원 한계와 담당자 인수를 확인한다. (예정 2026-11-06) ([원본 L106](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L106))
+- [ ] T023 · 함께 검증한 LLM·스키마·규칙·프롬프트 버전을 기록하고, 11/10 텍스트 개발 마감 전 변경이 생길 경우 재검수·이미지 재생성·회귀 범위를 판단할 담당을 정한다. (예정 2026-11-06) ([원본 L107](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L107))
+- [ ] T024 · 위 완료 조건 및 이 문서의 필수 실행 체크리스트를 충족한다. 비필수 개선은 사유와 함께 후속 목록으로 분리하고, 미달 필수 작업은 완료로 표시하지 않는다. (예정 2026-11-06) ([원본 L108](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L108))
+
+## 단계 1-A. 지원 범위와 자산 계약 확정
+
+- [ ] T025 · 지원할 화장품 형태와 초기 제외·수동 확인 대상을 정한다: 불투명 병, 튜브, 펌프, 유리·투명 용기, 반사 패키지 등. (계획 시작 2026-10-20) ([원본 L150](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L150))
+- [ ] T026 · 광고 비율·작업 해상도·최종 출력 해상도를 구분한다. 스키마의 허용 범위를 GPU가 처리할 수 있다는 보장으로 사용하지 않는다. (계획 시작 2026-10-20) ([원본 L151](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L151))
+- [ ] T027 · 모델 입력 전 이미지 형식·실제 디코딩·파일 크기·픽셀 크기·회전 방향·색 공간 처리 기준을 정한다. (계획 시작 2026-10-20) ([원본 L152](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L152))
+- [ ] T028 · 외부 경로나 임의 URL 대신 권한을 확인한 AssetRef로 자산을 전달한다. (계획 시작 2026-10-20) ([원본 L153](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L153))
+- [ ] T029 · alpha matte, 보호 마스크, 인페인트 마스크의 의미·형식·생성 주체를 문서화한다. (계획 시작 2026-10-20) ([원본 L154](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L154))
+- [ ] T030 · 누끼·배경 결과의 자산과 경고, 사용자 확인이 필요한 경우를 정한다. (계획 시작 2026-10-20) ([원본 L155](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L155))
+- [ ] T031 · 결과 이미지에 광고 문구를 굽지 않고, 문구 JSON과 이미지 레이어를 렌더러에 따로 전달하기로 합의한다. (계획 시작 2026-10-20) ([원본 L156](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L156))
+- [ ] T032 · 품질·처리 시간·VRAM·요청 비용 기준과 평가 조건을 먼저 정한다. 미정인 기준은 완료로 체크하지 않는다. (계획 시작 2026-10-20) ([원본 L157](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L157))
+
+## 단계 1-B. 모델·파이프라인·GPU 환경 확정
+
+- [ ] T033 · 누끼 모델과 배경 생성 모델 후보를 같은 제품 이미지로 비교한다. 설계 후보인 BiRefNet·SDXL 등을 쓴다면 선택 이유와 대안을 기록한다. (계획 시작 2026-10-21) ([원본 L165](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L165))
+- [ ] T034 · 선택 모델의 배포·사용 조건, 가중치 출처와 필요한 접근 권한을 확인한다. (계획 시작 2026-10-21) ([원본 L166](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L166))
+- [ ] T035 · 실제 GPU, 드라이버·CUDA·PyTorch·Diffusers 등 실행 환경 조합을 기록하고 기동을 확인한다. (계획 시작 2026-10-21) ([원본 L167](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L167))
+- [ ] T036 · 모델 가중치·코드·파이프라인 revision을 고정하고, 다운로드·로딩·warm-up 절차를 정한다. (계획 시작 2026-10-21) ([원본 L168](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L168))
+- [ ] T037 · checkpoint, scheduler, steps, precision, adapter 등 실행 설정을 서버 소유 profile에 묶는다. (계획 시작 2026-10-21) ([원본 L169](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L169))
+- [ ] T038 · pipeline_profile_id와 pipeline_revision으로 설정을 선택하고, 사용자가 임의 모델 경로나 실행 코드를 지정하지 못하게 한다. (계획 시작 2026-10-21) ([원본 L170](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L170))
+- [ ] T039 · 같은 seed·입력·버전의 재현 범위를 측정한다. 하드웨어·라이브러리가 바뀌어도 완전히 같은 픽셀이라고 가정하지 않는다. (계획 시작 2026-10-21) ([원본 L171](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L171))
+- [ ] T040 · 실패 시 이전 검증 프로필로 돌아갈 방법과 모델·환경 변경 후 회귀 평가 절차를 정한다. (계획 시작 2026-10-21) ([원본 L172](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L172))
+
+## 단계 2-A. 누끼와 제품 레이어 생성
+
+- [ ] T041 · 실제 파일의 hash·크기·형식이 AssetRef와 일치하는지 확인한다. 메타데이터만 믿고 처리하지 않는다. (예정 2026-10-22) ([원본 L180](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L180))
+- [ ] T042 · 실제 누끼 모델로 alpha matte를 만들고, alpha가 있는 RGBA PNG로 결과를 저장한다. (예정 2026-10-22) ([원본 L181](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L181))
+- [ ] T043 · 제품의 뚜껑·펌프·얇은 경계·라벨·반투명 부분이 잘리지 않는지 확인한다. (예정 2026-10-22) ([원본 L182](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L182))
+- [ ] T044 · 검정·흰색·유사색 배경에서 잔여 배경, 경계 테두리, 구멍과 잘못 선택한 객체를 검사한다. (예정 2026-10-22) ([원본 L183](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L183))
+- [ ] T045 · 여러 제품이나 소품이 있는 입력의 대상 선택 기준을 정하고, 모호하면 수동 확인으로 넘긴다. (예정 2026-10-22) ([원본 L184](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L184))
+- [ ] T046 · 누끼 결과가 불확실한 경우 needs_manual_check와 warnings를 반환한다. (예정 2026-10-22) ([원본 L185](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L185))
+- [ ] T047 · alpha matte와 별개로 제품 보호 마스크를 만들고, 사용자 확인·보정 뒤 승인된 제품 버전을 저장하도록 연결한다. (예정 2026-10-22) ([원본 L186](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L186))
+
+## 단계 2-B. 작업 캔버스와 마스크 정렬
+
+- [ ] T048 · 종횡비를 보존해 제품을 배치하고, 리사이즈·이동·여백 처리 결과를 승인 제품의 기준 레이어로 남긴다. (예정 2026-10-23) ([원본 L194](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L194))
+- [ ] T049 · 제품 RGBA·보호 마스크·비주얼 브리프의 작업 해상도를 일치시킨다. (예정 2026-10-23) ([원본 L195](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L195))
+- [ ] T050 · 현재 계약의 작업 크기 조건인 256\~2048 및 8의 배수 조건을 검사하고, 별도로 검증된 GPU 프로필 한도를 적용한다. (예정 2026-10-23) ([원본 L196](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L196))
+- [ ] T051 · 정규화된 product_box·text_safe_zone을 실제 픽셀 좌표로 변환하는 규칙을 렌더러와 맞춘다. (예정 2026-10-23) ([원본 L197](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L197))
+- [ ] T052 · 제품 영역과 텍스트 여백의 겹침·캔버스 밖 배치를 차단한다. 현재 사각형 검사 외에 실제 제품 alpha의 배치도 확인한다. (예정 2026-10-23) ([원본 L198](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L198))
+- [ ] T053 · 우리 계약의 보호 마스크는 흰색=보존, Diffusers 인페인트 마스크는 흰색=재생성임을 어댑터 경계에서 변환한다. (예정 2026-10-23) ([원본 L199](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L199))
+- [ ] T054 · 마스크 반전·가장자리 확장·부드럽게 처리하는 설정이 제품 라벨과 형상을 훼손하지 않는지 샘플로 검증한다. (예정 2026-10-23) ([원본 L200](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L200))
+
+## 단계 2-C. 배경·씬 생성
+
+- [ ] T055 · 고정된 콘셉트·스타일 프리셋·레이아웃·seed로 실제 배경 생성을 실행한다. (예정 2026-10-23) ([원본 L208](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L208))
+- [ ] T056 · 제품 보호 영역과 텍스트 여백을 지키도록 생성 조건을 구성한다. (예정 2026-10-23) ([원본 L209](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L209))
+- [ ] T057 · 생성된 씬에 다른 제품·가짜 라벨·문자·로고가 생기는지 검사한다. (예정 2026-10-23) ([원본 L210](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L210))
+- [ ] T058 · scene_underlay는 제품이 전혀 없는 깨끗한 배경이라고 보장하지 않는다. 중복 제품과 생성 잔상을 별도로 검사한다. (예정 2026-10-23) ([원본 L211](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L211))
+- [ ] T059 · 색감·광원·그림자·접지감이 제품과 어울리는지 평가하고, 원본 제품 픽셀을 변경하는 재조명은 기본 흐름과 분리한다. (예정 2026-10-23) ([원본 L212](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L212))
+- [ ] T060 · 요청한 프리셋과 다른 장면·검은 이미지·깨진 이미지·빈 결과를 성공으로 넘기지 않는다. (예정 2026-10-23) ([원본 L213](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L213))
+- [ ] T061 · 실패·품질 미달의 반환 상태와 재생성 횟수·예산 상한을 정한다. 무제한 seed 재시도를 하지 않는다. (예정 2026-10-23) ([원본 L214](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L214))
+
+## 단계 2-D. 승인 제품 재합성과 출력 연결
+
+- [ ] T062 · 생성된 씬 위에 승인 제품 RGBA를 동일한 작업 해상도로 재합성한다. (예정 2026-10-23) ([원본 L222](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L222))
+- [ ] T063 · 재합성 직후 alpha=255 영역이 승인 제품 레이어와 픽셀 단위로 일치하는지 검사한다. (예정 2026-10-23) ([원본 L223](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L223))
+- [ ] T064 · 부분 투명 경계·유리·반사 제품은 배경과 섞이므로 별도 시각 평가를 수행한다. (예정 2026-10-23) ([원본 L224](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L224))
+- [ ] T065 · 원본 업로드, 승인된 작업 캔버스 제품, 합성 preview, 최종 출력의 보존 기준을 각각 기록한다. (예정 2026-10-23) ([원본 L225](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L225))
+- [ ] T066 · 출력 리사이즈·압축이 라벨 가독성·경계·색에 주는 영향을 검증한다. 재합성 전후의 보존 주장을 최종 파일 전체로 확대하지 않는다. (예정 2026-10-23) ([원본 L226](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L226))
+- [ ] T067 · scene_underlay, product_rgba, composed_preview를 구분해 저장하고 파일 존재·디코딩·hash를 확인한다. (예정 2026-10-23) ([원본 L227](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L227))
+- [ ] T068 · 렌더러가 같은 위치·비율·레이어 순서로 문구를 합성하는지 공동 확인한다. (예정 2026-10-23) ([원본 L228](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L228))
+- [ ] T069 · 업스케일·제품 재조명을 추가할 경우 별도 평가와 변경된 보존 기준을 먼저 정의한다. (예정 2026-10-23) ([원본 L229](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L229))
+
+## 단계 3-A. 고정 평가셋과 이미지 품질
+
+- [ ] T070 · 정상 제품뿐 아니라 작은 라벨·흰 용기·검정 용기·유리·반사·펌프·복수 객체·복잡한 배경을 포함한다. (계획 시작 2026-10-21) ([원본 L237](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L237))
+- [ ] T071 · 평가셋의 이미지 사용 권한, 제품 유형, 기대 처리·수동 확인 여부를 기록한다. (계획 시작 2026-10-21) ([원본 L238](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L238))
+- [ ] T072 · 누끼 정답 마스크가 있는 경우 경계·영역 지표를 측정하고, 정답이 없는 경우 사람 평가와 구분한다. (계획 시작 2026-10-21) ([원본 L239](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L239))
+- [ ] T073 · 제품 색·형태·라벨 가독성·잘린 부분·경계 테두리·중복 제품·텍스트 여백을 각각 판정한다. (계획 시작 2026-10-21) ([원본 L240](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L240))
+- [ ] T074 · 자동 픽셀 검사나 VLM 판정만으로 합격시키지 않고, 투명·반사 제품과 최종 광고 레이아웃은 사람이 확인한다. (계획 시작 2026-10-21) ([원본 L241](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L241))
+- [ ] T075 · 프리셋·레이아웃·seed 조합을 고정하고 개발셋과 최종 평가셋을 구분한다. (계획 시작 2026-10-21) ([원본 L242](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L242))
+- [ ] T076 · 모델·scheduler·adapter·해상도·마스크 처리 변경 시 동일 평가셋으로 회귀를 확인한다. (계획 시작 2026-10-21) ([원본 L243](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L243))
+- [ ] T077 · 실패 이미지와 개선 전후 결과를 보존하고, 품질 미달을 경고만 붙여 자동 승인하지 않는다. (계획 시작 2026-10-21) ([원본 L244](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L244))
+
+## 단계 3-B. 성능·메모리·비용 측정
+
+- [ ] T078 · 모델 로딩·대기·누끼·배경 생성·합성·저장을 나눠 시간을 측정한다. (계획 시작 2026-10-21) ([원본 L252](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L252))
+- [ ] T079 · cold start와 warm 상태, 입력 크기·해상도별 지연과 최대 GPU 메모리를 기록한다. (계획 시작 2026-10-21) ([원본 L253](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L253))
+- [ ] T080 · 같은 조건에서 반복 횟수·표본 수와 실패율을 함께 기록한다. 계획상 속도를 실측값으로 적지 않는다. (계획 시작 2026-10-21) ([원본 L254](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L254))
+- [ ] T081 · 모델 전환·해상도 변경·연속 작업에서 메모리 증가와 GPU OOM을 확인한다. (계획 시작 2026-10-21) ([원본 L255](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L255))
+- [ ] T082 · OOM 시 오류·임시 자산 정리·워커 복구 동작을 정하고, 품질 조건을 몰래 낮춰 성공 처리하지 않는다. (계획 시작 2026-10-21) ([원본 L256](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L256))
+- [ ] T083 · GPU 가동·유휴·스토리지·전송·실패 재시도를 포함해 비용 기준을 정하고 단가 출처·확인일을 남긴다. (계획 시작 2026-10-21) ([원본 L257](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L257))
+- [ ] T084 · 검증된 동시 실행 수와 대기열·요청별 비용 상한을 정한다. 초기 설계의 GPU 실행 1개 제한을 실제 전역 제어로 확인한다. (계획 시작 2026-10-21) ([원본 L258](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L258))
+
+## 단계 4-A. private inference 서버와 작업 신뢰성
+
+- [ ] T085 · private inference API의 인증과 네트워크 접근 범위를 구성하고, 자산 소유권을 확인한다. (계획 시작 2026-10-21) ([원본 L266](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L266))
+- [ ] T086 · 같은 작업 ID·같은 입력은 저장된 같은 작업으로 응답하고, 같은 ID·다른 입력은 409로 거절한다. (계획 시작 2026-10-21) ([원본 L267](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L267))
+- [ ] T087 · 입력 hash와 작업 레코드를 원자적으로 저장한 뒤 접수 응답을 보내고, 동시 제출에서도 작업이 한 번만 등록되게 한다. (계획 시작 2026-10-21) ([원본 L268](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L268))
+- [ ] T088 · queued → running → succeeded/failed/interrupted 상태와 저장 주체를 정의한다. interrupted는 중단을 확인한 경우에만 적용한다. (계획 시작 2026-10-21) ([원본 L269](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L269))
+- [ ] T089 · 프로세스가 여러 개여도 GPU 실행 제한과 작업 소유권이 유지되도록 한다. API 프로세스별 semaphore만으로 보장하지 않는다. (계획 시작 2026-10-21) ([원본 L270](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L270))
+- [ ] T090 · 응답 유실·전송 오류·5xx·408·425·429 제출 응답은 접수 여부가 불명확할 수 있으므로, 같은 ID 조회로 조정한다. (계획 시작 2026-10-21) ([원본 L271](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L271))
+- [ ] T091 · SubmissionUncertain 뒤 새 작업 ID를 즉시 발급하지 않는다. 재조회 결과·서버 권위·재제출 조건을 정하고 중복 실행 여부를 확인한다. (계획 시작 2026-10-21) ([원본 L272](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L272))
+- [ ] T092 · JobStillPending은 클라이언트 대기 시간이 끝났다는 뜻으로 처리한다. GPU 취소·실패로 기록하지 않는다. (계획 시작 2026-10-21) ([원본 L273](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L273))
+- [ ] T093 · 워커 재시작 시 DB와 실제 작업 상태를 대조하고, 실행 중이던 작업의 실패·중단·재시도 정책을 명시한다. (계획 시작 2026-10-21) ([원본 L274](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L274))
+- [ ] T094 · 작업 commit 직후 대기열 등록 전에 프로세스가 종료돼도, 시작 시 저장된 queued 작업을 다시 찾아 실행한다. (계획 시작 2026-10-21) ([원본 L275](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L275))
+- [ ] T095 · 결과 파일·자산 메타데이터를 확인해 저장한 뒤 성공 상태를 commit한다. 성공 표시 후 결과 파일이 없는 상태를 차단한다. (계획 시작 2026-10-21) ([원본 L276](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L276))
+
+## 단계 4-B. API·캐시·편집 흐름 연결 및 인계
+
+- [ ] T096 · 이미지 key에 제품·누끼·마스크 hash, 비주얼 브리프, 파이프라인·프리셋·템플릿 버전, seed를 반영한다. (계획 시작 2026-10-21) ([원본 L284](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L284))
+- [ ] T097 · 문구 자체만 바뀌면 이미지를 재사용하고, 문구 변경으로 레이아웃·텍스트 여백이 달라지면 새 이미지 입력으로 처리한다. (계획 시작 2026-10-21) ([원본 L285](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L285))
+- [ ] T098 · 동일 사용자·프로젝트 권한을 확인한 범위에서 캐시를 재사용하며, 다른 프로젝트의 자산을 노출하지 않는다. (계획 시작 2026-10-21) ([원본 L286](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L286))
+- [ ] T099 · 이미지 생성 중 사용자가 제품·프리셋을 바꿨을 때 늦게 완료된 결과가 최신 선택을 덮어쓰지 못하게 한다. (계획 시작 2026-10-21) ([원본 L287](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L287))
+- [ ] T100 · 이미지 작업 실패가 저장된 광고 문구와 텍스트 검수 결과를 삭제하지 않는지 공동 확인한다. (계획 시작 2026-10-21) ([원본 L288](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L288))
+- [ ] T101 · 모델·profile revision·seed·환경·소요 시간·상태·오류 코드를 추적할 수 있게 한다. 비밀값과 서명 자산 URL은 로그에서 보호한다. (계획 시작 2026-10-21) ([원본 L289](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L289))
+- [ ] T102 · 사용자에게 필요한 대기·실패·수동 확인 상태가 API·UI에 일치하게 전달되는지 확인한다. (계획 시작 2026-10-21) ([원본 L290](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L290))
+- [ ] T103 · 서버 기동, 모델 준비, 작업 제출·조회, 결과 열람, 재시작 복구 명령을 인계한다. (계획 시작 2026-10-21) ([원본 L291](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L291))
+
+## 8. 먼저 확정할 사항과 실행 순서
+
+- [ ] T104 · 초기 제품 유형·광고 비율·출력 크기와 수동 확인 기준을 정한다. (일정 미정) ([원본 L333](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L333))
+- [ ] T105 · pi의 이미지 모델 범위와 백엔드·인프라·자산·렌더링 담당의 최종 분담을 확인한다. (일정 미정) ([원본 L334](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L334))
+- [ ] T106 · 실제 GPU 제공 환경·운영 담당·접근 방법·예산을 정한다. (일정 미정) ([원본 L335](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L335))
+- [ ] T107 · 누끼·배경 모델과 프로필 버전, 이미지 사용·모델 사용 조건을 확인한다. (일정 미정) ([원본 L336](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L336))
+- [ ] T108 · 품질·지연·VRAM·비용 목표와 평가 표본·판정자를 정한다. (일정 미정) ([원본 L337](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L337))
+- [ ] T109 · 작업 ledger·자산 저장·재시작 조정·렌더러 연결의 공동 담당자를 정한다. (일정 미정) ([원본 L338](https://github.com/uyt5041-lab/beauty-ai-models/blob/00e455e979f3061b3a1aed9609d994bc713757e4/docs/imageTodo.md#L338))

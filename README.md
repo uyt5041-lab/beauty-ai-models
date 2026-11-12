@@ -7,6 +7,7 @@
 | 날짜 | Markdown | HTML |
 | --- | --- | --- |
 | 2026-10-20 | [작업일지](worklogs/2026-10-20/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-20/park-jisoo-worklog.html) |
+| 2026-10-21 | [계약·마일스톤 계획과 당일 근거 미확인](worklogs/2026-10-21/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-21/park-jisoo-worklog.html) |
 | 2026-10-22 | [모델 작업·완료 체크·스키마 일지](worklogs/2026-10-22/schema-draft-worklog.md) | [HTML 파일](worklogs/2026-10-22/schema-draft-worklog.html) |
 | 2026-10-23 | [프롬프트·W&B·FinOps 협업일지](worklogs/2026-10-23/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-23/park-jisoo-worklog.html) |
 | 2026-10-26 | [브랜치·프롬프트 안내·백엔드 연동 리뷰](worklogs/2026-10-26/park-jisoo-worklog.md) | [HTML 파일](worklogs/2026-10-26/park-jisoo-worklog.html) |
@@ -128,3 +129,11 @@ HTML은 파일을 내려받아 브라우저에서 열 수 있습니다.
 [오늘 협업일지](worklogs/2026-11-05/park-jisoo-worklog.md) · [HTML](worklogs/2026-11-05/park-jisoo-worklog.html) · [전체 활성 TODO](worklogs/2026-11-05/full-todo.md) · [전체 목록 HTML](worklogs/2026-11-05/full-todo.html) · [220개 이관표](worklogs/2026-11-05/reclassification.md) · [재분류 전75/220 기록](worklogs/2026-11-05/archive/before-active-reclassification/park-jisoo-worklog.md) · [근거](worklogs/2026-11-05/evidence.md).
 
 과거·비적용·보류·중복 요약은 활성 분모에서 제외한다. 원본220개와원시82개/일지75개 체크·일정·완료일을 보존했다. 다른 집계 기준이므로 이전34.1%와 증감 비교하지 않는다. 자유형 다수+합성형1장은 보류이며 공동 서비스 검증/청구/인수는 활성으로 남긴다.
+
+### 누락 보완 · 2026-10-21
+
+당시 원본 전체 일지 체크 **0/109개 · 0.0%** · [당일 전체 목록](worklogs/2026-10-21/full-todo.md) · [HTML](worklogs/2026-10-21/full-todo.html)
+
+![당시 원본 전체 일지 체크 0/109개 · 0.0%](worklogs/2026-10-21/progress.svg)
+
+작업일 2026-10-21 / 기록일 2026-11-12. 당일 자기평가와 팀 인수는 확인된 근거만 기록한다.
