@@ -1,0 +1,29 @@
+{
+  "work_date": "2026-11-11",
+  "recorded_on": "2026-11-12",
+  "timezone": "Asia/Seoul",
+  "backfill": true,
+  "author": "박지수",
+  "team": "고급프로젝트 2팀",
+  "source_commit": "e3435c5f6b6ae36ce6a7512e360fa133575ee4e6",
+  "canonical_source": "docs/imageTodo.md",
+  "evidence": [
+    {
+      "label": "중앙 고정 재합성 5개 요약",
+      "reference": "local evidence retained privately",
+      "sha256": "7ed03245ddc4ecbac352c48f5d1deaeb80ffcf101bf356cfe85c25792fe128b9",
+      "public_url": null
+    },
+    {
+      "label": "기존 배치·폰트·계약 차이 회신 초안",
+      "reference": "local evidence retained privately",
+      "sha256": "2c2028c19720bb6c608c1eca7a4f3093be644f240a0ab710261056d75282d6ec",
+      "public_url": null
+    }
+  ],
+  "self_assessment": null,
+  "self_assessment_reason": "당일 본인 자기평가 미제공. 확인 불가를 0%로 바꾸지 않음.",
+  "new_model_calls_in_documentation_task": 0,
+  "milestones": "10/30 M1, 11/06 M2: 목표일 이력; 날짜 경과로 완료 체크하지 않음",
+  "shared_acceptance": "not established by this journal"
+}
