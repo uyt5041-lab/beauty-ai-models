@@ -1,0 +1,29 @@
+{
+  "work_date": "2026-11-04",
+  "recorded_on": "2026-11-12",
+  "timezone": "Asia/Seoul",
+  "backfill": true,
+  "author": "박지수",
+  "team": "고급프로젝트 2팀",
+  "source_commit": "ad0001458c24484bdc9d0046935a5c3cf3f26c6b",
+  "canonical_source": "docs/imageTodo.md",
+  "evidence": [
+    {
+      "label": "비율 실험 요약",
+      "reference": "local evidence retained privately",
+      "sha256": "195cd685d25dab902cd79df27d986aff6b572d97081ab8a756f3023fd3f09a49",
+      "public_url": null
+    },
+    {
+      "label": "W&B 수집 확인",
+      "reference": "local evidence retained privately",
+      "sha256": "801b734a1270ecd75928b0163a06ac6f13c19830dd33fbfc5d0e0b899337ae08",
+      "public_url": null
+    }
+  ],
+  "self_assessment": null,
+  "self_assessment_reason": "당일 본인 자기평가 미제공. 확인 불가를 0%로 바꾸지 않음.",
+  "new_model_calls_in_documentation_task": 0,
+  "milestones": "10/30 M1, 11/06 M2: 목표일 이력; 날짜 경과로 완료 체크하지 않음",
+  "shared_acceptance": "not established by this journal"
+}
